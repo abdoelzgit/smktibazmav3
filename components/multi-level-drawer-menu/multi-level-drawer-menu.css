@@ -1,0 +1,575 @@
+.mldm_wrap {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #efece4;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: #0a0a0a;
+}
+
+.mldm_page {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: #efece4;
+  overflow: hidden;
+}
+
+.mldm_page_hero {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 7rem 4rem 4rem 4rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+}
+
+.mldm_page_inner {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 3rem;
+  width: 100%;
+  align-items: end;
+}
+
+.mldm_page_text {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 640px;
+}
+
+.mldm_page_eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #888888;
+}
+
+.mldm_page_heading {
+  margin: 0;
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  color: #0a0a0a;
+}
+
+.mldm_page_sub {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  color: #555555;
+  max-width: 36ch;
+  line-height: 1.5;
+}
+
+.mldm_page_poster {
+  position: relative;
+  align-self: end;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #d8ddd1;
+}
+
+.mldm_page_poster_img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+.mldm_logo {
+  position: absolute;
+  top: 1.75rem;
+  left: 2.25rem;
+  z-index: 50;
+  display: inline-block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: #0a0a0a;
+  white-space: nowrap;
+  pointer-events: none;
+  will-change: color;
+}
+
+.mldm_toggle {
+  position: absolute;
+  top: 1.75rem;
+  right: 2.25rem;
+  z-index: 200;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #0a0a0a;
+  will-change: color;
+}
+
+.mldm_toggle_label_wrap {
+  position: relative;
+  display: block;
+  width: 3em;
+  height: 1em;
+  font-size: 1rem;
+  line-height: 1;
+  overflow: hidden;
+  text-align: left;
+}
+
+.mldm_toggle_label_track {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  will-change: transform;
+}
+
+.mldm_toggle_label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  height: 1em;
+  white-space: nowrap;
+  user-select: none;
+  color: inherit;
+}
+
+.mldm_toggle_icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  pointer-events: none;
+}
+
+.mldm_toggle_line {
+  position: absolute;
+  display: block;
+  width: 1rem;
+  height: 1.5px;
+  background-color: currentColor;
+  border-radius: 2px;
+  transform-origin: center;
+  will-change: transform, background-color;
+}
+
+.mldm_overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background-color: transparent;
+  pointer-events: none;
+}
+
+.mldm_overlay[aria-hidden="false"] {
+  pointer-events: auto;
+}
+
+/* Dim - darkens the page underneath; sits below trigger + panels. Click closes. */
+.mldm_scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: rgba(10, 10, 10, 0.55);
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0;
+  will-change: opacity;
+}
+
+.mldm_panel {
+  position: absolute;
+  z-index: 3;
+  top: 1rem;
+  bottom: 1rem;
+  background-color: #ececec;
+  border-radius: 8px;
+  overflow: hidden;
+  clip-path: inset(0% 100% 0% 0% round 8px);
+  will-change: clip-path;
+}
+
+.mldm_panel_inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 2.5rem 2.5rem 2.5rem 2.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mldm_panel_primary {
+  left: 1rem;
+  width: 420px;
+}
+
+.mldm_panel_secondary {
+  left: calc(1rem + 420px + 0.5rem);
+  width: 280px;
+}
+
+.mldm_back {
+  display: none;
+  position: absolute;
+  top: 1.5rem;
+  left: 2.5rem;
+  z-index: 5;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  font-family: inherit;
+  color: #0a0a0a;
+}
+
+.mldm_back_icon {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-top: 1.25px solid currentColor;
+  border-left: 1.25px solid currentColor;
+  transform: rotate(-45deg);
+  flex-shrink: 0;
+  margin-right: 0.25rem;
+}
+
+.mldm_back_label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.mldm_list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mldm_item {
+  display: block;
+}
+
+.mldm_primary_nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.mldm_primary_nav .mldm_list {
+  gap: 1.5rem;
+}
+
+.mldm_primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #888888;
+  text-align: left;
+  font-family: inherit;
+}
+
+.mldm_primary_dot {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: #0a0a0a;
+  transform: translate(0, -50%) scale(0);
+  transform-origin: center;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.mldm_primary_label {
+  display: inline-block;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  color: inherit;
+  will-change: transform, color;
+}
+
+.mldm_primary:hover {
+  color: #0a0a0a;
+}
+
+.mldm_explore {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #555555;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.mldm_explore:hover {
+  color: #0a0a0a;
+}
+
+.mldm_cards {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.mldm_card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: #0a0a0a;
+}
+
+.mldm_card_media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 6px;
+  background-color: #d8ddd1;
+}
+
+.mldm_card_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  will-change: transform;
+}
+
+.mldm_card_label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: #0a0a0a;
+}
+
+.mldm_footer_nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.mldm_footer_link {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #888888;
+  text-decoration: none;
+}
+
+.mldm_footer_link:hover {
+  color: #0a0a0a;
+}
+
+.mldm_sublist_stack {
+  position: relative;
+  width: 100%;
+  flex: 1;
+}
+
+.mldm_sublist {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.mldm_sublist_active {
+  visibility: visible;
+  pointer-events: auto;
+  position: relative;
+}
+
+.mldm_sublist .mldm_list {
+  gap: 0.5rem;
+}
+
+.mldm_sublink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  color: #888888;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+
+.mldm_sublink_dot {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  display: inline-block;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 50%;
+  background-color: #0a0a0a;
+  transform: translate(0, -50%) scale(0);
+  transform-origin: center;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.mldm_sublink_label {
+  display: inline-block;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: inherit;
+  will-change: transform, color;
+}
+
+.mldm_sublink:hover {
+  color: #0a0a0a;
+}
+
+.mldm_sub_explore {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #555555;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.mldm_sub_explore:hover {
+  color: #0a0a0a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mldm_card_img {
+    transition: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .mldm_panel_primary {
+    width: 360px;
+  }
+
+  .mldm_panel_secondary {
+    left: calc(1rem + 360px + 0.5rem);
+    width: 240px;
+  }
+
+  .mldm_primary_label {
+    font-size: 1.625rem;
+  }
+
+  .mldm_sublink_label {
+    font-size: 1.125rem;
+  }
+
+  .mldm_page_hero {
+    padding: 6rem 2rem 2rem 2rem;
+  }
+
+  .mldm_page_inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Push panels below the fixed header so the logo + trigger don't overlap */
+  .mldm_panel {
+    top: 5rem;
+  }
+
+  /* Both panels share the exact same left/right/width on mobile.
+     Panel 2 sits on top of panel 1 (higher z-index) as a drill-down overlay. */
+  .mldm_panel_primary {
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    max-width: none;
+    z-index: 3;
+  }
+
+  .mldm_panel_secondary {
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    /* slide-in initial state - shift by full viewport width so panel 2 is
+       guaranteed fully off-screen regardless of viewport size (translateX 100%
+       alone would leave a 1rem sliver visible due to the left offset) */
+    clip-path: inset(0% 0% 0% 0% round 8px);
+    transform: translateX(100vw);
+    z-index: 20;
+  }
+
+  .mldm_panel_secondary .mldm_panel_inner {
+    padding-top: 4.5rem;
+  }
+
+  .mldm_back {
+    display: inline-flex;
+  }
+
+  .mldm_page_hero {
+    padding: 5rem 1.5rem 1.5rem 1.5rem;
+  }
+
+  .mldm_page_inner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .mldm_logo {
+    top: 1.25rem;
+    left: 1.5rem;
+  }
+
+  .mldm_toggle {
+    top: 1.25rem;
+    right: 1.5rem;
+  }
+}
