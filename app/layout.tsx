@@ -6,7 +6,8 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { SmoothScroll } from "@/components/smooth-scroll";
-
+import { Navbar } from "@/components/navbar";
+import Footer from "@/components/footer";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -33,11 +34,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${plusJakartaSans.variable} ${familjenGrotesk.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <SmoothScroll>
-
+        <Navbar />
         {children}
+                <Footer />
+
         </SmoothScroll>
 
         </body>

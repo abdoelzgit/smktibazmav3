@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import gsap from "gsap";
+import { useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -38,10 +40,10 @@ const SLIDES: Slide[] = [
     tabLabel: "Melayani Sepenuh Hati",
     title: "Melayani Sepenuh Hati",
     description:
-      'Pertamina Patra Niaga meningkatkan layanan energi dan menyediakan berbagai fasilitas pendukung untuk memastikan kelancaran layanan kebutuhan energi terhadap masyarakat selama periode Ramadan & Idulfitri 2026. Klik "Selengkapnya" untuk melihat layanan lengkap kami di masa Ramadan dan Idulfitri.',
+      'Pertamina Patra Niaga meningkatkan layanan energi dan menyediakan berbagai fasilitas pendukung untuk memastikan kelancaran layanan kebutuhan energi terhadap masyarakat selama periode Ramadan & Idulfitri 2026.',
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/slide-melayani.jpg",
+    image: "/images/info-cover.webp",
   },
   {
     id: "kilang-dan-petrokimia",
@@ -51,7 +53,7 @@ const SLIDES: Slide[] = [
       "Mendukung ketahanan energi nasional melalui pengolahan minyak mentah menjadi produk BBM, LPG, dan petrokimia berkualitas tinggi bagi masyarakat dan industri.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/slide-kilang.jpg",
+    image: "/images/foto.webp",
   },
   {
     id: "maritim-logistik-terintegrasi",
@@ -61,7 +63,7 @@ const SLIDES: Slide[] = [
       "Armada kapal dan fasilitas logistik laut kami memastikan distribusi energi menjangkau pelosok negeri, dari kota besar hingga pulau-pulau terluar Indonesia.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/slide-maritim.jpg",
+    image: "/images/info-cover.webp",
   },
 ];
 
@@ -74,6 +76,8 @@ export default function HeroCarousel({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHidden, setIsHidden] = useState(false);
+  // Respect prefers-reduced-motion: skip Ken Burns + reveal animations
+  const prefersReducedMotion = useReducedMotion();
 
   // Catatan: pause-on-hover SUDAH DIHAPUS dengan sengaja. Sebelumnya
   // carousel ini pause saat kursor berada di atas section hero (yang
@@ -131,6 +135,8 @@ export default function HeroCarousel({
   }, [goToSlide]);
 
   // --- Crossfade + Ken Burns pada background image, dan reveal teks ---
+  // prefers-reduced-motion: skip Ken Burns scale & staggered reveal,
+  // tetap jalankan crossfade opacity (perubahan konten tetap jelas)
   useEffect(() => {
     const currentImage = imageRefs.current[activeIndex];
     const otherImages = imageRefs.current.filter((_, i) => i !== activeIndex);
@@ -141,7 +147,7 @@ export default function HeroCarousel({
       otherImages,
       {
         opacity: 0,
-        duration: 0.7,
+        duration: prefersReducedMotion ? 0 : 0.7,
         ease: "power2.inOut",
       },
       0
@@ -149,48 +155,58 @@ export default function HeroCarousel({
 
     if (currentImage) {
       gsap.killTweensOf(currentImage);
-      tl.fromTo(
-        currentImage,
-        { opacity: 0, scale: 1.08 },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 1,
-          ease: "power2.out",
-        },
-        0
-      ).to(
-        currentImage,
-        {
-          scale: 1.06,
-          duration: AUTOPLAY_DURATION + 1,
-          ease: "none",
-        },
-        0
-      );
+      if (prefersReducedMotion) {
+        // Reduced motion: langsung tampilkan tanpa scale
+        gsap.set(currentImage, { opacity: 1, scale: 1 });
+      } else {
+        tl.fromTo(
+          currentImage,
+          { opacity: 0, scale: 1.08 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 1,
+            ease: "power2.out",
+          },
+          0
+        ).to(
+          currentImage,
+          {
+            scale: 1.06,
+            duration: AUTOPLAY_DURATION + 1,
+            ease: "none",
+          },
+          0
+        );
+      }
     }
 
     if (contentRef.current) {
       const children = contentRef.current.querySelectorAll("[data-reveal]");
       gsap.killTweensOf(children);
-      tl.fromTo(
-        children,
-        { y: 24, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.6,
-          ease: "power3.out",
-          stagger: 0.08,
-        },
-        0.15
-      );
+      if (prefersReducedMotion) {
+        // Reduced motion: langsung tampilkan tanpa slide-up
+        gsap.set(children, { y: 0, opacity: 1 });
+      } else {
+        tl.fromTo(
+          children,
+          { y: 24, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.6,
+            ease: "power3.out",
+            stagger: 0.08,
+          },
+          0.15
+        );
+      }
     }
 
     return () => {
       tl.kill();
     };
-  }, [activeIndex]);
+  }, [activeIndex, prefersReducedMotion]);
 
   // --- Progress bar sebagai COUNTDOWN autoplay ---
   // Bar tab aktif mengisi 0 -> 1 selama AUTOPLAY_DURATION, sinkron persis
@@ -348,33 +364,29 @@ export default function HeroCarousel({
                 focus-ring, disabled state) yang konsisten dengan
                 komponen shadcn lain nantinya.
               */}
-              <Button
-                
-                variant="outline"
-                className="group h-auto w-fit rounded-full border-white/70 bg-transparent px-6 py-3 text-sm font-semibold text-white hover:bg-white hover:text-[#0a0e27]"
+              {/* ✅ Gunakan Link langsung dengan styling Button — bukan Button>a */}
+              <Link
+                href={activeSlide.ctaHref}
+                className="group inline-flex h-auto w-fit items-center gap-2 rounded-full border border-white/70 bg-transparent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-[#0a0e27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e27]"
               >
-                <a
-                  href={activeSlide.ctaHref}
-                  className="inline-flex items-center gap-2"
+                {activeSlide.ctaLabel}
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  aria-hidden="true"
+                  className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                 >
-                  {activeSlide.ctaLabel}
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 14 14"
-                    fill="none"
-                    className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                  >
-                    <path
-                      d="M3 11L11 3M11 3H4M11 3V10"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </a>
-              </Button>
+                  <path
+                    d="M3 11L11 3M11 3H4M11 3V10"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
             </div>
           </div>
 

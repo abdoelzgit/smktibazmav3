@@ -1,10 +1,6 @@
-'use client';
-
-import Image from 'next/image';
-import Link from 'next/link';
-import { Separator } from '@/components/ui/separator';
-import { MessageCircle, MapPin, Phone, Mail } from 'lucide-react';
-import { BlurFade } from './ui/blur-fade';
+import Image from "next/image";
+import Link from "next/link";
+import { MapPin, Phone, Mail } from "lucide-react";
 
 type FooterLink = {
   label: string;
@@ -14,123 +10,141 @@ type FooterLink = {
 
 type FooterColumn = {
   title: string;
-  links: FooterLink[];
+  href?: string;
+  links?: FooterLink[];
 };
 
 const footerColumns: FooterColumn[] = [
   {
-    title: 'Beranda',
+    title: "Beranda",
     links: [
-      { label: 'Sambutan', href: '/#sambutan' },
-      { label: 'Jurusan', href: '/#jurusan' },
-      { label: 'Prestasi', href: '/#prestasi' },
-      { label: 'Galeri', href: '/#galeri' },
-      { label: 'Mitra', href: '/#mitra' },
+      { label: "Sambutan", href: "/#sambutan" },
+      { label: "Jurusan", href: "/#jurusan" },
+      { label: "Prestasi", href: "/#prestasi" },
+      { label: "Galeri", href: "/#galeri" },
+      { label: "Mitra", href: "/#mitra" },
     ],
   },
   {
-    title: 'Tentang Kami',
+    title: "Tentang Kami",
     links: [
-      { label: 'Profil Sekolah', href: '/about' },
-      { label: 'Akreditasi', href: '/akreditasi' },
-      { label: 'Kontak', href: '/kontak' },
+      { label: "Profil Sekolah", href: "/#sekolah" },
+      { label: "Akreditasi", href: "/#akreditasi" },
+      { label: "Kontak", href: "/#kontak" },
     ],
   },
   {
-    title: 'Berita',
+    title: "Berita",
     links: [
-      { label: 'Terbaru', href: '/berita/terbaru' },
-      { label: 'Terpopuler', href: '/berita/terpopuler' },
+      { label: "Terbaru", href: "/#berita" },
+      { label: "Terpopuler", href: "/#berita" },
     ],
   },
   {
-    title: 'Portofolio',
+    title: "Portofolio",
     links: [
-      { label: 'Catalog Talent', href: 'https://best.smktibazma.com/', external: true },
-      { label: 'Smart PKL', href: 'https://smartpkl.smktibazma.com', external: true },
-      { label: 'Sesama', href: '/portofolio/sesama' },
+      { label: "Catalog Talent", href: "https://best.smktibazma.com/", external: true },
+      { label: "Smart PKL", href: "https://smartpkl.smktibazma.com", external: true },
+      { label: "Sesama", href: "/#karya" },
     ],
   },
   {
-    title: 'SPMB',
-    links: [
-      { label: 'Alur Pendaftaran', href: '/spmb/alur' },
-      { label: 'Formulir', href: '/spmb/formulir' },
-      { label: 'Jadwal', href: '/spmb/jadwal' },
-    ],
+    title: "SPMB",
+    href: "/#spmb",
   },
 ];
 
 export default function Footer() {
   return (
-    <footer className="w-full overflow-hidden bg-[#102a63] text-white">
-      <BlurFade delay={0.25 * 2} inView>
-        <div className="mx-auto w-full max-w-[1600px] px-4 py-9 sm:px-6 md:px-8 lg:px-16">
-          {/* Bagian atas */}
-          <div className="flex flex-col md:flex-row justify-between gap-8">
-            {/* Logo + info */}
-            <div className="mb-4 md:mb-0 max-w-sm">
-              <Image src="/logo.png" width={150} height={48} alt="Logo" loading="lazy" />
-              <h1 className="text-lg font-bold mb-3 mt-2">ENERGI MASA DEPAN INDONESIA</h1>
-              <ul className="flex flex-col gap-2">
-                <li className="flex items-center gap-2">
-                  <MapPin size={18} />
-                  <span className="text-white font-light text-[14px]">Jl. Raya Cikampak Cicadas</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Phone size={18} />
-                  <span className="text-white font-light text-[14px]">+62 821 2183 1439</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Mail size={18} />
-                  <span className="text-white font-light text-[14px]">infosmktibazma@gmail.com</span>
-                </li>
-              </ul>
-            </div>
+    <footer className="w-full overflow-hidden bg-[#0a0e27] text-white">
+      <div className="mx-auto w-full max-w-[1920px] px-6 pt-14 pb-10 sm:px-10 lg:px-16 lg:pt-16 xl:px-24">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_auto] lg:gap-16">
+          {/* Left Side: Logo, Tagline & Contact */}
+          <div className="max-w-md">
+            <Link href="/" className="inline-block">
+              <Image
+                src="/images/logo-secondary.png"
+                width={240}
+                height={70}
+                alt="SMK TI BAZMA"
+                priority
+                className="h-14 w-auto object-contain"
+              />
+            </Link>
 
-            {/* Link sections */}
-            <div className="flex flex-wrap gap-10 md:gap-16">
-              {footerColumns.map((column) => (
-                <div key={column.title}>
-                  <h2 className="text-lg font-semibold mb-3">{column.title}</h2>
-                  <ul className="flex flex-col gap-3">
+            <h2 className="mt-8 text-2xl font-bold tracking-wider text-white sm:text-3xl">
+              ENERGI MASA DEPAN INDONESIA
+            </h2>
+
+            <ul className="mt-8 space-y-3.5 text-sm font-normal text-white/85">
+              <li className="flex items-center gap-3">
+                <MapPin size={18} className="shrink-0 text-white/90" />
+                <span>Jl. Raya Cikampak Cicadas</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone size={18} className="shrink-0 text-white/90" />
+                <span>+62 821 2183 1439</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Mail size={18} className="shrink-0 text-white/90" />
+                <span>infosmktibazma@gmail.com</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Right Side: Navigation Columns */}
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5 lg:gap-10 xl:gap-14">
+            {footerColumns.map((column) => (
+              <div key={column.title}>
+                {column.href ? (
+                  <Link
+                    href={column.href}
+                    className="font-sans text-base font-bold text-white hover:text-white/80 transition-colors"
+                  >
+                    {column.title}
+                  </Link>
+                ) : (
+                  <h3 className="font-sans text-base font-bold text-white">
+                    {column.title}
+                  </h3>
+                )}
+
+                {column.links && column.links.length > 0 && (
+                  <ul className="mt-4 space-y-3">
                     {column.links.map((link) => (
                       <li key={link.label}>
                         <Link
                           href={link.href}
-                          target={link.external ? '_blank' : undefined}
-                          rel={link.external ? 'noopener noreferrer' : undefined}
-                          className="text-white font-light text-[14px] hover:text-gray-400 transition-colors"
+                          target={link.external ? "_blank" : undefined}
+                          rel={link.external ? "noopener noreferrer" : undefined}
+                          className="font-sans text-sm font-normal text-white/80 hover:text-white transition-colors duration-200"
                         >
                           {link.label}
                         </Link>
                       </li>
                     ))}
                   </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Divider (shadcn/ui Separator) */}
-          <Separator className="my-6 bg-white/20" />
-
-          {/* Bagian bawah */}
-          <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left pb-9">
-            <p className="text-sm">&copy; {new Date().getFullYear()} SMK TI BAZMA. All rights reserved.</p>
-            <div className="flex gap-4">
-              <Link href="https://wa.me/6282121831439" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
-                <MessageCircle color="white" size={20} />
-              </Link>
-              
-            </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
-      </BlurFade>
-      <div className="grid h-5 w-full grid-cols-3">
-        <div className="bg-[#102a63]"></div>
-        <div className="bg-[#7cb342]"></div>
-        <div className="bg-[#d94b3d]"></div>
+
+        {/* Bottom Bar: Copyright & Divider Line */}
+        <div className="mt-14 flex flex-col items-start gap-4 pt-6 md:flex-row md:items-center">
+          <p className="shrink-0 font-sans text-xs font-normal text-white/80 sm:text-sm">
+            &copy; {new Date().getFullYear()} SMK TI BAZMA. All rights reserved.
+          </p>
+          <div className="h-px w-full bg-white/20" />
+        </div>
+      </div>
+
+      {/* Bottom Color Accent Strip (Matching Brand colors: Blue, Lime Green, Red) */}
+      <div className="grid h-3.5 w-full grid-cols-3">
+        <div className="bg-[#0088ce]" />
+        <div className="bg-[#99cc33]" />
+        <div className="bg-[#ed1c24]" />
       </div>
     </footer>
   );
