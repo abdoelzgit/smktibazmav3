@@ -46,8 +46,7 @@ export default function Home() {
         <HowWeWork />
       </div>
 
-      <div id="footer" className="w-full">
-      </div>
+   
     </main>
   );
 }

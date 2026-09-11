@@ -14,44 +14,44 @@ const stepsData: StepItem[] = [
   {
     id: 1,
     stepNumber: "01",
-    title: "Pahami",
+    title: "Beasiswa Penuh",
     description:
-      "Kami memulai dengan mendengarkan. Memahami visi, tantangan, dan konteks Anda memungkinkan kami mendefinisikan masalah yang tepat sebelum merancang solusi.",
+      "SMK TI Bazma memberikan kesempatan belajar bagi siswa berprestasi dari seluruh Indonesia dengan dukungan beasiswa 100% sampai lulus.",
   },
   {
     id: 2,
     stepNumber: "02",
-    title: "Rancang & Arsitektur",
+    title: "Kurikulum Terpadu",
     description:
-      "Kami menerjemahkan wawasan menjadi sistem — desain yang matang, interaksi yang terarah, dan eksekusi yang presisi.",
+      "Menggabungkan Kurikulum Nasional, Industri, & Islamic Boarding School (Asrama) dalam satu sistem pembelajaran yang unggul & berdaya saing.",
   },
   {
     id: 3,
     stepNumber: "03",
-    title: "Kembangkan & Bangun",
+    title: "Fasilitas Lengkap",
     description:
-      "Membangun aplikasi yang skalabel dan berperforma tinggi dengan praktik rekayasa perangkat lunak modern dan teknologi cloud.",
+      "Menyediakan asrama, perlengkapan belajar, sarana olahraga, layanan kesehatan, makan-minum, serta transportasi penjemputan dan kepulangan siswa.",
   },
   {
     id: 4,
     stepNumber: "04",
-    title: "Uji & Jaminan Kualitas",
+    title: "Program Belajar 4 Tahun",
     description:
-      "Pengujian ketat, review kode, dan optimasi performa untuk memastikan keandalan dan keamanan tingkat produksi.",
+      "Fokus pada kompetensi SIJA dengan masa belajar 4 tahun, termasuk 1 tahun khusus untuk Praktek Kerja Industri (Prakerin).",
   },
   {
     id: 5,
     stepNumber: "05",
-    title: "Deploy & Peluncuran",
+    title: "Peluang Prakerin",
     description:
-      "Pipeline deployment berkelanjutan dan pengaturan infrastruktur yang mulus untuk rilis tanpa downtime.",
+      "Bekerja sama dengan BUMN dan industri untuk menyediakan tempat prakerin dan meningkatkan kompetensi profesional siswa.",
   },
   {
     id: 6,
     stepNumber: "06",
-    title: "Pantau & Kembangkan",
+    title: "Boarding Berbasis IT",
     description:
-      "Pemantauan berkelanjutan, pemeliharaan proaktif, dan iterasi fitur untuk mendukung pertumbuhan jangka panjang.",
+      "Membekali siswa dengan program Tahfidz minimal 5 Juz serta pembelajaran agama & teknologi untuk membentuk karakter dan kepemimpinan unggul.",
   },
 ]
 
@@ -61,16 +61,15 @@ const stepRanges: Array<{
   opacity: number[]
   y: number[]
 }> = [
-  { range: [0, 0.05, 1], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.1, 0.2, 1], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.25, 0.35, 1], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.4, 0.5, 1], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.55, 0.65, 1], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.7, 0.8, 1], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.0, 0.08, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.12, 0.20, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.24, 0.32, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.36, 0.44, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.48, 0.56, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.60, 0.68, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
 ]
 
-// ── StepCard: komponen terpisah supaya useTransform dipanggil di level ────────
-// komponen, bukan di dalam .map() — sesuai React Rules of Hooks.
+// ── StepCard: komponen terpisah ───────────────────────────────────────────────
 type StepCardProps = {
   step: StepItem
   rangeIndex: number
@@ -80,32 +79,31 @@ type StepCardProps = {
 function StepCard({ step, rangeIndex, scrollYProgress }: StepCardProps) {
   const config = stepRanges[rangeIndex]
 
-  // ✅ Hook dipanggil di level atas StepCard (bukan di dalam .map())
   const opacity = useTransform(scrollYProgress, config.range, config.opacity)
   const y = useTransform(scrollYProgress, config.range, config.y)
 
   return (
     <motion.div
       style={{ opacity, y }}
-      className="relative flex flex-col justify-between pb-6 pt-4"
+      className="relative flex flex-col justify-between py-2 sm:py-3"
     >
       <div>
         <span
-          className="text-xs font-mono tracking-widest text-neutral-500"
+          className="text-xs font-mono tracking-widest text-gray-400 font-semibold"
           aria-hidden="true"
         >
           {step.stepNumber}
         </span>
-        <h3 className="mt-3 text-xl font-medium text-white sm:text-2xl text-pretty">
+        <h3 className="mt-1 sm:mt-2 text-base sm:text-lg lg:text-xl font-medium text-white text-pretty">
           {step.title}
         </h3>
-        <p className="mt-3 text-xs leading-relaxed text-neutral-400 sm:text-sm">
+        <p className="mt-1.5 text-xs text-justify leading-relaxed text-neutral-400 sm:text-sm">
           {step.description}
         </p>
       </div>
 
       {/* Garis bawah dekoratif */}
-      <div className="relative mt-8 w-full border-t border-neutral-800" aria-hidden="true">
+      <div className="relative mt-4 w-full border-t border-neutral-800" aria-hidden="true">
         <span className="absolute -top-[7px] -left-1 text-xs text-neutral-600 font-mono select-none">
           +
         </span>
@@ -126,59 +124,59 @@ export default function HowWeWork() {
     offset: ["start start", "end end"],
   })
 
+  // Exit animation agar bagian ini fade out sebelum menyentuh footer
+  const frameOpacity = useTransform(scrollYProgress, [0.75, 0.92], [1, 0])
+  const frameY = useTransform(scrollYProgress, [0.75, 0.92], [0, -20])
+  const frameScale = useTransform(scrollYProgress, [0.75, 0.92], [1, 0.98])
+
   return (
     <section
       data-nav-theme="dark"
       ref={containerRef}
-      className="relative w-full h-[400vh] bg-[#0a0e27] text-white"
+      className="relative w-full h-[300vh] bg-[#0a0e27] text-white"
       aria-label="Proses kerja kami"
     >
       {/* Sticky viewport frame */}
-      <div className="sticky top-0 flex h-screen w-full flex-col justify-between px-6 pt-24 pb-8 sm:px-12 md:px-16 lg:px-24 md:pt-28 md:pb-10">
-
-        {/* Header */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr]">
-          <div>
-            <p className="text-xs font-mono tracking-widest text-neutral-400">
-              Proses kami
-            </p>
-          </div>
-          <div className="max-w-2xl">
-            <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl text-balance">
-              Bagaimana kami bekerja
-            </h2>
-            <p className="mt-2 text-xs text-neutral-400 sm:text-sm">
-              Metode berulang yang kami terapkan di setiap program &amp; proyek.
-            </p>
-          </div>
-        </div>
-
-        {/* Step Cards Grid */}
-        <div
-          className="my-auto grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2 lg:grid-cols-3"
-          role="list"
+      <div className="sticky top-0 flex h-screen w-full flex-col justify-between px-6 pt-16 pb-8 sm:px-12 md:px-16 lg:px-24 md:pt-20 md:pb-10 overflow-hidden">
+        <motion.div
+          style={{ opacity: frameOpacity, y: frameY, scale: frameScale }}
+          className="flex flex-col justify-between h-full max-w-7xl mx-auto w-full"
         >
-          {stepsData.map((step, index) => (
-            <div key={step.id} role="listitem">
-              <StepCard
-                step={step}
-                rangeIndex={index}
-                scrollYProgress={scrollYProgress}
+          {/* Header */}
+          <div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-white mb-2 sm:mb-4">
+              Mengapa memilih SMK TI BAZMA?
+            </h2>
+          </div>
+
+          {/* Step Cards Grid */}
+          <div
+            className="my-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 sm:gap-y-5 lg:gap-x-8"
+            role="list"
+          >
+            {stepsData.map((step, index) => (
+              <div key={step.id} role="listitem">
+                <StepCard
+                  step={step}
+                  rangeIndex={index}
+                  scrollYProgress={scrollYProgress}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Scroll Progress Bar */}
+          <div className="relative w-full pb-2" aria-hidden="true">
+            <div className="mt-2 h-[1px] w-full bg-neutral-900 rounded-full overflow-hidden">
+              <motion.div
+                style={{ scaleX: scrollYProgress, transformOrigin: "left" }}
+                className="h-full bg-white"
               />
             </div>
-          ))}
-        </div>
-
-        {/* Scroll Progress Bar */}
-        <div className="relative w-full pb-2" aria-hidden="true">
-          <div className="mt-2 h-[1px] w-full bg-neutral-900 rounded-full overflow-hidden">
-            <motion.div
-              style={{ scaleX: scrollYProgress, transformOrigin: "left" }}
-              className="h-full bg-white"
-            />
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )
 }
+
