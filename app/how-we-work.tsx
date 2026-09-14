@@ -55,18 +55,19 @@ const stepsData: StepItem[] = [
   },
 ]
 
-// Scroll range untuk setiap step — masing-masing muncul di titik scroll berbeda
+// Scroll range untuk setiap step — masing-masing muncul di titik scroll berbeda,
+// dan TETAP terlihat (opacity 1) sampai akhir progress (1.0)
 const stepRanges: Array<{
   range: number[]
   opacity: number[]
   y: number[]
 }> = [
-  { range: [0.0, 0.08, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.12, 0.20, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.24, 0.32, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.36, 0.44, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.48, 0.56, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.60, 0.68, 0.75], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.0, 0.08, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.12, 0.20, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.24, 0.32, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.36, 0.44, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.48, 0.56, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.60, 0.68, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
 ]
 
 // ── StepCard: komponen terpisah ───────────────────────────────────────────────
@@ -97,7 +98,7 @@ function StepCard({ step, rangeIndex, scrollYProgress }: StepCardProps) {
         <h3 className="mt-1 sm:mt-2 text-base sm:text-lg lg:text-xl font-medium text-white text-pretty">
           {step.title}
         </h3>
-        <p className="mt-1.5 text-xs text-justify leading-relaxed text-neutral-400 sm:text-sm">
+        <p className="mt-1.5 text-sm text-justify leading-relaxed text-neutral-400 sm:text-sm">
           {step.description}
         </p>
       </div>
@@ -124,24 +125,21 @@ export default function HowWeWork() {
     offset: ["start start", "end end"],
   })
 
-  // Exit animation agar bagian ini fade out sebelum menyentuh footer
-  const frameOpacity = useTransform(scrollYProgress, [0.75, 0.92], [1, 0])
-  const frameY = useTransform(scrollYProgress, [0.75, 0.92], [0, -20])
-  const frameScale = useTransform(scrollYProgress, [0.75, 0.92], [1, 0.98])
+  // ⬇️ Exit animation (frameOpacity/frameY/frameScale) DIHAPUS.
+  // Section ini sudah "sticky", jadi dia akan lepas secara natural
+  // begitu container h-[300vh] habis discroll — tidak perlu fade manual
+  // yang menyebabkan dead-zone/kedipan di akhir scroll.
 
   return (
     <section
       data-nav-theme="dark"
       ref={containerRef}
-      className="relative w-full h-[300vh] bg-[#0a0e27] text-white"
+      className="relative w-full h-[300vh] bg-[#132B6D] text-white"
       aria-label="Proses kerja kami"
     >
       {/* Sticky viewport frame */}
-      <div className="sticky top-0 flex h-screen w-full flex-col justify-between px-6 pt-16 pb-8 sm:px-12 md:px-16 lg:px-24 md:pt-20 md:pb-10 overflow-hidden">
-        <motion.div
-          style={{ opacity: frameOpacity, y: frameY, scale: frameScale }}
-          className="flex flex-col justify-between h-full max-w-7xl mx-auto w-full"
-        >
+      <div className="sticky top-0 flex h-screen w-full flex-col justify-between px-6 pt-16 pb-8 sm:px-6 md:px-10 lg:px-16 xl:px-24 md:pt-20 md:pb-10 overflow-hidden">
+        <div className="flex flex-col justify-between h-full  mx-auto w-full">
           {/* Header */}
           <div>
             <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-white mb-2 sm:mb-4">
@@ -151,7 +149,7 @@ export default function HowWeWork() {
 
           {/* Step Cards Grid */}
           <div
-            className="my-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 sm:gap-y-5 lg:gap-x-8"
+            className="my-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 sm:gap-y-6 lg:gap-x-12"
             role="list"
           >
             {stepsData.map((step, index) => (
@@ -174,9 +172,8 @@ export default function HowWeWork() {
               />
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )
 }
-

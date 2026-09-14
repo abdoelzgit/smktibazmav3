@@ -56,7 +56,7 @@ const footerColumns: FooterColumn[] = [
 
 export default function Footer() {
   return (
-    <footer className="w-full overflow-hidden bg-[#0a0e27] text-white">
+    <footer className="w-full overflow-hidden bg-[#132B6D] text-white">
       <div className="mx-auto w-full max-w-[1920px] px-6 pt-14 pb-10 sm:px-10 lg:px-16 lg:pt-16 xl:px-24">
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_auto] lg:gap-16">

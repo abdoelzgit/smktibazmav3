@@ -38,7 +38,7 @@ export function ProgramHero({
     <section
       data-nav-theme="dark"
       className={cn(
-        "relative flex min-h-screen w-full flex-col overflow-hidden bg-[#0a0e27]",
+        "relative flex min-h-screen w-full flex-col overflow-hidden bg-[#132B6D]",
         className
       )}
     >
@@ -56,7 +56,7 @@ export function ProgramHero({
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-transparent" />
 
       {/* Gradient biru navy di bawah — transisi halus ke section berikutnya */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-b from-transparent via-[#0a0e27]/70 to-[#0a0e27]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-b from-transparent via-[#132B6D]/70 to-[#132B6D]" />
 
       {/* Konten */}
       <div className="relative z-10 flex h-full flex-1 flex-col justify-between px-6 pb-10 pt-28 sm:px-10 md:pb-14 md:pt-20 lg:px-16 xl:px-24">
@@ -77,7 +77,7 @@ export function ProgramHero({
             </p>
             <Link
               href={ctaHref}
-              className="group mt-5 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-medium text-white backdrop-blur-sm transition-colors duration-300 hover:bg-white hover:text-[#0a0e27] md:ml-auto"
+              className="group mt-5 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-medium text-white backdrop-blur-sm transition-colors duration-300 hover:bg-white hover:text-[#132B6D] md:ml-auto"
             >
               {ctaLabel}
               <ArrowRight

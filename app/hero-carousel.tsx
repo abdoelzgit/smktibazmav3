@@ -27,40 +27,40 @@ export type Slide = {
 const SLIDES: Slide[] = [
   {
     id: "integrasi-bisnis-hilir",
-    tabLabel: "Integrasi Bisnis Hilir",
-    title: "Rantai Pasok yang Terintegrasi",
+    tabLabel: "ENERGI MASA DEPAN INDONESIA",
+    title: "Energi Masa Depan Indonesia!",
     description:
-      "Pertamina Patra Niaga mengelola distribusi energi dari kilang hingga ke tangan masyarakat melalui jaringan logistik yang terintegrasi di seluruh Indonesia.",
+      "Kami percaya, masa depan bangsa ada di tangan generasi muda yang cerdas dan berakhlak. SMK TI BAZMA hadir untuk melahirkan talenta teknologi yang siap jadi motor penggerak Indonesia.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
     image: "/images/foto.webp",
   },
   {
     id: "melayani-sepenuh-hati",
-    tabLabel: "Melayani Sepenuh Hati",
-    title: "Melayani Sepenuh Hati",
+    tabLabel: "KUALITAS TERUJI, DEDIKASI TANPA HENTI",
+    title: "Kualitas Teruji, Dedikasi Tiada Henti",
     description:
-      'Pertamina Patra Niaga meningkatkan layanan energi dan menyediakan berbagai fasilitas pendukung untuk memastikan kelancaran layanan kebutuhan energi terhadap masyarakat selama periode Ramadan & Idulfitri 2026.',
+      'Terakreditasi A (unggul), SMK TI BAZMA berkomitmen melahirkan lulusan profesional, berintegritas, dan berakhlak islami..',
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
     image: "/images/info-cover.webp",
   },
   {
     id: "kilang-dan-petrokimia",
-    tabLabel: "Kilang dan Petrokimia",
-    title: "Kilang dan Petrokimia",
+    tabLabel: "LANGKAH KECIL, KARYA BESAR",
+    title: "Langkah Kecil, Karya Besar",
     description:
-      "Mendukung ketahanan energi nasional melalui pengolahan minyak mentah menjadi produk BBM, LPG, dan petrokimia berkualitas tinggi bagi masyarakat dan industri.",
+      "SMK TI BAZMA mendorong siswa untuk berinovasi melalui berbagai karya seperti pembuatan project website, desain poster, majalah digital, dan beragam karya kreatif lainnya.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
     image: "/images/foto.webp",
   },
   {
     id: "maritim-logistik-terintegrasi",
-    tabLabel: "Maritim & Logistik Terintegrasi",
-    title: "Maritim & Logistik Terintegrasi",
+    tabLabel: "ASISTEN AI SIAP MEMBANTUMU",
+    title: "Asisten AI Siap Membantumu",
     description:
-      "Armada kapal dan fasilitas logistik laut kami memastikan distribusi energi menjangkau pelosok negeri, dari kota besar hingga pulau-pulau terluar Indonesia.",
+      "Dapatkan kemudahan dalam mencari informasi terkait pendaftaran siswa baru, informasi akademik, dan kegiatan sekolah lainnya melalui asisten AI yang selalu siap membantu.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
     image: "/images/info-cover.webp",

@@ -133,7 +133,7 @@ export function InfoSekilas({
             aria-hidden="true"
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-[#0a0e27]/80" />
+          <div className="absolute inset-0 bg-[#132B6D]/80" />
 
           <div className="relative px-8 py-10 sm:px-12 sm:py-16">
             <h3 className="mb-4 text-xl font-semibold text-white sm:text-2xl">
