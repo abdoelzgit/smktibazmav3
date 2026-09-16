@@ -1,13 +1,9 @@
-import Footer from "@/components/footer";
-import { Navbar } from "@/components/navbar";
-import HeroCarousel from "../hero-carousel";
 import { Hero } from "@/components/hero";
-// 1. Import komponen Summary dari folder yang dituju
-import Summary from "@/app/sekolah/section/summary";
-import Core from "@/app/sekolah/section/core";
-import TimelineCarousel from "@/app/sekolah/section/timeline";
-import Fasilitas from "@/app/sekolah/section/fasilitas";
-import LeaderQuote from "@/app/sekolah/section/leaderquote";
+import Summary from "./section/summary";
+import Core from "./section/core";
+import TimelineCarousel from "./section/timeline";
+import Fasilitas from "./section/fasilitas";
+import LeaderQuote from "./section/leaderquote";
 export default function SekolahPage() {
   return (
     <main className="flex min-h-full flex-col items-center">

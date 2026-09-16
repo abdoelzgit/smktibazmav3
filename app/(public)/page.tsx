@@ -1,9 +1,7 @@
-import HeroCarousel from "@/app/hero-carousel";
-import { Navbar } from "@/components/navbar";
-import { Sambutan, InfoSekilas } from "@/app/summary";
-import Footer from "@/components/footer";
-import { ProgramHero } from "@/app/profil-jurusan";
-import HowWeWork from "@/app/how-we-work";
+import HeroCarousel from "./hero-carousel";
+import { Sambutan, InfoSekilas } from "./summary";
+import { ProgramHero } from "./profil-jurusan";
+import HowWeWork from "./how-we-work";
 
 export default function Home() {
   return (
