@@ -93,7 +93,7 @@ export async function loginAction(
     }
 
     // Generate JWT Token
-    const secretKey = JWT_SECRET || 'default-secret-key-smktibazma-change-in-prod';
+    const secretKey = JWT_SECRET ;
     const secret = new TextEncoder().encode(secretKey);
     const token = await new SignJWT({
       userId: user.id,

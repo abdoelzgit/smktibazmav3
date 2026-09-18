@@ -17,25 +17,32 @@ export async function verifyAdminToken(token: string): Promise<boolean> {
     const secret = new TextEncoder().encode(JWT_SECRET);
     await jwtVerify(token, secret);
     return true;
-  } catch (error) {
+  } catch {
     // Token invalid, expired, or malformed
     return false;
   }
 }
 
 /**
- * Handle authentication middleware logic for /admin and /login routes
+ * Handle authentication middleware logic for protected admin and PPDB routes
  */
 export async function handleAuthMiddleware(request: NextRequest): Promise<NextResponse> {
   const { pathname, origin } = request.nextUrl;
   const token = request.cookies.get(COOKIE_NAME)?.value;
 
   const isAdminRoute = pathname.startsWith('/admin');
-  const isLoginRoute = pathname === '/login';
+  const isPpdbDashboardRoute = pathname.startsWith('/dashboard-ppdb/dashboard');
+  const isLoginRoute = pathname === '/login' || pathname === '/dashboard-ppdb/login';
+  const loginPath = isPpdbDashboardRoute || pathname === '/dashboard-ppdb/login'
+    ? '/dashboard-ppdb/login'
+    : '/login';
+  const dashboardPath = pathname === '/dashboard-ppdb/login'
+    ? '/dashboard-ppdb/dashboard'
+    : '/admin';
 
-  // No token and accessing /admin -> redirect to login
-  if (!token && isAdminRoute) {
-    const loginUrl = new URL('/login', origin);
+  // No token and accessing a protected route -> redirect to its login page
+  if (!token && (isAdminRoute || isPpdbDashboardRoute)) {
+    const loginUrl = new URL(loginPath, origin);
     loginUrl.searchParams.set('callbackUrl', pathname);
     loginUrl.searchParams.set('reason', 'unauthorized');
     return NextResponse.redirect(loginUrl);
@@ -52,18 +59,18 @@ export async function handleAuthMiddleware(request: NextRequest): Promise<NextRe
 
     // Invalid/expired token
     if (!isValid) {
-      const response = NextResponse.redirect(new URL('/login?reason=session_expired', origin));
+      const response = NextResponse.redirect(new URL(`${loginPath}?reason=session_expired`, origin));
       response.cookies.delete(COOKIE_NAME);
       return response;
     }
 
-    // Valid token + accessing /login -> redirect to /admin
+    // Valid token + accessing a login page -> redirect to its dashboard
     if (isLoginRoute) {
-      return NextResponse.redirect(new URL('/admin', origin));
+      return NextResponse.redirect(new URL(dashboardPath, origin));
     }
 
-    // Valid token + accessing /admin -> allow
-    if (isAdminRoute) {
+    // Valid token + accessing a protected route -> allow
+    if (isAdminRoute || isPpdbDashboardRoute) {
       return NextResponse.next();
     }
   }
