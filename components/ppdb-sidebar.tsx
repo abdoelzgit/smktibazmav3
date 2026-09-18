@@ -26,14 +26,14 @@ const data = {
   navMain: [
     {
       title: "Beranda",
-      url: "/admin/berita",
+      url: "/dashboard-ppdb/dashboard",
       icon: (
         <House />
       ),
       isActive: true,
     },{
       title: "Formulir Pendaftaran",
-      url: "/admin/jejak-karya",
+      url: "/dashboard-ppdb/dashboard/pendaftaran",
       icon: (
         <FolderInput />
       )
