@@ -15,7 +15,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { TerminalSquareIcon, BotIcon, BookOpenIcon, Newspaper, Settings2Icon, AppWindow,LifeBuoyIcon, SendIcon, FrameIcon, PieChartIcon, MapIcon, TerminalIcon } from "lucide-react"
+import {House, FolderInput, BellRing, TerminalSquareIcon, BotIcon, BookOpenIcon, Newspaper, Settings2Icon, AppWindow,LifeBuoyIcon, SendIcon, FrameIcon, PieChartIcon, MapIcon, TerminalIcon } from "lucide-react"
 
 const data = {
   user: {
@@ -25,18 +25,24 @@ const data = {
   },
   navMain: [
     {
-      title: "Berita",
+      title: "Beranda",
       url: "/admin/berita",
       icon: (
-        <Newspaper
-        />
+        <House />
       ),
       isActive: true,
     },{
-      title: "Jejak Karya",
+      title: "Formulir Pendaftaran",
       url: "/admin/jejak-karya",
       icon: (
-        <AppWindow/>
+        <FolderInput />
+      )
+    }
+    ,{
+      title: "Pengumuman",
+      url: "/admin/jejak-karya",
+      icon: (
+        <BellRing />
       )
     }
 
@@ -44,7 +50,7 @@ const data = {
  
  
 }
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function PpdbSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
