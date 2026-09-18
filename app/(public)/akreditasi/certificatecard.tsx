@@ -5,9 +5,9 @@ import Link from "next/link";
 
 export function CertificateCard() {
   return (
-    <section className="w-full max-w-5xl px-4 sm:px-6 lg:px-8 pb-16">
+    <section className="w-full max-w-[1148px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
       <div
-        className="relative rounded-3xl overflow-hidden p-8 md:p-12 min-h-[300px] flex items-center bg-cover bg-center"
+        className="relative rounded-3xl overflow-hidden p-8 md:p-12 h-[473px] flex items-center bg-cover bg-center"
         style={{
           backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 58, 138, 0.85)), url('/images/students-bg.jpg')`,
         }}
