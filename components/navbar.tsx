@@ -29,8 +29,8 @@ const navLinks: NavLink[] = [
     children: [
       { label: "Tentang Sekolah", href: "/sekolah" },
       { label: "Tentang Asrama", href: "/asrama" },
-      { label: "Mitra kami", href: "#mitra" },
-      { label: "Akreditasi", href: "#akreditasi" },
+      { label: "Mitra kami", href: "/mitra" },
+      { label: "Akreditasi", href: "/akreditasi" },
     ],
   },
   {
