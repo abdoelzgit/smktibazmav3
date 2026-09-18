@@ -37,7 +37,7 @@ const navLinks: NavLink[] = [
     label: "Program",
     href: "#program",
     children: [
-      { label: "Profil Jurusan", href: "#jurusan" },
+      { label: "Profil Jurusan", href: "/profil-jurusan" },
       { label: "Ekstrakulikuler", href: "/ekstrakulikuler" },
     ],
   },
