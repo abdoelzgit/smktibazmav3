@@ -1,6 +1,7 @@
 import { Hero } from "@/components/hero";
-import FasilitasAsrama from "./section/fasilitasAsrama";
 import SummaryAsrama from "./section/summary";
+import ProgramAsrama from "./section/program";
+import Fasilitas from "./section/fasilitas";
 
 export default function AsramaPage() {
   return (
@@ -10,7 +11,8 @@ export default function AsramaPage() {
         backgroundImage="/images/hero-network.jpg"
       />
       <SummaryAsrama />
-      <FasilitasAsrama />
+      <ProgramAsrama />
+      <Fasilitas />
     </main>
   );
 }

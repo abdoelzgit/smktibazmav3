@@ -25,7 +25,6 @@ export default function SummaryAsrama() {
           <div className="space-y-4 text-lg sm:text-xl text-slate-700/80 leading-loose text-justify">
             <p className="">
               Sekolah Menengah Kejuruan Teknologi Informasi Bazma (SMK TI BAZMA) merupakan sekolah unggulan berasrama 
-              yang bebas biaya dan diperuntukkan untuk anak-anak tidak mampu. Pembangunan sekolah, baik fasilitas maupun 
               operasional didanai dari hasil pengelolaan wakaf dan sumber dana sosial kemanusiaan lainnya yang diamanahkan oleh 
               masyarakat.
             </p>
