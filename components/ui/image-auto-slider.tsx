@@ -71,13 +71,13 @@ export function ImageAutoSlider({ itemCount = 8, logos }: ImageAutoSliderProps) 
         }
       `}</style>
 
-      <div className="w-full relative overflow-hidden flex items-center justify-center py-12 bg-white">
+      <div className="w-full relative overflow-hidden flex items-center justify-center bg-white">
         <div className="relative z-10 w-full flex items-center justify-center">
           <div className="w-full max-w-7xl">
             <div
               ref={scrollRef}
               // Gap diperkecil lagi menjadi gap-2 md:gap-4 agar lebih rapat
-              className="infinite-scroll flex gap-2 md:gap-4 w-max"
+              className="infinite-scroll flex gap-2 md:gap-1 w-max"
             >
               {duplicatedItems.map((logoFile, index) => (
                 <div

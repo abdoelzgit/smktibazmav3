@@ -305,7 +305,7 @@ export default function HeroCarousel({
   return (
     <section
       data-nav-theme="dark"
-      className="relative flex min-h-screen min-h-[100svh] w-full flex-col overflow-hidden bg-[#0a0e27] text-white"
+      className="relative flex min-h-screen min-h-[100svh] w-full flex-col overflow-hidden bg-primary text-white"
       aria-roledescription="carousel"
       aria-label="Sorotan utama"
     >
@@ -327,8 +327,8 @@ export default function HeroCarousel({
           />
         ))}
 
-        {/* <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e27] via-[#0a0e27]/75" /> */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0e27] via-[#0a0e27]/90 to-transparent" />
+        {/* <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/75" /> */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-transparent" />
 
 
         {/*
@@ -367,7 +367,7 @@ export default function HeroCarousel({
               {/* ✅ Gunakan Link langsung dengan styling Button — bukan Button>a */}
               <Link
                 href={activeSlide.ctaHref}
-                className="group inline-flex h-auto w-fit items-center gap-2 rounded-full border border-white/70 bg-transparent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-[#0a0e27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e27]"
+                className="group inline-flex h-auto w-fit items-center gap-2 rounded-full border border-white/70 bg-transparent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
               >
                 {activeSlide.ctaLabel}
                 <svg

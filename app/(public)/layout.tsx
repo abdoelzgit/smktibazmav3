@@ -1,6 +1,7 @@
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
+import { PortalTransitionProvider, PortalOverlay } from "@/components/portal-transition";
 
 export default function PublicLayout({
   children,
@@ -8,10 +9,16 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SmoothScroll>
-      <Navbar />
-      {children}
-      <Footer />
-    </SmoothScroll>
+    <PortalTransitionProvider>
+      <SmoothScroll>
+        <div id="public-page-content" className="w-full">
+          <Navbar />
+          {children}
+          <Footer />
+        </div>
+        <PortalOverlay />
+      </SmoothScroll>
+    </PortalTransitionProvider>
   );
 }
+

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import Image from "next/image";
+import { usePortalTransition } from "@/components/portal-transition";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type SubLink = { label: string; href: string };
@@ -41,7 +42,7 @@ const navLinks: NavLink[] = [
       { label: "Ekstrakulikuler", href: "/ekstrakulikuler" },
     ],
   },
-  { label: "Jejak Karya", href: "#karya" },
+  { label: "Jejak Karya", href: "/jejak-karya" },
   { label: "Berita", href: "/berita" },
   { label: "SPMB", href: "#spmb" },
 ];
@@ -54,6 +55,7 @@ const HOVER_EASE = "back.out";
 const DOT_GAP = 14;
 
 export function Navbar() {
+  const { navigateTo } = usePortalTransition();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isInverted, setIsInverted] = useState(true);
@@ -246,7 +248,7 @@ export function Navbar() {
     if (link.children?.length) {
       openDrawer(link);
     } else {
-      scrollToSection(link.href);
+      navigateTo(link.href, link.label);
     }
   };
 
@@ -287,9 +289,9 @@ export function Navbar() {
     });
   };
 
-  const handleDrawerLinkClick = (href: string) => {
+  const handleDrawerLinkClick = (href: string, label: string) => {
     closeDrawer();
-    scrollToSection(href);
+    navigateTo(href, label);
   };
 
   const drawerItems: Array<NavLink | SubLink> =
@@ -309,16 +311,16 @@ export function Navbar() {
 
   const navText = showInverted
     ? "text-white/85 hover:text-white"
-    : "text-[#0a0e27]/80 hover:text-[#0a0e27]";
-  const iconLineColor = showInverted ? "bg-white" : "bg-[#0a0e27]";
-  const navUnderline = showInverted ? "bg-white" : "bg-[#0a0e27]";
+    : "text-primary/80 hover:text-primary";
+  const iconLineColor = showInverted ? "bg-white" : "bg-primary";
+  const navUnderline = showInverted ? "bg-white" : "bg-primary";
   const logoSrc = showInverted
     ? "/images/logo-secondary.png"
     : "/images/logo.png";
   const headerSurface = isScrolled
     ? showInverted
-      ? "bg-[#0a0e27]/80 backdrop-blur-md "
-      : "bg-background/90 backdrop-blur-md "
+      ? "bg-primary/80 backdrop-blur-md"
+      : "bg-background/90 backdrop-blur-md"
     : "";
 
   return (
@@ -421,13 +423,13 @@ export function Navbar() {
             ref={drawerScrimRef}
             onClick={closeDrawer}
             aria-label="Tutup menu"
-            className="absolute inset-0 bg-[#0a0e27]/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-primary/60 backdrop-blur-sm"
             style={{ opacity: 0 }}
           />
 
           <aside
             ref={drawerPanelRef}
-            className="fixed inset-0 flex w-full flex-col overflow-hidden bg-background px-6 py-7 shadow-2xl shadow-[#0a0e27]/25 sm:absolute sm:inset-y-5 sm:right-5 sm:left-auto sm:w-full sm:max-w-md sm:rounded-xl sm:border sm:border-border/70 sm:px-8 sm:py-8 md:inset-y-6 md:right-6 md:px-10 md:py-10"
+            className="fixed inset-0 flex w-full flex-col overflow-hidden bg-background px-6 py-7 shadow-2xl shadow-primary/25 sm:absolute sm:inset-y-5 sm:right-5 sm:left-auto sm:w-full sm:max-w-md sm:rounded-xl sm:border sm:border-border/70 sm:px-8 sm:py-8 md:inset-y-6 md:right-6 md:px-10 md:py-10"
             style={{ clipPath: CLIP_HIDDEN }}
           >
             <div className="mb-10 flex items-center justify-between">
@@ -464,13 +466,13 @@ export function Navbar() {
                       if (hasChildren(item)) {
                         openDrawer(item);
                       } else {
-                        handleDrawerLinkClick(item.href);
+                        handleDrawerLinkClick(item.href, item.label);
                       }
                     }}
                     className="group relative flex w-full items-center justify-between py-3 text-left"
                   >
                     <span
-                      className={`font-sans text-2xl font-semibold tracking-tight text-foreground transition-colors duration-300 hover:text-blue-800 md:text-3xl `}
+                      className={`font-sans text-2xl font-semibold tracking-tight text-foreground transition-colors duration-300 hover:text-primary md:text-3xl`}
                     >
                       {item.label}
                     </span>
