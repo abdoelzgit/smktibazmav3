@@ -1,8 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 export default function BerkasTab() {
+  const [selectedFiles, setSelectedFiles] = useState<Record<string, File | null>>({});
+
+  const handleFileChange = (fileKey: string, file: File | undefined) => {
+    setSelectedFiles((currentFiles) => ({
+      ...currentFiles,
+      [fileKey]: file ?? null,
+    }));
+  };
+
   return (
     <div>
       <div className="mb-6">
@@ -12,17 +21,56 @@ export default function BerkasTab() {
       </div>
 
       <div className="space-y-4">
-        <div className="border p-4 rounded-lg flex items-center justify-between">
-          <span>Kartu Keluarga (KK)</span>
-          <input type="file" className="text-sm" />
+
+        <div>
+          <label className="block text-sm font-bold text-gray-800 mb-1">
+            Kartu Keluarga (KK)
+          </label>
+          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
+            <input
+              type="file"
+              accept=".pdf,image/*"
+              onChange={(event) => handleFileChange("kk", event.target.files?.[0])}
+              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
+            />
+            {selectedFiles.kk && (
+              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.kk.name}</p>
+            )}
+          </div>
         </div>
-        <div className="border p-4 rounded-lg flex items-center justify-between">
-          <span>Akte Kelahiran</span>
-          <input type="file" className="text-sm" />
+
+        <div>
+          <label className="block text-sm font-bold text-gray-800 mb-1">
+            Akte Kelahiran
+          </label>
+          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
+            <input
+              type="file"
+              accept=".pdf,image/*"
+              onChange={(event) => handleFileChange("akte", event.target.files?.[0])}
+              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
+            />
+            {selectedFiles.akte && (
+              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.akte.name}</p>
+            )}
+          </div>
         </div>
-        <div className="border p-4 rounded-lg flex items-center justify-between">
-          <span>Ijazah / SKL</span>
-          <input type="file" className="text-sm" />
+
+        <div>
+          <label className="block text-sm font-bold text-gray-800 mb-1">
+            Ijazah / SKL
+          </label>
+          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
+            <input
+              type="file"
+              accept=".pdf,image/*"
+              onChange={(event) => handleFileChange("ijazah", event.target.files?.[0])}
+              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
+            />
+            {selectedFiles.ijazah && (
+              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.ijazah.name}</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

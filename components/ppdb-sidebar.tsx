@@ -3,8 +3,6 @@
 import * as React from "react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -15,14 +13,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {House, FolderInput, BellRing, TerminalSquareIcon, BotIcon, BookOpenIcon, Newspaper, Settings2Icon, AppWindow,LifeBuoyIcon, SendIcon, FrameIcon, PieChartIcon, MapIcon, TerminalIcon } from "lucide-react"
+import { House, FolderInput, BellRing, TerminalIcon } from "lucide-react"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Beranda",
@@ -50,7 +43,13 @@ const data = {
  
  
 }
-export function PpdbSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type PpdbSidebarUser = {
+  name: string;
+  email: string;
+  avatar: string;
+};
+
+export function PpdbSidebar({ user, ...props }: React.ComponentProps<typeof Sidebar> & { user: PpdbSidebarUser }) {
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -72,7 +71,7 @@ export function PpdbSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   )

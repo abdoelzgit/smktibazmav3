@@ -40,7 +40,7 @@ export default function PendaftaranPpdb() {
   return (
     <div className="flex-1 bg-white p-8 overflow-y-auto min-h-screen">
       {/* Navigation Tabs Header */}
-      <div className="flex items-center gap-8 border-b pb-2 mb-6 text-sm font-semibold text-gray-500">
+      <div className="flex w-auto  items-center gap-8 border-b pb-2 mb-6 text-sm font-semibold text-gray-500 ">
         {navTabs.map((tab) => (
           <button
             key={tab}

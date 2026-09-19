@@ -1,5 +1,7 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+import { logoutPpdbAction } from "@/app/actions/ppdb-auth"
 import {
   Avatar,
   AvatarFallback,
@@ -32,6 +34,17 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    const result = await logoutPpdbAction()
+
+    if (result.success) {
+      router.push("/dashboard-ppdb/login")
+      router.refresh()
+    }
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -98,7 +111,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOutIcon
               />
               Log out

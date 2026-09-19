@@ -29,16 +29,16 @@ const navLinks: NavLink[] = [
     children: [
       { label: "Tentang Sekolah", href: "/sekolah" },
       { label: "Tentang Asrama", href: "/asrama" },
-      { label: "Mitra kami", href: "#mitra" },
-      { label: "Akreditasi", href: "#akreditasi" },
+      { label: "Mitra kami", href: "/mitra" },
+      { label: "Akreditasi", href: "/akreditasi" },
     ],
   },
   {
     label: "Program",
     href: "#program",
     children: [
-      { label: "Profil Jurusan", href: "#jurusan" },
-      { label: "Ekstrakulikuler", href: "#ekstrakulikuler" },
+      { label: "Profil Jurusan", href: "/profil-jurusan" },
+      { label: "Ekstrakulikuler", href: "/ekstrakulikuler" },
     ],
   },
   { label: "Jejak Karya", href: "#karya" },
