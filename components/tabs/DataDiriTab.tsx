@@ -2,9 +2,17 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { saveDataDiriAction } from "@/app/actions/ppdb-form";
 
 export default function DataDiriTab() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const handleSubmit = async (formData: FormData) => {
+    setStatus("Menyimpan...");
+    const result = await saveDataDiriAction(formData);
+    setStatus(result.success ? "Data diri berhasil disimpan." : result.error ?? "Data diri gagal disimpan.");
+  };
 
   useEffect(() => {
     return () => {
@@ -31,7 +39,7 @@ export default function DataDiriTab() {
   };
 
   return (
-    <div>
+    <form action={handleSubmit} className="space-y-6">
       <div className="mb-6">
         <span className="bg-[#1e3a8a] text-white px-5 py-2 rounded-lg font-semibold text-base shadow-sm inline-block">
           Data Diri
@@ -51,182 +59,154 @@ export default function DataDiriTab() {
           </div>
           <label className="border-2 border-gray-800 text-gray-800 font-semibold px-6 py-2 rounded-full cursor-pointer hover:bg-gray-100 transition-colors text-sm">
             Unggah Foto
-            <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+            <input name="fotoFormalUrl" type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
           </label>
         </div>
 
-        {/* Input Form Data Diri */}
         <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">Nama Lengkap</label>
-            <input type="text" placeholder="Masukkan nama lengkap" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="namaLengkap" type="text" placeholder="Masukkan nama lengkap" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">Email</label>
-            <input type="email" placeholder="Masukkan email" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="email" type="email" placeholder="Masukkan email" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">Tempat lahir</label>
-            <input type="text" placeholder="Masukkan tempat lahir" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="tempatLahir" type="text" placeholder="Masukkan tempat lahir" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Anak Ke ... Dari ... Bersaudara</label>
-            <input type="text" placeholder="Masukkan tempat lahir" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label className="block text-sm font-bold text-gray-800 mb-1">Anak Ke / Jumlah Saudara</label>
+            <input name="anakKe" type="text" placeholder="Contoh: 2 / 3" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">No Hp</label>
-            <input type="text" placeholder="Masukkan nomor handphone" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="noHpWhatsapp" type="text" placeholder="Masukkan nomor handphone" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">Tanggal Lahir</label>
-            <input type="date" placeholder="Masukkan tanggal lahir" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="tanggalLahir" type="date" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">Kewarganegaraan</label>
-            <input type="text" placeholder="Masukkan kewarganegaraan" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="kewarganegaraan" type="text" placeholder="Masukkan kewarganegaraan" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
-         
+
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">NIK</label>
-            <input type="text" placeholder="Masukkan NIK" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="nik" type="text" placeholder="Masukkan NIK" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
-           <div>
+          <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">NISN</label>
-            <input type="text" placeholder="Masukkan NISN" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="nisn" type="text" placeholder="Masukkan NISN" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
-          
-           <div>
+
+          <div className="md:col-span-2">
             <label className="block text-sm font-bold text-gray-800 mb-1">Alamat Saat ini</label>
-            <input type="text" placeholder="Masukkan alamat saat ini" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          
-           <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">No Telephone/Hp/Whatsapp</label>
-            <input type="text" placeholder="Masukkan nomor telephone/hp/whatsapp" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-        
-           <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Akun Media Sosial(Instagram/Fb/Twitter jika ada)</label>
-            <input type="text" placeholder="Masukkan Akun Media Sosial" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="alamatLengkap" type="text" placeholder="Masukkan alamat saat ini" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
-         <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Status Dalam Keluarga
-          </label>
-          <select className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="Anak Kandung">Anak Kandung</option>
-            <option value="Anak Tiri">Anak Tiri</option>
-            <option value="Anak Angkat">Anak Angkat</option>
-          </select>
-        </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-800 mb-1">Akun Media Sosial</label>
+            <input name="mediaSosial" type="text" placeholder="Masukkan Akun Media Sosial" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Saat Ini Tinggal Bersama Siapa?</label>
-            <input type="text" placeholder="Masukkan Tinggal Bersama" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label className="block text-sm font-bold text-gray-800 mb-1">Status Dalam Keluarga</label>
+            <select name="statusKeluarga" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="ANAK_KANDUNG">Anak Kandung</option>
+              <option value="ANAK_TIRI">Anak Tiri</option>
+              <option value="ANAK_ANGKAT">Anak Angkat</option>
+            </select>
           </div>
-         
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Sebutkan Bahasa Asing Yang Dikuasai(Jika Ada)</label>
-            <input type="text" placeholder="Masukkan Bahasa Asing Yang Dikuasai" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Status Dalam Keluarga
-          </label>
-          <select className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="Anak Kandung">Anak Kandung</option>
-            <option value="Anak Tiri">Anak Tiri</option>
-            <option value="Anak Angkat">Anak Angkat</option>
-          </select>
-        </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Sebutkan Riwayat Prestasi(Jika Ada)</label>
+            <label className="block text-sm font-bold text-gray-800 mb-1">Saat Ini Tinggal Bersama</label>
+            <input name="tinggalBersama" type="text" placeholder="Masukkan Tinggal Bersama" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-gray-800 mb-1">Bahasa Asing</label>
+            <input name="bahasaAsing" type="text" placeholder="Masukkan Bahasa Asing Yang Dikuasai" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-gray-800 mb-1">Riwayat Prestasi</label>
             <p className="text-xs text-gray-500 mb-2">Contoh: Jenis Prestasi-tingkat-nama prestasi-tahun penyelenggaraan</p>
-            <input type="text" placeholder="Masukan Prestasi" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="riwayatPrestasi" type="text" placeholder="Masukan Prestasi" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Sebutkan Riwayat Organisasi Sekolah Dan Non Sekolah(Jika Ada)</label>
+            <label className="block text-sm font-bold text-gray-800 mb-1">Riwayat Organisasi</label>
             <p className="text-xs text-gray-500 mb-2">Contoh: bidang organisasi-tingkat-nama organisasi-tahun kepengurusan</p>
-            <input type="text" placeholder="Masukkan Riwayat Organisasi" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="riwayatOrganisasi" type="text" placeholder="Masukkan Riwayat Organisasi" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Berat Badan(KG)</label>
-            <input type="text" placeholder="Masukkan Riwayat Organisasi" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label className="block text-sm font-bold text-gray-800 mb-1">Berat Badan (KG)</label>
+            <input name="beratBadan" type="text" placeholder="Masukkan Berat Badan" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Tinggi Badan(CM)</label>
-            <input type="text" placeholder="Masukkan Tinggi Badan" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Riwayat Penyakit</label>
-            <input type="text" placeholder="Masukkan Riwayat Penyakit" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label className="block text-sm font-bold text-gray-800 mb-1">Tinggi Badan (CM)</label>
+            <input name="tinggiBadan" type="text" placeholder="Masukkan Tinggi Badan" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">Riwayat Penyakit</label>
-            <input type="text" placeholder="Masukkan Riwayat Penyakit" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input name="riwayatPenyakit" type="text" placeholder="Masukkan Riwayat Penyakit" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">Apakah Anda Pernah Merokok?</label>
-            <input type="text" placeholder="Masukkan Riwayat Merokok" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <select name="isMerokok" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="false">Tidak</option>
+              <option value="true">Ya</option>
+            </select>
           </div>
 
           <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Apakah Anda Buta warna?
-          </label>
-          <select className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="Ya">Ya</option>
-            <option value="Tidak">Tidak</option>
-          </select>
-        </div>
+            <label className="block text-sm font-bold text-gray-800 mb-1">Apakah Anda Buta Warna?</label>
+            <select name="isButaWarna" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="false">Tidak</option>
+              <option value="true">Ya</option>
+            </select>
+          </div>
 
-          
-          <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Pernyataan Calon Siswa <br />
-            Saya dengan sungguh-sungguh menyatakan bahwa :
-          </label>
-          <p className="text-xs text-gray-500 mb-2">
-            1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang saya lampirkan dalam berkas pendaftaran PPDB SMK TI BAZMA TA 2021-2022 adalah benar
-          </p>
-          <p className="text-xs text-gray-500 mb-2">
-            2. Apabila diperlukan, saya bersedia memberikan informasi lebih lanjut untuk melengkapi dokumen pendaftaran ini.
-          </p>
-          <select className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="Ya">Ya</option>
-            <option value="Tidak">Tidak</option>
-          </select>
-        </div>
-          
-
+          <div className="md:col-span-2">
+            <label className="block text-sm font-bold text-gray-800 mb-1">Pernyataan Calon Siswa</label>
+            <p className="text-xs text-gray-500 mb-2">1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang saya lampirkan dalam berkas pendaftaran PPDB SMK TI BAZMA TA 2021-2022 adalah benar.</p>
+            <p className="text-xs text-gray-500 mb-2">2. Apabila diperlukan, saya bersedia memberikan informasi lebih lanjut untuk melengkapi dokumen pendaftaran ini.</p>
+            <select name="pernyataanSiswa" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="true">Ya</option>
+              <option value="false">Tidak</option>
+            </select>
+          </div>
 
           <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Apakah Anda Memiliki Riwayat Penyakit Menular?
-          </label>
-          <select className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="Ya">Ya</option>
-            <option value="Tidak">Tidak</option>
-          </select>
-        </div>
+            <label className="block text-sm font-bold text-gray-800 mb-1">Apakah Anda Memiliki Riwayat Penyakit Menular?</label>
+            <select name="hasPenyakitMenular" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="false">Tidak</option>
+              <option value="true">Ya</option>
+            </select>
+          </div>
         </div>
       </div>
-    </div>
+
+      <div className="flex justify-end">
+        {status && <p className="mr-4 self-center text-sm text-gray-600" role="status">{status}</p>}
+        <button type="submit" className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          Simpan Data Diri
+        </button>
+      </div>
+    </form>
   );
 }

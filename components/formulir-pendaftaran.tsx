@@ -60,15 +60,6 @@ export default function PendaftaranPpdb() {
       <div className="mt-4">
         {renderTabContent()}
       </div>
-
-      <div className="mt-8 flex justify-end border-t border-gray-200 pt-6">
-        <button
-          type="button"
-          className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          Submit Formulir
-        </button>
-      </div>
     </div>
   );
 }

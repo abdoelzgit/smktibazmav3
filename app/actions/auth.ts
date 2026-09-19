@@ -230,6 +230,7 @@ export async function registerPpdbAction(
 export async function logoutAction() {
   const cookieStore = await cookies();
   cookieStore.delete(COOKIE_NAME);
+  cookieStore.delete('admin_session');
   revalidatePath('/');
   revalidatePath('/admin');
   revalidatePath('/dashboard-ppdb/dashboard');

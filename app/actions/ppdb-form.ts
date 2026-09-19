@@ -1,11 +1,18 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
+import { mkdir, writeFile } from 'fs/promises';
+import path from 'path';
+import { randomUUID } from 'crypto';
+import { KeadaanOrangTua, StatusKeluarga, StatusSekolah } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/app/actions/auth';
 import { revalidatePath } from 'next/cache';
+import { convertImageToWebp, isAllowedDocument, isImageFile } from '@/lib/image.utils';
 
 const COOKIE_NAME = 'auth_session';
+const LEGACY_COOKIE_NAME = 'admin_session';
 
 export type FormResult<T = unknown> = {
   success: boolean;
@@ -13,20 +20,50 @@ export type FormResult<T = unknown> = {
   error?: string;
 };
 
+function asString(value: FormDataEntryValue | null | undefined): string {
+  if (typeof value === 'string') return value;
+  if (value instanceof File) return value.name;
+  return '';
+}
+
+function asBoolean(value: FormDataEntryValue | null | undefined): boolean {
+  const raw = asString(value).toLowerCase();
+  return raw === 'true' || raw === '1' || raw === 'yes' || raw === 'on';
+}
+
 async function getUserFromToken(): Promise<{ userId: string; email: string } | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
 
-  if (!token) {
+  if (token) {
+    const payload = await verifyToken(token);
+    if (payload) {
+      return { userId: payload.userId, email: payload.email };
+    }
+  }
+
+  const legacyToken = cookieStore.get(LEGACY_COOKIE_NAME)?.value;
+  const secret = process.env.JWT_SECRET;
+  if (!legacyToken || !secret) {
     return null;
   }
 
-  const payload = await verifyToken(token);
-  if (!payload) {
+  try {
+    const { payload } = await jwtVerify(legacyToken, new TextEncoder().encode(secret));
+    const userId = typeof payload.userId === 'string' ? payload.userId : '';
+    if (!userId) {
+      return null;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.role !== 'USER') {
+      return null;
+    }
+
+    return { userId: user.id, email: user.email };
+  } catch {
     return null;
   }
-
-  return { userId: payload.userId, email: payload.email };
 }
 
 async function getOrCreatePendaftaran(userId: string) {
@@ -55,29 +92,31 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
 
     const pendaftaran = await getOrCreatePendaftaran(user.userId);
 
-    const namaLengkap = formData.get('namaLengkap') as string;
-    const tempatLahir = formData.get('tempatLahir') as string;
-    const tanggalLahirStr = formData.get('tanggalLahir') as string;
-    const nik = formData.get('nik') as string;
-    const nisn = formData.get('nisn') as string;
-    const kewarganegaraan = formData.get('kewarganegaraan') as string;
-    const anakKeStr = formData.get('anakKe') as string;
-    const jumlahSaudaraStr = formData.get('jumlahSaudara') as string;
-    const statusKeluarga = formData.get('statusKeluarga') as string;
-    const tinggalBersama = formData.get('tinggalBersama') as string;
-    const alamatLengkap = formData.get('alamatLengkap') as string;
-    const noHpWhatsapp = formData.get('noHpWhatsapp') as string;
-    const mediaSosial = formData.get('mediaSosial') as string;
-    const bahasaAsing = formData.get('bahasaAsing') as string;
-    const riwayatPrestasi = formData.get('riwayatPrestasi') as string;
-    const riwayatOrganisasi = formData.get('riwayatOrganisasi') as string;
-    const beratBadanStr = formData.get('beratBadan') as string;
-    const tinggiBadanStr = formData.get('tinggiBadan') as string;
-    const riwayatPenyakit = formData.get('riwayatPenyakit') as string;
-    const isMerokok = formData.get('isMerokok') === 'true';
-    const isButaWarna = formData.get('isButaWarna') === 'true';
-    const hasPenyakitMenular = formData.get('hasPenyakitMenular') === 'true';
-    const pernyataanSiswa = formData.get('pernyataanSiswa') === 'true';
+    const namaLengkap = asString(formData.get('namaLengkap'));
+    const email = asString(formData.get('email'));
+    const fotoFormalUrl = asString(formData.get('fotoFormalUrl'));
+    const tempatLahir = asString(formData.get('tempatLahir'));
+    const tanggalLahirStr = asString(formData.get('tanggalLahir'));
+    const nik = asString(formData.get('nik'));
+    const nisn = asString(formData.get('nisn'));
+    const kewarganegaraan = asString(formData.get('kewarganegaraan')) || 'Indonesia';
+    const anakKeStr = asString(formData.get('anakKe'));
+    const jumlahSaudaraStr = asString(formData.get('jumlahSaudara'));
+    const statusKeluarga = asString(formData.get('statusKeluarga')) || 'ANAK_KANDUNG';
+    const tinggalBersama = asString(formData.get('tinggalBersama'));
+    const alamatLengkap = asString(formData.get('alamatLengkap'));
+    const noHpWhatsapp = asString(formData.get('noHpWhatsapp'));
+    const mediaSosial = asString(formData.get('mediaSosial'));
+    const bahasaAsing = asString(formData.get('bahasaAsing'));
+    const riwayatPrestasi = asString(formData.get('riwayatPrestasi'));
+    const riwayatOrganisasi = asString(formData.get('riwayatOrganisasi'));
+    const beratBadanStr = asString(formData.get('beratBadan'));
+    const tinggiBadanStr = asString(formData.get('tinggiBadan'));
+    const riwayatPenyakit = asString(formData.get('riwayatPenyakit'));
+    const isMerokok = asBoolean(formData.get('isMerokok'));
+    const isButaWarna = asBoolean(formData.get('isButaWarna'));
+    const hasPenyakitMenular = asBoolean(formData.get('hasPenyakitMenular'));
+    const pernyataanSiswa = asBoolean(formData.get('pernyataanSiswa'));
 
     if (!namaLengkap) {
       return { success: false, error: 'Nama lengkap wajib diisi' };
@@ -89,6 +128,8 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
       where: { pendaftaranId: pendaftaran.id },
       update: {
         namaLengkap,
+        email,
+        fotoFormalUrl,
         tempatLahir,
         tanggalLahir,
         nik,
@@ -96,7 +137,7 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
         kewarganegaraan,
         anakKe: anakKeStr ? parseInt(anakKeStr, 10) : null,
         jumlahSaudara: jumlahSaudaraStr ? parseInt(jumlahSaudaraStr, 10) : null,
-        statusKeluarga: (statusKeluarga as any) || 'ANAK_KANDUNG',
+        statusKeluarga: statusKeluarga as StatusKeluarga,
         tinggalBersama,
         alamatLengkap,
         noHpWhatsapp,
@@ -115,6 +156,8 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
       create: {
         pendaftaranId: pendaftaran.id,
         namaLengkap,
+        email,
+        fotoFormalUrl,
         tempatLahir,
         tanggalLahir,
         nik,
@@ -122,7 +165,7 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
         kewarganegaraan,
         anakKe: anakKeStr ? parseInt(anakKeStr, 10) : null,
         jumlahSaudara: jumlahSaudaraStr ? parseInt(jumlahSaudaraStr, 10) : null,
-        statusKeluarga: (statusKeluarga as any) || 'ANAK_KANDUNG',
+        statusKeluarga: statusKeluarga as StatusKeluarga,
         tinggalBersama,
         alamatLengkap,
         noHpWhatsapp,
@@ -157,15 +200,15 @@ export async function saveDataOrangTuaAction(formData: FormData): Promise<FormRe
 
     const pendaftaran = await getOrCreatePendaftaran(user.userId);
 
-    const namaAyah = formData.get('namaAyah') as string;
-    const pekerjaanAyah = formData.get('pekerjaanAyah') as string;
-    const alamatDomisiliAyah = formData.get('alamatDomisiliAyah') as string;
-    const namaIbu = formData.get('namaIbu') as string;
-    const pekerjaanIbu = formData.get('pekerjaanIbu') as string;
-    const noHpOi = formData.get('noHpOi') as string;
-    const keadaanOrangTua = formData.get('keadaanOrangTua') as string;
-    const penghasilanOrangTua = formData.get('penghasilanOrangTua') as string;
-    const pernyataanOrangTua = formData.get('pernyataanOrangTua') === 'true';
+    const namaAyah = asString(formData.get('namaAyah'));
+    const pekerjaanAyah = asString(formData.get('pekerjaanAyah'));
+    const alamatDomisiliAyah = asString(formData.get('alamatDomisiliAyah'));
+    const namaIbu = asString(formData.get('namaIbu'));
+    const pekerjaanIbu = asString(formData.get('pekerjaanIbu'));
+    const noHpOi = asString(formData.get('noHpOi'));
+    const keadaanOrangTua = asString(formData.get('keadaanOrangTua')) || 'LENGKAP';
+    const penghasilanOrangTua = asString(formData.get('penghasilanOrangTua'));
+    const pernyataanOrangTua = asBoolean(formData.get('pernyataanOrangTua'));
 
     const orangTua = await prisma.dataOrangTua.upsert({
       where: { pendaftaranId: pendaftaran.id },
@@ -176,7 +219,7 @@ export async function saveDataOrangTuaAction(formData: FormData): Promise<FormRe
         namaIbu,
         pekerjaanIbu,
         noHpOi,
-        keadaanOrangTua: (keadaanOrangTua as any) || 'LENGKAP',
+        keadaanOrangTua: keadaanOrangTua as KeadaanOrangTua,
         penghasilanOrangTua,
         pernyataanOrangTua,
       },
@@ -188,7 +231,7 @@ export async function saveDataOrangTuaAction(formData: FormData): Promise<FormRe
         namaIbu,
         pekerjaanIbu,
         noHpOi,
-        keadaanOrangTua: (keadaanOrangTua as any) || 'LENGKAP',
+        keadaanOrangTua: keadaanOrangTua as KeadaanOrangTua,
         penghasilanOrangTua,
         pernyataanOrangTua,
       },
@@ -211,18 +254,18 @@ export async function saveDataSekolahAction(formData: FormData): Promise<FormRes
 
     const pendaftaran = await getOrCreatePendaftaran(user.userId);
 
-    const namaSekolahAsal = formData.get('namaSekolahAsal') as string;
-    const npsnSekolah = formData.get('npsnSekolah') as string;
-    const statusSekolah = formData.get('statusSekolah') as string;
-    const tahunLulus = formData.get('tahunLulus') as string;
-    const alamatSekolah = formData.get('alamatSekolah') as string;
+    const namaSekolahAsal = asString(formData.get('namaSekolahAsal'));
+    const npsnSekolah = asString(formData.get('npsnSekolah'));
+    const statusSekolah = asString(formData.get('statusSekolah')) || 'NEGERI';
+    const tahunLulus = asString(formData.get('tahunLulus'));
+    const alamatSekolah = asString(formData.get('alamatSekolah'));
 
     const sekolah = await prisma.dataSekolahAsal.upsert({
       where: { pendaftaranId: pendaftaran.id },
       update: {
         namaSekolahAsal,
         npsnSekolah,
-        statusSekolah: (statusSekolah as any) || 'NEGERI',
+        statusSekolah: statusSekolah as StatusSekolah,
         tahunLulus,
         alamatSekolah,
       },
@@ -230,7 +273,7 @@ export async function saveDataSekolahAction(formData: FormData): Promise<FormRes
         pendaftaranId: pendaftaran.id,
         namaSekolahAsal,
         npsnSekolah,
-        statusSekolah: (statusSekolah as any) || 'NEGERI',
+        statusSekolah: statusSekolah as StatusSekolah,
         tahunLulus,
         alamatSekolah,
       },
@@ -253,11 +296,15 @@ export async function saveRekomendasiAction(formData: FormData): Promise<FormRes
 
     const pendaftaran = await getOrCreatePendaftaran(user.userId);
 
-    const namaPemberiRekomendasi = formData.get('namaPemberiRekomendasi') as string;
-    const jabatanInstansi = formData.get('jabatanInstansi') as string;
-    const noHpPemberiRekomendasi = formData.get('noHpPemberiRekomendasi') as string;
-    const suratRekomendasiUrl = formData.get('suratRekomendasiUrl') as string;
-    const catatanRekomendasi = formData.get('catatanRekomendasi') as string;
+    const namaPemberiRekomendasi = asString(formData.get('namaPemberiRekomendasi')).trim();
+    const jabatanInstansi = asString(formData.get('jabatanInstansi')).trim();
+    const noHpPemberiRekomendasi = asString(formData.get('noHpPemberiRekomendasi')).trim();
+    const suratRekomendasiUrl = asString(formData.get('suratRekomendasiUrl')).trim();
+    const catatanRekomendasi = asString(formData.get('catatanRekomendasi')).trim();
+
+    if (!namaPemberiRekomendasi) {
+      return { success: false, error: 'Nama pemberi rekomendasi wajib diisi' };
+    }
 
     const rekomendasi = await prisma.suratRekomendasi.upsert({
       where: { pendaftaranId: pendaftaran.id },
@@ -295,17 +342,21 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
 
     const pendaftaran = await getOrCreatePendaftaran(user.userId);
 
-    const kkUrl = formData.get('kkUrl') as string;
-    const ktpOrangTuaUrl = formData.get('ktpOrangTuaUrl') as string;
-    const kipUrl = formData.get('kipUrl') as string;
-    const akteUrl = formData.get('akteUrl') as string;
-    const ijazahUrl = formData.get('ijazahUrl') as string;
-    const raporUrl = formData.get('raporUrl') as string;
-    const prestasiUrl = formData.get('prestasiUrl') as string;
-    const tampakDepanRumahUrl = formData.get('tampakDepanRumahUrl') as string;
-    const tampakSampingRumahUrl = formData.get('tampakSampingRumahUrl') as string;
-    const kamarTidurUrl = formData.get('kamarTidurUrl') as string;
-    const ruangTamuUrl = formData.get('ruangTamuUrl') as string;
+    const existingBerkas = await prisma.berkasPendaftaran.findUnique({
+      where: { pendaftaranId: pendaftaran.id },
+    });
+
+    const kkUrl = await saveUploadedFile(formData.get('kkUrl'), user.userId, 'kk', existingBerkas?.kkUrl);
+    const ktpOrangTuaUrl = await saveUploadedFile(formData.get('ktpOrangTuaUrl'), user.userId, 'ktp-orang-tua', existingBerkas?.ktpOrangTuaUrl);
+    const kipUrl = await saveUploadedFile(formData.get('kipUrl'), user.userId, 'kip', existingBerkas?.kipUrl);
+    const akteUrl = await saveUploadedFile(formData.get('akteUrl'), user.userId, 'akte', existingBerkas?.akteUrl);
+    const ijazahUrl = await saveUploadedFile(formData.get('ijazahUrl'), user.userId, 'ijazah', existingBerkas?.ijazahUrl);
+    const raporUrl = await saveUploadedFile(formData.get('raporUrl'), user.userId, 'rapor', existingBerkas?.raporUrl);
+    const prestasiUrl = await saveUploadedFile(formData.get('prestasiUrl'), user.userId, 'prestasi', existingBerkas?.prestasiUrl);
+    const tampakDepanRumahUrl = await saveUploadedFile(formData.get('tampakDepanRumahUrl'), user.userId, 'rumah-depan', existingBerkas?.tampakDepanRumahUrl);
+    const tampakSampingRumahUrl = await saveUploadedFile(formData.get('tampakSampingRumahUrl'), user.userId, 'rumah-samping', existingBerkas?.tampakSampingRumahUrl);
+    const kamarTidurUrl = await saveUploadedFile(formData.get('kamarTidurUrl'), user.userId, 'kamar-tidur', existingBerkas?.kamarTidurUrl);
+    const ruangTamuUrl = await saveUploadedFile(formData.get('ruangTamuUrl'), user.userId, 'ruang-tamu', existingBerkas?.ruangTamuUrl);
 
     const berkas = await prisma.berkasPendaftaran.upsert({
       where: { pendaftaranId: pendaftaran.id },
@@ -342,10 +393,45 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
     return { success: true, data: berkas };
   } catch (error) {
     console.error('uploadBerkasAction error:', error);
-    return { success: false, error: 'Gagal menyimpan berkas' };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Gagal menyimpan berkas',
+    };
   }
 }
 
+async function saveUploadedFile(
+  value: FormDataEntryValue | null,
+  userId: string,
+  fieldName: string,
+  existingUrl: string | null | undefined
+): Promise<string | null> {
+  if (!(value instanceof File) || value.size === 0) {
+    return existingUrl ?? null;
+  }
+
+  if (value.size > 10 * 1024 * 1024) {
+    throw new Error(`${fieldName} melebihi batas ukuran 10 MB`);
+  }
+
+  if (!isAllowedDocument(value)) {
+    throw new Error(`${fieldName} harus berupa PDF atau gambar`);
+  }
+
+  const image = isImageFile(value);
+  const extension = image ? '.webp' : path.extname(value.name).toLowerCase() || '.pdf';
+  const fileName = `${fieldName}-${randomUUID()}${extension}`;
+  const relativeDirectory = path.join('uploads', 'ppdb', userId);
+  const absoluteDirectory = path.join(process.cwd(), 'public', relativeDirectory);
+
+  await mkdir(absoluteDirectory, { recursive: true });
+  const contents = image
+    ? await convertImageToWebp(value)
+    : Buffer.from(await value.arrayBuffer());
+  await writeFile(path.join(absoluteDirectory, fileName), contents);
+
+  return `/${relativeDirectory.replaceAll(path.sep, '/')}/${fileName}`;
+}
 export async function submitPendaftaranAction(): Promise<FormResult> {
   try {
     const user = await getUserFromToken();
