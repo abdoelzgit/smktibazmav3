@@ -12,9 +12,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/admin";
   const reason = searchParams.get("reason");
 
   const [state, action, isPending] = useActionState(loginAction, {
@@ -22,10 +20,12 @@ export function LoginForm({
   });
 
   useEffect(() => {
-    if (state?.success) {
-      window.location.href = callbackUrl;
+    if (state?.success && state.redirectTo) {
+      window.location.href = state.redirectTo;
     }
-  }, [state?.success, callbackUrl]);
+  }, [state?.success, state?.redirectTo]);
+
+  // State handled above with redirectTo
 
   const errorMessage =
     state?.error ||

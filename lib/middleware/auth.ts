@@ -2,24 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
-const COOKIE_NAME = 'admin_session';
+const COOKIE_NAME = 'auth_session';
 
 /**
- * Verify admin JWT token using jose (Edge-compatible)
+ * Verify JWT token and extract role (Edge-compatible)
  */
-export async function verifyAdminToken(token: string): Promise<boolean> {
+export async function verifyAdminToken(token: string): Promise<{ isValid: boolean; role?: 'ADMIN' | 'USER' }> {
   if (!JWT_SECRET) {
     console.error('JWT_SECRET not configured');
-    return false;
+    return { isValid: false };
   }
 
   try {
     const secret = new TextEncoder().encode(JWT_SECRET);
-    await jwtVerify(token, secret);
-    return true;
+    const { payload } = await jwtVerify(token, secret);
+    const role = payload.role as 'ADMIN' | 'USER';
+    return { isValid: true, role };
   } catch {
-    // Token invalid, expired, or malformed
-    return false;
+    return { isValid: false };
   }
 }
 
@@ -32,44 +32,51 @@ export async function handleAuthMiddleware(request: NextRequest): Promise<NextRe
 
   const isAdminRoute = pathname.startsWith('/admin');
   const isPpdbDashboardRoute = pathname.startsWith('/dashboard-ppdb/dashboard');
-  const isLoginRoute = pathname === '/login' || pathname === '/dashboard-ppdb/login';
-  const loginPath = isPpdbDashboardRoute || pathname === '/dashboard-ppdb/login'
-    ? '/dashboard-ppdb/login'
-    : '/login';
-  const dashboardPath = pathname === '/dashboard-ppdb/login'
-    ? '/dashboard-ppdb/dashboard'
-    : '/admin';
+  const isLegacyPpdbLogin = pathname === '/dashboard-ppdb/login';
+  const isLoginRoute = pathname === '/login';
 
-  // No token and accessing a protected route -> redirect to its login page
+  // Redirect legacy PPDB login to unified login
+  if (isLegacyPpdbLogin) {
+    const loginUrl = new URL('/login', origin);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Protected routes require authentication
   if (!token && (isAdminRoute || isPpdbDashboardRoute)) {
-    const loginUrl = new URL(loginPath, origin);
+    const loginUrl = new URL('/login', origin);
     loginUrl.searchParams.set('callbackUrl', pathname);
     loginUrl.searchParams.set('reason', 'unauthorized');
     return NextResponse.redirect(loginUrl);
   }
 
-  // No token and accessing /login -> allow
+  // Allow login page for unauthenticated users
   if (!token && isLoginRoute) {
     return NextResponse.next();
   }
 
-  // Has token -> verify it
+  // Verify token if present
   if (token) {
-    const isValid = await verifyAdminToken(token);
+    const { isValid, role } = await verifyAdminToken(token);
 
     // Invalid/expired token
     if (!isValid) {
-      const response = NextResponse.redirect(new URL(`${loginPath}?reason=session_expired`, origin));
+      const response = NextResponse.redirect(new URL('/login?reason=session_expired', origin));
       response.cookies.delete(COOKIE_NAME);
       return response;
     }
 
-    // Valid token + accessing a login page -> redirect to its dashboard
+    // Authenticated user on login page -> redirect to appropriate dashboard
     if (isLoginRoute) {
+      const dashboardPath = role === 'ADMIN' ? '/admin' : '/dashboard-ppdb/dashboard';
       return NextResponse.redirect(new URL(dashboardPath, origin));
     }
 
-    // Valid token + accessing a protected route -> allow
+    // Role guard: USER cannot access admin routes
+    if (isAdminRoute && role === 'USER') {
+      return NextResponse.redirect(new URL('/dashboard-ppdb/dashboard', origin));
+    }
+
+    // Valid token + accessing protected route -> allow
     if (isAdminRoute || isPpdbDashboardRoute) {
       return NextResponse.next();
     }

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { loginPpdbAction, registerPpdbAction } from '@/app/actions/ppdb-auth';
+import { loginAction, registerPpdbAction } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,22 +28,21 @@ export default function LoginPage() {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Handler Submit Login
+      // Handler Submit Login
   const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
     setIsLoading(true);
 
-    const result = await loginPpdbAction(new FormData(e.currentTarget));
+    const result = await loginAction(new FormData(e.currentTarget));
 
-    if (result.success) {
-      setSuccessMessage('Login berhasil! Mengalihkan ke dashboard...');
-      router.push('/dashboard-ppdb/dashboard');
+    if (result.success && result.redirectTo) {
+      router.push(result.redirectTo);
       router.refresh();
     } else {
       setIsLoading(false);
-      setErrorMessage(result.error ?? 'Email atau password salah!');
+      setErrorMessage(result.error ?? 'Login gagal');
     }
   };
 
@@ -60,10 +59,11 @@ export default function LoginPage() {
 
     setIsLoading(true);
 
-    const result = await registerPpdbAction(new FormData(e.currentTarget));
+    const formData = new FormData(e.currentTarget);
+    const result = await registerPpdbAction(formData);
 
-    if (result.success) {
-      router.push('/dashboard-ppdb/dashboard');
+    if (result.success && result.redirectTo) {
+      router.push(result.redirectTo);
       router.refresh();
     } else {
       setIsLoading(false);

@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/sidebar"
 
 async function getPpdbUser() {
-  const token = (await cookies()).get('admin_session')?.value;
+  const token = (await cookies()).get('auth_session')?.value;
   const secretKey = process.env.JWT_SECRET;
 
   if (!token || !secretKey) {

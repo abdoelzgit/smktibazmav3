@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { logoutPpdbAction } from "@/app/actions/ppdb-auth"
+import { logoutAction } from "@/app/actions/auth"
 import {
   Avatar,
   AvatarFallback,
@@ -37,10 +37,10 @@ export function NavUser({
   const router = useRouter()
 
   const handleLogout = async () => {
-    const result = await logoutPpdbAction()
+    const result = await logoutAction()
 
     if (result.success) {
-      router.push("/dashboard-ppdb/login")
+      router.push("/login")
       router.refresh()
     }
   }
