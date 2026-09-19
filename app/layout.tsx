@@ -5,9 +5,7 @@ import {
   Plus_Jakarta_Sans,
 } from "next/font/google";
 import "./globals.css";
-import { SmoothScroll } from "@/components/smooth-scroll";
-import { Navbar } from "@/components/navbar";
-import Footer from "@/components/footer";
+import { Providers } from "@/components/providers";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -41,7 +39,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

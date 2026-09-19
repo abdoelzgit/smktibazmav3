@@ -81,6 +81,13 @@ export async function loginAction(
       return { success: false, error: 'Email atau password salah' };
     }
 
+    if (!user.password) {
+      return {
+        success: false,
+        error: 'Akun ini terdaftar via Google. Silakan login menggunakan Google.',
+      };
+    }
+
     let isPasswordValid = false;
 
     if (user.password.startsWith('$2')) {
@@ -131,7 +138,22 @@ export async function loginAction(
   }
 }
 
-export async function registerPpdbAction(formData: FormData): Promise<AuthResult> {
+export async function registerPpdbAction(
+  prevStateOrFormData: AuthResult | FormData | unknown,
+  formDataParam?: FormData
+): Promise<AuthResult> {
+  let formData: FormData | null = null;
+
+  if (isFormData(formDataParam)) {
+    formData = formDataParam;
+  } else if (isFormData(prevStateOrFormData)) {
+    formData = prevStateOrFormData;
+  }
+
+  if (!formData) {
+    return { success: false, error: 'Data formulir tidak valid' };
+  }
+
   const nameValue = formData.get('name');
   const emailValue = formData.get('email');
   const passwordValue = formData.get('password');

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
+import { getToken } from 'next-auth/jwt';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 const COOKIE_NAME = 'auth_session';

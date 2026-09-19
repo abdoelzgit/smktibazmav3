@@ -1,23 +1,19 @@
 "use client";
 
 import React, { useEffect, useActionState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginAction } from "@/app/actions/auth";
+import { registerPpdbAction } from "@/app/actions/auth";
 
-export function LoginForm({
+export function RegisterForm({
   className,
-  onSwitchToRegister,
+  onSwitchToLogin,
   ...props
-}: React.ComponentProps<"form"> & { onSwitchToRegister?: () => void }) {
-  const searchParams = useSearchParams();
-  const reason = searchParams.get("reason");
-
-  const [state, action, isPending] = useActionState(loginAction, {
+}: React.ComponentProps<"form"> & { onSwitchToLogin?: () => void }) {
+  const [state, action, isPending] = useActionState(registerPpdbAction, {
     success: false,
   });
 
@@ -27,13 +23,7 @@ export function LoginForm({
     }
   }, [state?.success, state?.redirectTo]);
 
-  const errorMessage =
-    state?.error ||
-    (!state?.success && state?.error === undefined && reason === "unauthorized"
-      ? "Anda harus login untuk mengakses halaman admin."
-      : reason === "session_expired"
-      ? "Sesi Anda telah berakhir. Silakan login kembali."
-      : null);
+  const errorMessage = state?.error;
 
   return (
     <form
@@ -42,9 +32,9 @@ export function LoginForm({
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Login</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Daftar PPDB</h1>
         <p className="text-xs text-muted-foreground">
-          Masukkan email dan password Anda untuk masuk
+          Buat akun baru untuk mendaftar sebagai peserta PPDB
         </p>
       </div>
 
@@ -56,25 +46,40 @@ export function LoginForm({
 
       <div className="grid gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="username">Email</Label>
+          <Label htmlFor="name">Nama Lengkap</Label>
           <Input
-            id="username"
-            name="username"
-            type="email"
-            placeholder="admin@smktibazma.sch.id"
+            id="name"
+            name="name"
+            type="text"
+            placeholder="Nama lengkap Anda"
             required
           />
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="register-email">Email</Label>
           <Input
-            id="password"
+            id="register-email"
+            name="email"
+            type="email"
+            placeholder="email@example.com"
+            required
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="register-password">Password</Label>
+          <Input
+            id="register-password"
             name="password"
             type="password"
             placeholder="••••••••"
             required
+            minLength={8}
           />
+          <p className="text-xs text-muted-foreground">
+            Minimal 8 karakter
+          </p>
         </div>
 
         <Button
@@ -82,7 +87,7 @@ export function LoginForm({
           disabled={isPending}
           className="w-full mt-2 font-semibold"
         >
-          {isPending ? "Memproses..." : "Login"}
+          {isPending ? "Mendaftar..." : "Daftar Akun PPDB"}
         </Button>
       </div>
 
@@ -121,17 +126,17 @@ export function LoginForm({
             fill="#EA4335"
           />
         </svg>
-        Masuk dengan Google
+        Daftar dengan Google
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
-        Belum memiliki akun?{" "}
+        Sudah punya akun?{" "}
         <button
           type="button"
-          onClick={onSwitchToRegister}
-          className="underline underline-offset-4 hover:text-primary font-semibold"
+          onClick={onSwitchToLogin}
+          className="underline underline-offset-4 hover:text-primary"
         >
-          Daftar di sini
+          Login di sini
         </button>
       </p>
     </form>
