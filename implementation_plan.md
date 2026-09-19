@@ -1,75 +1,254 @@
-# Implementation Plan: Unified Auth System & Role-Based Dashboard Redirection
+# Implementation Plan: Analisis Formulir Pendaftaran & Perancangan Skema Prisma PPDB
 
-Menyatukan sistem autentikasi (**Single Unified Auth System**) ke 1 Server Action dan 1 Halaman Login Universal (`/login`), serta menghapus rute login redundan (`/dashboard-ppdb/login`). Sistem akan secara otomatis mengarahkan pengguna ke **Dashboard Admin** (`/admin`) jika bertipe `ADMIN` atau ke **Dashboard Peserta PPDB** (`/dashboard-ppdb/dashboard`) jika bertipe `USER`.
+Rencana ini mencakup hasil analisis mendalam terhadap komponen UI `FormulirPendaftaran` (5 Tab: **Data Diri**, **Data Orang Tua**, **Upload Berkas**, **Surat Rekomendasi**, dan **Data Sekolah Asal**) serta perancangan **Skema Prisma (Data Model)** yang terstruktur, type-safe, dan relasional dengan model `User`.
+
+---
+
+## Hasil Analisis Input Field Formulir Pendaftaran
+
+Berdasarkan analisis file komponen UI pada folder `components/tabs/`:
+
+### 1. Tab Data Diri (`DataDiriTab.tsx`)
+- **Identitas Siswa:** `namaLengkap`, `email`, `nik`, `nisn`, `tempatLahir`, `tanggalLahir`, `kewarganegaraan`.
+- **Informasi Keluarga & Sosial:** `anakKe`, `jumlahSaudara`, `statusDalamKeluarga` (Anak Kandung/Tiri/Angkat), `tinggalBersama`, `alamatLengkap`, `noHpWhatsapp`, `mediaSosial`.
+- **Keterampilan & Prestasi:** `bahasaAsing`, `riwayatPrestasi`, `riwayatOrganisasi`.
+- **Kondisi Fisik & Kesehatan:** `beratBadan` (float/int), `tinggiBadan` (float/int), `riwayatPenyakit`, `riwayatMerokok` (Boolean/String), `isButaWarna` (Boolean), `hasPenyakitMenular` (Boolean).
+- **Pernyataan:** `pernyataanSiswa` (Boolean).
+- **Foto:** `fotoFormalUrl`.
+
+### 2. Tab Data Orang Tua (`DataOrangTuaTab.tsx`)
+- **Data Ayah:** `namaAyah`, `pekerjaanAyah`, `alamatDomisiliAyah`.
+- **Data Ibu:** `namaIbu`, `pekerjaanIbu`.
+- **Kontak & Kondisi:** `noHpOi`, `keadaanOrangTua` (Lengkap, Yatim, Piatu, Yatim Piatu), `penghasilanOrangTua`.
+- **Pernyataan:** `pernyataanOrangTua` (Boolean).
+
+### 3. Tab Upload Berkas (`BerkasTab.tsx`)
+- **Dokumen Pribadi:** `kkUrl`, `ktpOrangTuaUrl`, `kipUrl` (opsional), `akteUrl`, `ijazahUrl`, `raporUrl`, `prestasiUrl` (opsional).
+- **Dokumen Foto Rumah:** `tampakDepanRumahUrl`, `tampakSampingRumahUrl`, `kamarTidurUrl`, `ruangTamuUrl`.
+
+### 4. Tab Surat Rekomendasi (`SuratRekomendasiTab.tsx`)
+- **Informasi Pemberi:** `namaPemberiRekomendasi`, `jabatanInstansi`, `noHpPemberiRekomendasi`.
+- **Berkas & Catatan:** `suratRekomendasiUrl`, `catatanRekomendasi`.
+
+### 5. Tab Data Sekolah Asal (`DataSekolahAsalTab.tsx`)
+- **Informasi Sekolah:** `namaSekolahAsal`, `npsnSekolah`, `statusSekolah` (Negeri/Swasta), `tahunLulus`, `alamatSekolahAsal`.
 
 ---
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Penyederhanaan Rute Login:**
-> 1. **Penghapusan `/dashboard-ppdb/login`:** Halaman `/dashboard-ppdb/login` **aman untuk dihapus**. Seluruh tombol login (baik di header utama sekolah maupun landing page PPDB) akan diarahkan langsung ke `/login`.
-> 2. **Redirect Otomatis jika URL Lama Diakses:** Di middleware, jika ada pengguna yang masih mengakses URL `/dashboard-ppdb/login`, sistem akan secara otomatis mengalihkannya (*redirect*) ke `/login`.
+> **Struktur Model Relasional Prisma:**
+> Kami merekomendasikan pemisahan model menjadi relasi 1-to-1 dengan tabel `Pendaftaran` agar rapi dan terukur:
+> 1. `Pendaftaran`: Tabel utama status pendaftaran (`status`: `DRAFT`, `SUBMITTED`, `VERIFIED`, `ACCEPTED`, `REJECTED`).
+> 2. `BiodataSiswa`: Menyimpan data detail siswa dari Tab Data Diri.
+> 3. `DataOrangTua`: Menyimpan detail ayah, ibu, dan wali.
+> 4. `DataSekolahAsal`: Menyimpan riwayat sekolah SMP/MTs.
+> 5. `SuratRekomendasi`: Menyimpan data & dokumen rekomendasi.
+> 6. `BerkasPendaftaran`: Menyimpan seluruh URL file upload (KK, KTP, foto rumah, dsb).
+
+---
+
+## Open Questions
+
+> [!NOTE]
+> 1. **Penyimpanan File Upload:** Apakah berkas (PDF/Gambar foto rumah) akan di-upload ke sistem lokal (`public/uploads/ppdb/`) atau cloud storage? (Rekomendasi: `public/uploads/ppdb/` via Server Actions upload helper).
+> 2. **Alur Simpan:** Apakah peserta diperbolehkan menyimpan *draft* pendaftaran secara bertahap (per-tab) atau wajib submit sekaligus? (Rekomendasi: Dukung simpan draft per-tab dengan status `DRAFT`).
 
 ---
 
 ## Proposed Changes
 
-### Database Layer (Prisma)
+### Database Layer (Prisma Schema)
 
 #### [MODIFY] [schema.prisma](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/prisma/schema.prisma)
-- Tambahkan enum `Role` (`ADMIN`, `USER`).
-- Tambahkan field `role Role @default(USER)` pada tabel `User`.
-- Jalankan `npx prisma db push` untuk memperbarui database PostgreSQL.
+Menambahkan Enum & Model berikut ke `prisma/schema.prisma`:
+
+```prisma
+enum StatusPendaftaran {
+  DRAFT
+  SUBMITTED
+  VERIFIED
+  REJECTED
+  ACCEPTED
+}
+
+enum StatusKeluarga {
+  ANAK_KANDUNG
+  ANAK_TIRI
+  ANAK_ANGKAT
+}
+
+enum KeadaanOrangTua {
+  LENGKAP
+  YATIM
+  PIATU
+  YATIM_PIATU
+}
+
+enum StatusSekolah {
+  NEGERI
+  SWASTA
+}
+
+model Pendaftaran {
+  id               String            @id @default(cuid())
+  userId           String            @unique
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nomorPendaftaran String?           @unique
+  status           StatusPendaftaran @default(DRAFT)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  biodata          BiodataSiswa?
+  orangTua         DataOrangTua?
+  sekolahAsal      DataSekolahAsal?
+  rekomendasi      SuratRekomendasi?
+  berkas           BerkasPendaftaran?
+
+  @@map("pendaftaran_ppdb")
+}
+
+model BiodataSiswa {
+  id                 String          @id @default(cuid())
+  pendaftaranId     String          @unique
+  pendaftaran       Pendaftaran     @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+  
+  namaLengkap        String
+  email              String?
+  tempatLahir        String?
+  tanggalLahir       DateTime?
+  nik                String?
+  nisn               String?
+  kewarganegaraan    String?         @default("Indonesia")
+  anakKe             Int?
+  jumlahSaudara      Int?
+  statusKeluarga     StatusKeluarga? @default(ANAK_KANDUNG)
+  tinggalBersama     String?
+  alamatLengkap      String?
+  noHpWhatsapp       String?
+  mediaSosial        String?
+  bahasaAsing        String?
+  riwayatPrestasi    String?
+  riwayatOrganisasi  String?
+  beratBadan         Float?
+  tinggiBadan        Float?
+  riwayatPenyakit    String?
+  isMerokok          Boolean?        @default(false)
+  isButaWarna        Boolean?        @default(false)
+  hasPenyakitMenular Boolean?        @default(false)
+  pernyataanSiswa    Boolean?        @default(false)
+  fotoFormalUrl      String?
+
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@map("biodata_siswa")
+}
+
+model DataOrangTua {
+  id                    String           @id @default(cuid())
+  pendaftaranId        String           @unique
+  pendaftaran          Pendaftaran      @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+
+  namaAyah              String?
+  pekerjaanAyah         String?
+  alamatDomisiliAyah    String?
+  namaIbu               String?
+  pekerjaanIbu          String?
+  noHpOi                String?
+  keadaanOrangTua       KeadaanOrangTua? @default(LENGKAP)
+  penghasilanOrangTua   String?
+  pernyataanOrangTua    Boolean?         @default(false)
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@map("data_orang_tua")
+}
+
+model DataSekolahAsal {
+  id               String         @id @default(cuid())
+  pendaftaranId   String         @unique
+  pendaftaran     Pendaftaran    @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+
+  namaSekolahAsal  String?
+  npsnSekolah      String?
+  statusSekolah    StatusSekolah? @default(NEGERI)
+  tahunLulus       String?
+  alamatSekolah    String?
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@map("data_sekolah_asal")
+}
+
+model SuratRekomendasi {
+  id                        String      @id @default(cuid())
+  pendaftaranId            String      @unique
+  pendaftaran              Pendaftaran @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+
+  namaPemberiRekomendasi    String?
+  jabatanInstansi           String?
+  noHpPemberiRekomendasi    String?
+  suratRekomendasiUrl       String?
+  catatanRekomendasi        String?
+
+  createdAt                 DateTime    @default(now())
+  updatedAt                 DateTime    @updatedAt
+
+  @@map("surat_rekomendasi")
+}
+
+model BerkasPendaftaran {
+  id                    String      @id @default(cuid())
+  pendaftaranId        String      @unique
+  pendaftaran          Pendaftaran @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+
+  kkUrl                 String?
+  ktpOrangTuaUrl        String?
+  kipUrl                String?
+  akteUrl               String?
+  ijazahUrl             String?
+  raporUrl              String?
+  prestasiUrl           String?
+  tampakDepanRumahUrl   String?
+  tampakSampingRumahUrl String?
+  kamarTidurUrl         String?
+  ruangTamuUrl          String?
+
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@map("berkas_pendaftaran")
+}
+```
 
 ---
 
-### Unified Auth Server Actions
+### Backend & Server Actions (Next Phase)
 
-#### [MODIFY] [app/actions/auth.ts](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/actions/auth.ts)
-- Konsolidasi seluruh logika autentikasi:
-  - `loginAction(formData)`: Verifikasi email & password, masukkan `role` ke JWT token payload (`auth_session`), dan kembalikan `{ success: true, role, redirectTo }`.
-  - `registerPpdbAction(formData)`: Registrasi peserta PPDB baru (default `role: USER`), buat JWT session, dan kembalikan `redirectTo: '/dashboard-ppdb/dashboard'`.
-  - `logoutAction()`: Hapus cookie `auth_session` dan revalidate path.
-
-#### [DELETE] [ppdb-auth.ts](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/actions/ppdb-auth.ts)
-- Hapus file Server Action PPDB lama ini karena seluruh fungsinya sudah disatukan di `app/actions/auth.ts`.
-
----
-
-### Middleware & Navigation Guard
-
-#### [MODIFY] [lib/middleware/auth.ts](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/lib/middleware/auth.ts)
-- Perbarui `verifyToken` untuk membaca `role` dari JWT token.
-- Pada `handleAuthMiddleware`:
-  - **Redirect Legacy Login Path:** Jika rute yang diminta adalah `/dashboard-ppdb/login`, redirect langsung ke `/login`.
-  - **Single Login Guard:** Jika user yang sudah terautentikasi membuka `/login`, redirect otomatis sesuai rolenya (`ADMIN` $\rightarrow$ `/admin`, `USER` $\rightarrow$ `/dashboard-ppdb/dashboard`).
-  - **Role Guard:** Jika user ber-role `USER` mencoba membuka `/admin`, redirect ke `/dashboard-ppdb/dashboard`.
-
----
-
-### UI Components & Pages
-
-#### [MODIFY] [components/login-form.tsx](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/components/login-form.tsx)
-- Perbarui form agar menggunakan `loginAction` dari `@/app/actions/auth`.
-- Saat login sukses, jalankan `router.push(result.redirectTo)` untuk mengarahkan pengguna ke dashboard yang sesuai secara dinamis.
-
-#### [DELETE] [app/dashboard-ppdb/login/page.tsx](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/dashboard-ppdb/login/page.tsx)
-- Hapus folder/file rute login PPDB yang redundan.
+#### [NEW] [app/actions/ppdb-form.ts](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/actions/ppdb-form.ts)
+- Membuat Server Action `'use server'` untuk menyimpan/update data tiap tab (`saveDataDiriAction`, `saveDataOrangTuaAction`, `saveDataSekolahAction`, `saveRekomendasiAction`, `uploadBerkasAction`, `submitPendaftaranAction`).
 
 ---
 
 ## Verification Plan
 
-### Automated Tests / Commands
-- Database Schema Sync: `npx prisma db push`
-- TypeScript Verification: `npx tsc --noEmit`
+### Automated Verification
+1. Sinkronisasi skema Prisma ke database PostgreSQL:
+   ```powershell
+   npx prisma db push
+   ```
+2. Generate Prisma Client:
+   ```powershell
+   npx prisma generate
+   ```
+3. Type Checking:
+   ```powershell
+   npx tsc --noEmit
+   ```
 
 ### Manual Verification
-1. **Navigasi Login:**
-   - Buka `/dashboard-ppdb/login` di URL browser $\rightarrow$ Harus otomatis ter-redirect ke `/login`.
-2. **Login Admin & User:**
-   - Login di `/login` dengan kredensial Admin $\rightarrow$ Masuk ke `/admin`.
-   - Logout, lalu login di `/login` dengan kredensial Peserta PPDB $\rightarrow$ Masuk ke `/dashboard-ppdb/dashboard`.
-3. **Proteksi Role:**
-   - Login sebagai Peserta PPDB, coba buka `/admin` $\rightarrow$ Otomatis diredirect kembali ke `/dashboard-ppdb/dashboard`.
+1. Buka Prisma Studio (`npx prisma studio`) untuk memverifikasi tabel `pendaftaran_ppdb`, `biodata_siswa`, `data_orang_tua`, `data_sekolah_asal`, `surat_rekomendasi`, dan `berkas_pendaftaran` berhasil terbuat dengan relasi yang benar ke tabel `users`.

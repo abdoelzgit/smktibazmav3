@@ -8,13 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String?
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  role      Role     @default(USER)
+  id          String       @id @default(cuid())
+  name        String?
+  email       String       @unique
+  password    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  role        Role         @default(USER)
+  pendaftaran Pendaftaran?
 
   @@map("users")
 }
@@ -34,7 +35,155 @@ model Berita {
   @@map("berita")
 }
 
+model Pendaftaran {
+  id               String             @id @default(cuid())
+  userId           String             @unique
+  nomorPendaftaran String?            @unique
+  status           StatusPendaftaran  @default(DRAFT)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  berkas           BerkasPendaftaran?
+  biodata          BiodataSiswa?
+  orangTua         DataOrangTua?
+  sekolahAsal      DataSekolahAsal?
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rekomendasi      SuratRekomendasi?
+
+  @@map("pendaftaran_ppdb")
+}
+
+model BiodataSiswa {
+  id                 String          @id @default(cuid())
+  pendaftaranId      String          @unique
+  namaLengkap        String
+  email              String?
+  tempatLahir        String?
+  tanggalLahir       DateTime?
+  nik                String?
+  nisn               String?
+  kewarganegaraan    String?         @default("Indonesia")
+  anakKe             Int?
+  jumlahSaudara      Int?
+  statusKeluarga     StatusKeluarga? @default(ANAK_KANDUNG)
+  tinggalBersama     String?
+  alamatLengkap      String?
+  noHpWhatsapp       String?
+  mediaSosial        String?
+  bahasaAsing        String?
+  riwayatPrestasi    String?
+  riwayatOrganisasi  String?
+  beratBadan         Float?
+  tinggiBadan        Float?
+  riwayatPenyakit    String?
+  isMerokok          Boolean?        @default(false)
+  isButaWarna        Boolean?        @default(false)
+  hasPenyakitMenular Boolean?        @default(false)
+  pernyataanSiswa    Boolean?        @default(false)
+  fotoFormalUrl      String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  pendaftaran        Pendaftaran     @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+
+  @@map("biodata_siswa")
+}
+
+model DataOrangTua {
+  id                  String           @id @default(cuid())
+  pendaftaranId       String           @unique
+  namaAyah            String?
+  pekerjaanAyah       String?
+  alamatDomisiliAyah  String?
+  namaIbu             String?
+  pekerjaanIbu        String?
+  noHpOi              String?
+  keadaanOrangTua     KeadaanOrangTua? @default(LENGKAP)
+  penghasilanOrangTua String?
+  pernyataanOrangTua  Boolean?         @default(false)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  pendaftaran         Pendaftaran      @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+
+  @@map("data_orang_tua")
+}
+
+model DataSekolahAsal {
+  id              String         @id @default(cuid())
+  pendaftaranId   String         @unique
+  namaSekolahAsal String?
+  npsnSekolah     String?
+  statusSekolah   StatusSekolah? @default(NEGERI)
+  tahunLulus      String?
+  alamatSekolah   String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  pendaftaran     Pendaftaran    @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+
+  @@map("data_sekolah_asal")
+}
+
+model SuratRekomendasi {
+  id                     String      @id @default(cuid())
+  pendaftaranId          String      @unique
+  namaPemberiRekomendasi String?
+  jabatanInstansi        String?
+  noHpPemberiRekomendasi String?
+  suratRekomendasiUrl    String?
+  catatanRekomendasi     String?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  pendaftaran            Pendaftaran @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+
+  @@map("surat_rekomendasi")
+}
+
+model BerkasPendaftaran {
+  id                    String      @id @default(cuid())
+  pendaftaranId         String      @unique
+  kkUrl                 String?
+  ktpOrangTuaUrl        String?
+  kipUrl                String?
+  akteUrl               String?
+  ijazahUrl             String?
+  raporUrl              String?
+  prestasiUrl           String?
+  tampakDepanRumahUrl   String?
+  tampakSampingRumahUrl String?
+  kamarTidurUrl         String?
+  ruangTamuUrl          String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  pendaftaran           Pendaftaran @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+
+  @@map("berkas_pendaftaran")
+}
+
 enum Role {
   ADMIN
   USER
+}
+
+enum StatusPendaftaran {
+  DRAFT
+  SUBMITTED
+  VERIFIED
+  REJECTED
+  ACCEPTED
+}
+
+enum StatusKeluarga {
+  ANAK_KANDUNG
+  ANAK_TIRI
+  ANAK_ANGKAT
+}
+
+enum KeadaanOrangTua {
+  LENGKAP
+  YATIM
+  PIATU
+  YATIM_PIATU
+}
+
+enum StatusSekolah {
+  NEGERI
+  SWASTA
 }
