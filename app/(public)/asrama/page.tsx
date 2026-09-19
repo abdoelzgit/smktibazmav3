@@ -2,6 +2,7 @@ import { Hero } from "@/components/hero";
 import SummaryAsrama from "./section/summary";
 import ProgramAsrama from "./section/program";
 import Fasilitas from "./section/fasilitas";
+import Ustadz from "./section/ustadz";
 
 export default function AsramaPage() {
   return (
@@ -13,6 +14,7 @@ export default function AsramaPage() {
       <SummaryAsrama />
       <ProgramAsrama />
       <Fasilitas />
+      <Ustadz />
     </main>
   );
 }
