@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { AppSidebar } from "@/components/app-sidebar";
 import { getBeritaListAction } from "@/app/actions/berita-list";
 import { deleteBeritaAction } from "@/app/actions/berita";
 import {
@@ -16,7 +15,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
-  SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -106,65 +104,37 @@ export default function BeritaAdminPage() {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="bg-background min-h-screen flex flex-col">
-        {/* ── Top Header Bar ─────────────────────────────────────────────── */}
-        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border px-4 md:px-6">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-vertical:h-4 data-vertical:self-auto"
+    <div className="flex-1 p-6 md:p-8 w-full mx-auto space-y-6">
+      {/* Header Title Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight font-heading">
+            Kelola Berita & Artikel
+          </h1>
+          <p className="text-xs md:text-sm text-muted-foreground mt-1">
+            Publikasikan kabar terbaru, prestasi, dan pengumuman sekolah SMK TI BAZMA.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="relative w-48 md:w-64">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari berita..."
+              className="pl-8 h-9 text-xs bg-card border-border focus-visible:ring-1"
             />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/admin">Admin</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="font-semibold">
-                    Kelola Berita
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
           </div>
-
-          <div className="flex items-center gap-3">
-            <div className="relative w-48 md:w-64">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari berita..."
-                className="pl-8 h-8 text-xs bg-muted/40 border-border focus-visible:ring-1"
-              />
-            </div>
-            <Link
-              href="/admin/berita/new"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm rounded-lg"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Buat Berita</span>
-            </Link>
-          </div>
-        </header>
-
-        {/* ── Content Container ───────────────────────────────────────────── */}
-        <div className="flex-1 p-6 md:p-8  w-full mx-auto space-y-6">
-          {/* Header Title Section */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight font-heading">
-                Kelola Berita & Artikel
-              </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                Publikasikan kabar terbaru, prestasi, dan pengumuman sekolah SMK TI BAZMA.
-              </p>
-            </div>
-          </div>
+          <Link
+            href="/admin/berita/new"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs rounded-lg whitespace-nowrap"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Buat Berita</span>
+          </Link>
+        </div>
+      </div>
 
           {/* ── Filter Tabs Bar (Exact Dribbble Style from image) ─────────── */}
           <div className="space-y-4">
@@ -303,8 +273,6 @@ export default function BeritaAdminPage() {
           </>
             )}
           </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    </div>
   );
 }
