@@ -55,7 +55,25 @@ export default function DataOrangTuaTab() {
           <input type="text" placeholder="Alamat Domisili Ayah" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
 
-          
+                    <div>
+          <label className="block text-sm font-bold text-gray-800 mb-1">
+            Pernyataan Orang Tua / Wali Calon Siswa <br />
+            Saya dengan sungguh-sungguh menyatakan bahwa :
+          </label>
+          <p className="text-xs text-gray-500 mb-2">
+           1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang dilampirkan dalam berkas pendaftaran PPDB SMK TI BAZMA ΤΑ 2021-2022 adalah benar;
+          </p>
+          <p className="text-xs text-gray-500 mb-2">
+           2. Saya mendukung dan memberi izin anak/tanggungan saya dalam mengikuti keseluruhan proses seleksi PPDB SMK TI BAZMA;
+          </p>
+          <p className="text-xs text-gray-500 mb-2">
+          3. Jika nantinya anak/tanggungan saya dinyatakan lolos seleksi maka saya memberi izin untuknya bertempat tinggal di asrama selama masa pendidikan berlangsung.
+          </p>
+          <select className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            <option value="Ya">Ya</option>
+            <option value="Tidak">Tidak</option>
+          </select>
+        </div>
       </div>
     </div>
   );

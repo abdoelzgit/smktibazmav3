@@ -196,6 +196,26 @@ export default function DataDiriTab() {
           </select>
         </div>
 
+          
+          <div>
+          <label className="block text-sm font-bold text-gray-800 mb-1">
+            Pernyataan Calon Siswa <br />
+            Saya dengan sungguh-sungguh menyatakan bahwa :
+          </label>
+          <p className="text-xs text-gray-500 mb-2">
+            1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang saya lampirkan dalam berkas pendaftaran PPDB SMK TI BAZMA TA 2021-2022 adalah benar
+          </p>
+          <p className="text-xs text-gray-500 mb-2">
+            2. Apabila diperlukan, saya bersedia memberikan informasi lebih lanjut untuk melengkapi dokumen pendaftaran ini.
+          </p>
+          <select className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            <option value="Ya">Ya</option>
+            <option value="Tidak">Tidak</option>
+          </select>
+        </div>
+          
+
+
           <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">
             Apakah Anda Memiliki Riwayat Penyakit Menular?

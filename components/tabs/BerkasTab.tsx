@@ -12,6 +12,23 @@ export default function BerkasTab() {
     }));
   };
 
+  const renderUploadField = (key: string, label: string) => (
+    <div key={key} className="rounded-xl border border-gray-300 bg-white p-4 shadow-sm">
+      <label className="block text-sm font-bold text-gray-800 mb-2">{label}</label>
+      <div className="w-full rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+        <input
+          type="file"
+          accept=".pdf,image/*"
+          onChange={(event) => handleFileChange(key, event.target.files?.[0])}
+          className="w-full cursor-pointer file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-900 hover:file:bg-blue-100"
+        />
+        {selectedFiles[key] && (
+          <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles[key]?.name}</p>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <div className="mb-6">
@@ -20,193 +37,30 @@ export default function BerkasTab() {
         </span>
       </div>
 
-      <div className="space-y-4">
-
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Kartu Keluarga (KK)
-          </label>
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("kk", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.kk && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.kk.name}</p>
-            )}
-          </div>
+      <div className="space-y-5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {[
+            ["kk", "Kartu Keluarga (KK)"],
+            ["ktpOrangTua", "KTP Orang Tua / Wali Murid"],
+            ["kip", "KIP/KIS/KPS/PHK/SKTM"],
+            ["akte", "Akte Kelahiran / Surat Keterangan Lahir"],
+            ["ijazah", "Ijazah / SKL"],
+            ["rapor", "Rapor Semester 3-6"],
+            ["prestasi", "Piagam Penghargaan / Prestasi (Jika ada)"],
+          ].map(([key, label]) => renderUploadField(key, label))}
         </div>
 
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Ktp Orang Tua/Wali Murid
-          </label>
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("ktpwalimurid", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.ktpwalimurid && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.ktpwalimurid.name}</p>
-            )}
-          </div>
-        </div>        
-
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            KIP/KIS/KPS/PHK/SKTM
-          </label>
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("ktpwalimurid", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.ktpwalimurid && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.ktpwalimurid.name}</p>
-            )}
-          </div>
-        </div>        
-
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Akte Kelahiran/Surat Keterangan Lahir
-          </label>
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("akte", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.akte && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.akte.name}</p>
-            )}
+        <div className="rounded-2xl border border-gray-300 bg-gray-50 p-4 shadow-sm">
+          <h3 className="mb-4 text-base font-bold text-gray-800">Upload Foto Rumah Yang Ditempati</h3>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {[
+              ["tampakDepanRumah", "Tampak Depan Rumah"],
+              ["tampakSampingRumah", "Tampak Samping Rumah"],
+              ["kamarTidur", "Kamar Tidur"],
+              ["ruangTamu", "Ruang Tamu"],
+            ].map(([key, label]) => renderUploadField(key, label))}
           </div>
         </div>
-
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Ijazah / SKL
-          </label>
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("ijazah", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.ijazah && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.ijazah.name}</p>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Rapor Semerter 3-6
-          </label>
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("Rapor", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.Rapor && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.Rapor.name}</p>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Piagam Penghargaan / Prestasi (Jika ada)
-          </label>
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("PiagamPenghargaan", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.PiagamPenghargaan && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.PiagamPenghargaan.name}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Upload Foto Rumah Yang Ditempati  
-          </label>
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Tampak Depan Rumah
-          </label>
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("TampakDepanRumah", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.TampakDepanRumah && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.TampakDepanRumah.name}</p>
-            )}
-          </div>
-          
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Tampak samping Rumah
-          </label>
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("TampakSampingRumah", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.TampakSampingRumah && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.TampakSampingRumah.name}</p>
-            )}
-          </div>
-         
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Kamar Tidur
-          </label>
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("KamarTidur", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.KamarTidur && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.KamarTidur.name}</p>
-            )}
-          </div>
-
-          <div className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700">
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Ruang Tamu
-          </label>
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={(event) => handleFileChange("RuangTamu", event.target.files?.[0])}
-              className="w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-            />
-            {selectedFiles.RuangTamu && (
-              <p className="mt-2 truncate text-xs text-green-700">File dipilih: {selectedFiles.RuangTamu.name}</p>
-            )}
-          </div>
-        </div>
-
-
       </div>
     </div>
   );
