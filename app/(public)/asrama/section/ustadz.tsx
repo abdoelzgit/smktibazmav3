@@ -23,7 +23,7 @@ const pembina: Pembina[] = [
     },
     {
         id: 2,
-        name: "[Isi Nama Wali Asrama]",
+        name: "Muhamamd Abdul Aziz",
         role: "Wali Asrama",
         image: "/images/pembina-asrama/wali-asrama.jpg",
     },
