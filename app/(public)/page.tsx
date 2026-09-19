@@ -28,7 +28,7 @@ export default function Home() {
         <div id="program" className="sticky top-6 z-10">
           <div id="jurusan">
             <ProgramHero
-              imageSrc="/images/foto.webp"
+              imageSrc="/images/sija.webp"
               imageAlt="Rak jaringan fiber optik"
               label="Profil Jurusan"
               title="Sistem Informasi, Jaringan & Aplikasi (SIJA)"

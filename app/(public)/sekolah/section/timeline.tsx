@@ -22,7 +22,7 @@ const TIMELINE_SLIDES: TimelineSlide[] = [
     year: "2014",
     description:
       "Titik awal perjalanan BAZMA di bidang pendidikan, membuka jalan bagi program-program pemberdayaan yang menjadi cikal bakal berdirinya sekolah.",
-    image: "/images/timeline/foto.webp",
+    image: "/images/timeline/2014.webp",
   },
   {
     id: "2019",

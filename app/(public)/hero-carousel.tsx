@@ -33,7 +33,7 @@ const SLIDES: Slide[] = [
       "Kami percaya, masa depan bangsa ada di tangan generasi muda yang cerdas dan berakhlak. SMK TI BAZMA hadir untuk melahirkan talenta teknologi yang siap jadi motor penggerak Indonesia.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/foto.webp",
+    image: "/images/caro4.webp",
   },
   {
     id: "melayani-sepenuh-hati",
@@ -43,7 +43,7 @@ const SLIDES: Slide[] = [
       'Terakreditasi A (unggul), SMK TI BAZMA berkomitmen melahirkan lulusan profesional, berintegritas, dan berakhlak islami..',
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/info-cover.webp",
+    image: "/images/caro1.webp",
   },
   {
     id: "kilang-dan-petrokimia",
@@ -53,7 +53,7 @@ const SLIDES: Slide[] = [
       "SMK TI BAZMA mendorong siswa untuk berinovasi melalui berbagai karya seperti pembuatan project website, desain poster, majalah digital, dan beragam karya kreatif lainnya.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/foto.webp",
+    image: "/images/caro3.webp",
   },
   {
     id: "maritim-logistik-terintegrasi",
@@ -63,7 +63,7 @@ const SLIDES: Slide[] = [
       "Dapatkan kemudahan dalam mencari informasi terkait pendaftaran siswa baru, informasi akademik, dan kegiatan sekolah lainnya melalui asisten AI yang selalu siap membantu.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/info-cover.webp",
+    image: "/images/caro2.webp",
   },
 ];
 
