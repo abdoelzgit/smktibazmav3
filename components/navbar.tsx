@@ -42,7 +42,7 @@ const navLinks: NavLink[] = [
     ],
   },
   { label: "Jejak Karya", href: "#karya" },
-  { label: "Berita", href: "#berita" },
+  { label: "Berita", href: "/berita" },
   { label: "SPMB", href: "#spmb" },
 ];
 

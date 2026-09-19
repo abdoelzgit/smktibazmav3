@@ -1,119 +1,89 @@
-# Implementation Plan — Server Action Login Form
+# Implementation Plan - Setup Model Prisma & Server Action Create Berita
 
-Rencana ini mengatur implementasi **Server Action** untuk autentikasi login (`loginAction`) di portal Admin **Smktibazmav3**, menghubungkan form login UI (`components/login-form.tsx`) dengan database PostgreSQL via Prisma dan sistem session HTTP-only cookie.
-
----
-
-## Technical Standards & Requirements (Sesuai `AGENTS.md`)
-- **Server Actions**: Menempatkan logika autentikasi backend di `app/actions/auth.ts` menggunakan directive `'use server'`.
-- **Standard Response Format**:
-  ```typescript
-  export type ActionResult<T = unknown> = {
-    success: boolean;
-    data?: T;
-    error?: string;
-  };
-  ```
-- **Password Security**: Menggunakan library **`bcryptjs`** untuk verifikasi *password hash* secara aman.
-- **Session & Cookies**: Menggunakan **`jose`** untuk membuat JWT session token dan menyimpannya di browser via `cookies().set()` (`httpOnly`, `secure`, `sameSite: 'lax'`).
-- **Input Validation**: Validasi data input (email/username & password) sebelum diproses ke database.
-
----
+Menyusun skema basis data Prisma dan Server Action (`'use server'`) untuk fitur pembuat berita pada **SMK TI BAZMA v3** sesuai dengan aturan proyek `AGENTS.md`.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> 1. **Library Hashing `bcryptjs`**: Perlu menambah paket `bcryptjs` dan `@types/bcryptjs`.
-> 2. **Initial Admin Seed**: Menyiapkan fungsi helper/script untuk mendaftarkan user Admin pertama jika database masih kosong.
-> 3. **Session Expiry**: Masa berlaku token session diatur default 1 hari (24 jam).
-
----
+> 1. **Pembaruan Skema Prisma (`Berita`)**: Perlu menambahkan field `category` (default: `"Akademik"`) ke model `Berita` di [`prisma/schema.prisma`](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/prisma/schema.prisma).
+> 2. **Eksekusi Migration/Push**: Setelah memperbarui `schema.prisma`, command `npx prisma db push` atau `npx prisma generate` perlu dijalankan untuk memperbarui Prisma Client di environment lokal.
 
 ## Proposed Changes
 
-### Dependencies
-
-#### [MODIFY] [`package.json`](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/package.json)
-- Menambahkan dependency `bcryptjs` dan `@types/bcryptjs`.
-
 ---
 
-### Backend & Server Actions
+### Database Layer (Prisma Schema)
 
-#### [NEW] [`app/actions/auth.ts`](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/actions/auth.ts)
-- Menyediakan fungsi backend Server Action:
-  1. `loginAction(prevState, formData)` / `loginAction(input)`:
-     - Memeriksa kelengkapan `email` dan `password`.
-     - Mencari user berdasarkan email di database (`prisma.user.findUnique`).
-     - Membandingkan password menggunakan `bcrypt.compare(password, user.password)`.
-     - Jika valid, generate JWT payload `{ userId: user.id, email: user.email, name: user.name }` menggunakan `jose.SignJWT`.
-     - Menyimpan JWT di HTTP-only cookie `admin_session`.
-     - Mengembalikan `{ success: true }`.
-  2. `logoutAction()`:
-     - Menghapus cookie `admin_session` dan merevalidate rute `/admin`.
-  3. `createInitialAdmin()` (Helper):
-     - Membuat akun admin default jika belum ada user terdaftar di database.
+#### [MODIFY] [schema.prisma](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/prisma/schema.prisma)
+- Menambahkan field `category String @default("Akademik")` pada `model Berita`.
+- Memastikan field pendukung (`id`, `title`, `slug`, `excerpt`, `content` (JSON/Text dari blocks), `coverImage`, `published`, `publishedAt`) terdefinisi dengan rapi.
 
----
+```prisma
+model Berita {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  category    String    @default("Akademik")
+  excerpt     String?
+  content     String    @db.Text
+  coverImage  String?
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-### Client Component
-
-#### [MODIFY] [`components/login-form.tsx`](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/components/login-form.tsx)
-- Menghubungkan form dengan `loginAction`:
-  - Mengelola state `error` (pesan kesalahan dari Server Action).
-  - Mengelola state `isLoading` saat mutasi berlangsung.
-  - Jika sukses, melakukan pengalihan rute ke `/admin` (`router.push('/admin')` / `window.location.href = '/admin'`).
-
----
-
-## Data Flow Diagram
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Admin as User Admin
-    participant UI as LoginForm (Client)
-    participant SA as Server Action (auth.ts)
-    participant DB as PostgreSQL (Prisma)
-    participant CK as Browser Cookies
-
-    Admin->>UI: Input Email & Password -> Submit
-    UI->>SA: Call loginAction({ email, password })
-    SA->>DB: prisma.user.findUnique({ where: { email } })
-    DB-->>SA: User Data / null
-    alt User tidak ditemukan
-        SA-->>UI: { success: false, error: "Email atau password salah" }
-        UI-->>Admin: Tampilkan pesan error
-    else User ditemukan
-        SA->>SA: bcrypt.compare(password, user.password)
-        alt Password Salah
-            SA-->>UI: { success: false, error: "Email atau password salah" }
-            UI-->>Admin: Tampilkan pesan error
-        else Password Benar
-            SA->>SA: Sign JWT via jose
-            SA->>CK: setCookie('admin_session', jwt, { httpOnly: true })
-            SA-->>UI: { success: true }
-            UI->>Admin: Redirect ke /admin dashboard
-        end
-    end
+  @@map("berita")
+}
 ```
+
+---
+
+### Backend Layer (Next.js Server Actions)
+
+#### [NEW] [berita.ts](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/actions/berita.ts)
+- Membuat Server Action file `app/actions/berita.ts` berlabel `'use server'`.
+- Tipe payload input:
+  ```typescript
+  export type CreateBeritaInput = {
+    title: string;
+    excerpt?: string;
+    category?: string;
+    coverSrc?: string | null;
+    blocks: Array<{
+      id: string;
+      type: "paragraph" | "heading" | "image";
+      content: string;
+      imageSrc?: string;
+      caption?: string;
+    }>;
+    status: "draft" | "published";
+  };
+  ```
+- Fungsi helper `generateSlug(title: string)` untuk membuat slug URL ramah SEO & unik (contoh: `kegiatan-ldks-2026-a3f2`).
+- Fungsi Server Action `createBeritaAction(input: CreateBeritaInput): Promise<ActionResult<{ id: string; slug: string }>>`.
+- Validasi data input (memastikan `title` tidak kosong).
+- Penggunaan `prisma.berita.create(...)`.
+- Pemanggilan `revalidatePath('/admin/berita')` dan `revalidatePath('/berita')` setelah mutasi berhasil.
+- Error handling standar `{ success: false, error: "Pesan error" }`.
+
+---
+
+### Frontend Integration
+
+#### [MODIFY] [page.tsx](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/admin/berita/new/page.tsx)
+- Menghubungkan fungsi `handleSaveDraft` & `handlePublish` ke `createBeritaAction`.
+- Menambahkan state `isSubmitting` (loading indicator pada tombol "Simpan Draft" & "Terbitkan").
+- Navigasi otomatis ke halaman daftar berita `/admin/berita` saat sukses menerbitkan/menyimpan.
 
 ---
 
 ## Verification Plan
 
-### Automated / Command Verification
-1. Install dependency `bcryptjs`:
-   ```powershell
-   npm install bcryptjs
-   npm install -D @types/bcryptjs
-   ```
-2. Uji TypeScript linting:
-   ```powershell
-   powershell -ExecutionPolicy Bypass -Command "npx tsc --noEmit"
-   ```
+### Automated Verification
+- Melakukan verifikasi tipe TypeScript `npx tsc --noEmit` untuk memastikan tipe Server Action type-safe.
 
 ### Manual Verification
-1. **Login dengan Kredensial Salah**: Masukkan email/password yang tidak ada di DB -> Harap tampil pesan error *"Email atau password salah"*.
-2. **Login dengan Kredensial Benar**: Masukkan email & password yang valid -> Cookie `admin_session` terbuat secara otomatis dan ter-redirect ke dashboard `/admin`.
-3. **Pemeriksaan Cookie**: Buka DevTools (F12) -> Application -> Cookies -> Pastikan cookie `admin_session` bertipe `HTTPOnly`.
+- Uji coba pengisian berita baru (Judul, Ringkasan, Cover Image, Kategori, Blok Konten).
+- Menekan tombol **Simpan Draft** dan memastikan status tersimpan sebagai `published: false` di basis data.
+- Menekan tombol **Terbitkan** dan memastikan status tersimpan sebagai `published: true` dengan timestamp `publishedAt`.
+- Memastikan halaman berhasil dialihkan (*redirect*) ke `/admin/berita`.

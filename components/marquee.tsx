@@ -136,7 +136,7 @@ export const LogoMarquee = memo(function LogoMarquee({
   return (
     <div
       className={cn(
-        "max-w-7xl mx-auto overflow-hidden py-4 mask-[linear-gradient(to_right,transparent,black_25%,black_75%,transparent)]",
+        "max-w-7xl mx-auto overflow-hidden py-4 mask-[linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]",
         className,
       )}
     >

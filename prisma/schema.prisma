@@ -22,6 +22,7 @@ model Berita {
   id          String    @id @default(cuid())
   title       String
   slug        String    @unique
+  category    String    @default("Akademik")
   excerpt     String?
   content     String
   coverImage  String?
