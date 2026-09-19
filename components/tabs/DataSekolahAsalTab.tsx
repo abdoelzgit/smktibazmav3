@@ -31,6 +31,9 @@ export default function DataSekolahAsalTab() {
           <label className="block text-sm font-bold text-gray-800 mb-1">
             NPSN Sekolah
           </label>
+           <a href="https://referensi.data.kemdikbud.go.id/index11.php" target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm underline">
+            https://referensi.data.kemdikbud.go.id/index11.php</a>
+        
           <input
             type="text"
             placeholder="Masukkan NPSN Sekolah"
@@ -55,7 +58,7 @@ export default function DataSekolahAsalTab() {
             Tahun Lulus
           </label>
           <input
-            type="number"
+            type="text"
             placeholder="Contoh: 2025"
             className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

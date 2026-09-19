@@ -32,6 +32,30 @@ export default function DataOrangTuaTab() {
           <label className="block text-sm font-bold text-gray-800 mb-1">No HP Orang Tua</label>
           <input type="text" placeholder="+62..." className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
+        
+         <div>
+          <label className="block text-sm font-bold text-gray-800 mb-1">
+            Keadaan Orang Tua
+          </label>
+          <select className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            <option value="Orang Tua Saya Lengkap">Orang Tua Saya Lengkap</option>
+            <option value="Saya Yatim">Saya Yatim</option>
+            <option value="Saya Piatu">Saya Piatu</option>
+            <option value="Saya Yatim Piatu">Saya Yatim Piatu</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-gray-800 mb-1">Penghasilan Ayah/Ibu</label>
+          <input type="text" placeholder="Masukan Penghasilan Orang Tua" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-bold text-gray-800 mb-1">Alamat Domisili Ayah</label>
+          <input type="text" placeholder="Alamat Domisili Ayah" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+          
       </div>
     </div>
   );
