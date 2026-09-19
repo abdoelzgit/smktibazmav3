@@ -1,13 +1,14 @@
 import { Hero } from "@/components/hero";
 import { MitraContent } from "./mitra-content";
 import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
+import ProfileMitraFullScreen from "./mitra-profile";
 
 export default function MitraPage() {
   return (
     <main className="flex h-full flex-col items-center">
       <Hero
         title="Mitra Sekolah"
-        backgroundImage="/images/hero-network.jpg"
+        backgroundImage="/images/hero-network.webp"
       />
       
       <MitraContent />
@@ -15,6 +16,9 @@ export default function MitraPage() {
       {/* 1. Marquee Slider (Logo bergerak) */}
       <ImageAutoSlider itemCount={8} />
 
+      {/* 2. Profil Mitra (Card) */}
+      <ProfileMitraFullScreen />
     </main>
   );
 }
+  
