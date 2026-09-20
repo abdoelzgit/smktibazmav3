@@ -67,6 +67,17 @@ export function PortalOverlay() {
     [],
   );
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+      if (routeResolverRef.current) {
+        routeResolverRef.current = null;
+        pendingPathRef.current = null;
+      }
+    };
+  }, []);
+
   // Pantau perpindahan route untuk sinkronisasi load page
   useEffect(() => {
     if (pendingPathRef.current && routeResolverRef.current) {

@@ -59,6 +59,7 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isInverted, setIsInverted] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [activeDrawerLink, setActiveDrawerLink] = useState<NavLink | null>(
     null,
   );
@@ -67,6 +68,24 @@ export function Navbar() {
   const rafRef = useRef<number | null>(null);
   const isScrolledRef = useRef(false);
   const isInvertedRef = useRef(true);
+
+  useEffect(() => {
+    // Listen to portal transition events
+    const startHandler = () => {
+      setIsTransitioning(true);
+      setIsMenuOpen(false); // close mobile menu on navigation
+      if (isDrawerOpenRef.current) closeDrawer();
+    };
+    const endHandler = () => setIsTransitioning(false);
+
+    window.addEventListener("portal-transition-start", startHandler);
+    window.addEventListener("portal-transition-end", endHandler);
+
+    return () => {
+      window.removeEventListener("portal-transition-start", startHandler);
+      window.removeEventListener("portal-transition-end", endHandler);
+    };
+  }, []);
 
   // ── Drawer refs ────────────────────────────────────────────────────────
   const drawerRootRef = useRef<HTMLDivElement>(null);
@@ -330,7 +349,9 @@ export function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerSurface}`}
+        className={`fixed top-0 left-0 right-0 transition-all duration-500 ${headerSurface} ${
+          isTransitioning ? "z-[40] pointer-events-none" : "z-50"
+        }`}
       >
         <nav className="mx-auto flex w-full max-w-[1920px] items-center justify-between px-6 py-4 sm:px-10 md:py-6 lg:px-16 xl:px-24">
           {/* Logo */}

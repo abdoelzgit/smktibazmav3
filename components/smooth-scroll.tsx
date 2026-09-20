@@ -1,7 +1,8 @@
 "use client"
 
 import { ReactLenis, useLenis } from "lenis/react"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
+import { usePathname } from "next/navigation"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
@@ -11,6 +12,8 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const lenis = useLenis(({ scroll }) => {
     // opsional: callback tiap frame scroll
   })
+  const pathname = usePathname()
+  const hasResizedRef = useRef(false)
 
   useEffect(() => {
     if (!lenis) return
@@ -30,6 +33,42 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       activeLenis.off("scroll", ScrollTrigger.update)
       gsap.ticker.remove(raf)
     }
+  }, [lenis])
+
+  // Reset scroll saat rute berubah
+  useEffect(() => {
+    if (!lenis) return
+    // Reset posisi scroll ke paling atas tanpa delay
+    lenis.scrollTo(0, { immediate: true })
+    // Re-calculate tinggi halaman
+    requestAnimationFrame(() => {
+      lenis.resize()
+      ScrollTrigger.refresh()
+      // Trigger kedua untuk memastikan height terhitung setelah gambar lazy load
+      requestAnimationFrame(() => {
+        lenis.resize()
+        ScrollTrigger.refresh()
+      })
+    })
+  }, [pathname, lenis])
+
+  // ResizeObserver untuk menangkap perubahan konten (misal: gambar lazy loaded)
+  useEffect(() => {
+    if (!lenis) return
+    const observer = new ResizeObserver(() => {
+      if (!hasResizedRef.current) {
+        hasResizedRef.current = true
+        requestAnimationFrame(() => {
+          lenis.resize()
+          ScrollTrigger.refresh()
+          setTimeout(() => {
+            hasResizedRef.current = false
+          }, 250)
+        })
+      }
+    })
+    observer.observe(document.body)
+    return () => observer.disconnect()
   }, [lenis])
 
   return (

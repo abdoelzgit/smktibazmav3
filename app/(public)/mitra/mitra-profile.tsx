@@ -243,6 +243,14 @@ export default function MitraProfileFullScreen() {
     };
   }, [isInView, isPaused, activeIndex, handleSelectMitra, setBarInstant, startBarCountdown, freezeBar]);
 
+  // Notify Lenis on hijackActive state change
+  useEffect(() => {
+    if (!hijackActive && typeof window !== "undefined") {
+      const lenisBroadcast = new Event("lenis-resize");
+      window.dispatchEvent(lenisBroadcast);
+    }
+  }, [hijackActive]);
+
   return (
     <div
       ref={wrapperRef}
@@ -288,7 +296,7 @@ export default function MitraProfileFullScreen() {
               </div>
             );
           })}
-          <div className="absolute inset-0 z-[2] bg-gradient-to-r from-[#132B6D]/95 via-[#132B6D]/80 to-[#132B6D]/40 pointer-events-none" />
+          <div className="absolute inset-0 z-[2] bg-gradient-to-t from-[#132B6D]/80 pointer-events-none" />
           <div className="absolute inset-0 z-[2] bg-black/20 pointer-events-none" />
         </div>
 
