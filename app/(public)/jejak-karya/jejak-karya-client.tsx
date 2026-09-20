@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Globe, Palette, Video, Zap } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { JEJAK_KARYA_LIST, JejakKaryaItem } from "@/lib/jejak-karya-data";
 import { cn } from "@/lib/utils";
 import { Hero } from "@/components/hero";
+import { getPublishedJejakKaryaAction } from "@/app/actions/jejak-karya-list";
 
 type CategoryFilter = "Semua" | "Website" | "Design" | "Video" | "IoT";
 
@@ -43,19 +43,43 @@ const CATEGORIES: {
 ];
 
 export function JejakKaryaClient() {
-  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("Semua");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("Website");
+  const [projects, setProjects] = useState<Array<any>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredProjects =
-    selectedCategory === "Semua"
-      ? JEJAK_KARYA_LIST
-      : JEJAK_KARYA_LIST.filter((item) => item.category === selectedCategory);
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await getPublishedJejakKaryaAction({
+          category: selectedCategory === "Semua" ? undefined : selectedCategory,
+        });
+        if (res.success && res.data) {
+          setProjects(res.data);
+        } else {
+          setError(res.error || "Gagal memuat data");
+          setProjects([]);
+        }
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+        setError("Terjadi kesalahan saat memuat data");
+        setProjects([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, [selectedCategory]);
+
+  const filteredProjects = projects;
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-slate-900 font-sans selection:bg-slate-900 selection:text-white">
-      {/* ── 1. Hero Header Section ──────────────────────────────────────── */}
       <Hero title="JEJAK KARYA" backgroundImage="/images/hero-berita.jpg" />
 
-      {/* ── 2. Floating Overlapping Category Cards Container ─────────────── */}
       <div className="relative z-20 max-w-6xl mx-auto px-4 -mt-24 md:-mt-28" data-nav-theme="light">
         <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl border border-slate-100">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -66,9 +90,7 @@ export function JejakKaryaClient() {
               return (
                 <div
                   key={cat.id}
-                  onClick={() =>
-                    setSelectedCategory(isActive ? "Semua" : cat.id)
-                  }
+                  onClick={() => setSelectedCategory(cat.id)}
                   className={cn(
                     "group relative flex flex-col justify-between p-5 md:p-6 rounded-2xl transition-all duration-300 cursor-pointer select-none border",
                     isActive
@@ -112,10 +134,10 @@ export function JejakKaryaClient() {
         </div>
       </div>
 
-      {/* ── 3. Horizontal Scroll Pinned Projects Section ───────────────── */}
       <div className="pt-12">
         <HorizontalProjectsSection
           projects={filteredProjects}
+          isLoading={isLoading}
           selectedCategory={selectedCategory}
           onResetCategory={() => setSelectedCategory("Semua")}
         />
@@ -124,14 +146,14 @@ export function JejakKaryaClient() {
   );
 }
 
-// ── Horizontal Pinned Scroll Section Component ─────────────────────────────────
-
 function HorizontalProjectsSection({
   projects,
+  isLoading,
   selectedCategory,
   onResetCategory,
 }: {
-  projects: JejakKaryaItem[];
+  projects: Array<any>;
+  isLoading: boolean;
   selectedCategory: string;
   onResetCategory: () => void;
 }) {
@@ -150,18 +172,31 @@ function HorizontalProjectsSection({
     };
 
     updateScrollRange();
+    window.dispatchEvent(new Event("resize"));
+
+    const timer1 = setTimeout(() => {
+      updateScrollRange();
+      window.dispatchEvent(new Event("resize"));
+    }, 150);
+
+    const timer2 = setTimeout(() => {
+      updateScrollRange();
+      window.dispatchEvent(new Event("resize"));
+    }, 500);
+
     window.addEventListener("resize", updateScrollRange);
-    return () => window.removeEventListener("resize", updateScrollRange);
-  }, [projects]);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      window.removeEventListener("resize", updateScrollRange);
+    };
+  }, [projects, isLoading]);
 
   const { scrollYProgress } = useScroll({
     target: targetRef,
     offset: ["start start", "end end"],
   });
 
-  // Horizontal translation finishes at progress = 0.85, leaving the last
-  // 15% of the vertical scroll as a "hold" — the last card stays fully
-  // visible and still before the section releases into normal vertical flow.
   const x = useTransform(scrollYProgress, [0, 0.85], [0, -scrollRange], {
     clamp: true,
   });
@@ -178,7 +213,6 @@ function HorizontalProjectsSection({
           style={{ x }}
           className="flex items-center shrink-0"
         >
-          {/* Title Block — exactly 50% viewport width */}
           <div className="w-[50vw] shrink-0 px-6 sm:px-10 md:px-14 lg:px-16">
             <div className="space-y-6">
               <div className="space-y-3">
@@ -205,50 +239,64 @@ function HorizontalProjectsSection({
             </div>
           </div>
 
-          {/* Divider between title block and first card */}
           <div className="w-px self-stretch bg-slate-300/70 shrink-0" />
 
-          {/* Project Cards — each exactly 50% viewport width */}
           <div className="flex items-center shrink-0">
-            {projects.map((project, idx) => (
-              <div key={project.slug} className="flex items-center shrink-0">
-                <div className="w-[50vw] shrink-0 px-6 sm:px-10 lg:px-12 group space-y-4">
-                  {/* Card Image Frame */}
-                  <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-300 shadow-md border border-black/5">
-                    <img
-                      src={project.heroImage}
-                      alt={project.title}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                    />
+            {isLoading ? (
+              [1, 2, 3].map((_, idx) => (
+                <div key={idx} className="flex items-center shrink-0">
+                  <div className="w-[50vw] shrink-0 px-6 sm:px-10 lg:px-12 space-y-4">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-300/70 animate-pulse" />
+                    <div className="space-y-2">
+                      <div className="h-6 w-3/4 bg-slate-300/70 rounded animate-pulse" />
+                      <div className="h-4 w-1/2 bg-slate-300/70 rounded animate-pulse" />
+                    </div>
                   </div>
-
-                  {/* Card Bottom Meta */}
-                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 px-1">
-                    <div className="space-y-1.5 max-w-lg">
-                      <h3 className="text-xl sm:text-2xl font-bold text-[#1a1a1a] font-heading group-hover:text-blue-900 transition-colors">
-                        {project.title}
-                      </h3>
-                      <p className="text-xs sm:text-sm text-[#555] line-clamp-2 leading-relaxed">
-                        {project.description}
-                      </p>
+                  {idx < 2 && <div className="w-px self-stretch bg-slate-300/70 shrink-0" />}
+                </div>
+              ))
+            ) : projects.length === 0 ? (
+              <div className="w-[50vw] shrink-0 px-12 text-slate-500">
+                <p className="text-lg font-medium">Belum ada karya untuk kategori ini.</p>
+              </div>
+            ) : (
+              projects.map((project, idx) => (
+                <div key={project.slug} className="flex items-center shrink-0">
+                  <div className="w-[50vw] shrink-0 px-6 sm:px-10 lg:px-12 group space-y-4">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-300 shadow-md border border-black/5">
+                      <img
+                        src={project.heroImage}
+                        alt={project.title}
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                      />
                     </div>
 
-                    <Link
-                      href={`/jejak-karya/${project.slug}`}
-                      className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-[#222] border-b border-[#666] hover:border-black pb-1 shrink-0 font-bold transition-all hover:text-black self-start sm:self-auto"
-                    >
-                      <span>EXPLORE PROJECT</span>
-                      <span>→</span>
-                    </Link>
-                  </div>
-                </div>
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 px-1">
+                      <div className="space-y-1.5 max-w-lg">
+                        <h3 className="text-xl sm:text-2xl font-bold text-[#1a1a1a] font-heading group-hover:text-blue-900 transition-colors">
+                          {project.title}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-[#555] line-clamp-2 leading-relaxed">
+                          {project.description}
+                        </p>
+                      </div>
 
-                {/* Divider after each card, except the last */}
-                {idx < projects.length - 1 && (
-                  <div className="w-px self-stretch bg-slate-300/70 shrink-0" />
-                )}
-              </div>
-            ))}
+                      <Link
+                        href={`/jejak-karya/${project.slug}`}
+                        className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-[#222] border-b border-[#666] hover:border-black pb-1 shrink-0 font-bold transition-all hover:text-black self-start sm:self-auto"
+                      >
+                        <span>EXPLORE PROJECT</span>
+                        <span>→</span>
+                      </Link>
+                    </div>
+                  </div>
+
+                  {idx < projects.length - 1 && (
+                    <div className="w-px self-stretch bg-slate-300/70 shrink-0" />
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </motion.div>
       </div>

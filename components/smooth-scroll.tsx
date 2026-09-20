@@ -56,16 +56,10 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!lenis) return
     const observer = new ResizeObserver(() => {
-      if (!hasResizedRef.current) {
-        hasResizedRef.current = true
-        requestAnimationFrame(() => {
-          lenis.resize()
-          ScrollTrigger.refresh()
-          setTimeout(() => {
-            hasResizedRef.current = false
-          }, 250)
-        })
-      }
+      requestAnimationFrame(() => {
+        lenis.resize()
+        ScrollTrigger.refresh()
+      })
     })
     observer.observe(document.body)
     return () => observer.disconnect()
