@@ -483,7 +483,59 @@ export function Navbar() {
                 </li>
               ))}
             </ul>
+            <div className="mt-auto space-y-6 pt-8 border-t border-border/50">
+              {/* Business Enquiry */}
+              <div className="space-y-2">
+                <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Business Enquiry
+                </p>
+                <ul className="space-y-1">
+                  <li className="flex gap-3 text-sm text-foreground">
+                    <span className="font-mono text-muted-foreground">E.</span>
+                    <a
+                      href="mailto:info@smktibazma.sch.id"
+                      className="transition-colors hover:text-primary"
+                    >
+                      info@smktibazma.sch.id
+                    </a>
+                  </li>
+                  <li className="flex gap-3 text-sm text-foreground">
+                    <span className="font-mono text-muted-foreground">P.</span>
+                    <a
+                      href="tel:+628111111111"
+                      className="transition-colors hover:text-primary"
+                    >
+                      (0251) 1234567
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Social */}
+              <div className="space-y-2">
+                <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Social
+                </p>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+                  {[
+                    { label: "Linkedin", href: "#" },
+                    { label: "Facebook", href: "#" },
+                    { label: "Dribbble", href: "#" },
+                    { label: "Instagram", href: "#" },
+                  ].map((s) => (
+                    <a
+                      key={s.label}
+                      href={s.href}
+                      className="text-sm text-foreground transition-colors hover:text-primary"
+                    >
+                      {s.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
           </aside>
+          
         </div>
       </div>
     </>

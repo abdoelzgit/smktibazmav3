@@ -46,7 +46,7 @@ function FacilityCard({ item }: FacilityCardProps) {
 
 export default function Fasilitas() {
   return (
-    <section className="sticky top-0 z-0 min-h-screen w-full bg-white px-4 py-16 sm:px-6 lg:px-8 sm:py-20">
+    <section data-nav-theme="light" className="sticky top-0 z-0 min-h-screen w-full bg-white px-4 py-16 sm:px-6 lg:px-8 sm:py-20">
       <div className="mx-auto max-w-6xl w-full">
         <div className="mb-10 grid grid-cols-1 gap-6 md:mb-12 md:grid-cols-12 md:gap-10 sm:mb-12">
           <div className="md:col-span-3">

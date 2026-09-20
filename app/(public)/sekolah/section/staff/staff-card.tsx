@@ -7,7 +7,7 @@ interface StaffCardProps {
 
 export function StaffCard({ member }: StaffCardProps) {
   return (
-    <div className="flex flex-col w-[240px] sm:w-[260px] md:w-[280px] shrink-0 select-none">
+    <div className="flex flex-col w-[220px] sm:w-[240px] lg:w-[220px] xl:w-[240px] shrink-0 select-none">
       {/* Container Foto Portrait */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-slate-100">
         {member.image ? (
