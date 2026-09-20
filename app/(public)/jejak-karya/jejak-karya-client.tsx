@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Globe, Palette, Video, Zap } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { JEJAK_KARYA_LIST, JejakKaryaItem } from "@/lib/jejak-karya-data";
 import { cn } from "@/lib/utils";
 import { Hero } from "@/components/hero";
+import { getPublishedJejakKaryaAction } from "@/app/actions/jejak-karya-list";
 
 type CategoryFilter = "Semua" | "Website" | "Design" | "Video" | "IoT";
 
@@ -44,18 +44,78 @@ const CATEGORIES: {
 
 export function JejakKaryaClient() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("Semua");
+  const [projects, setProjects] = useState<Array<any>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await getPublishedJejakKaryaAction({
+          category: selectedCategory === "Semua" ? undefined : selectedCategory,
+        });
+        if (res.success && res.data) {
+          setProjects(res.data);
+        } else {
+          setError(res.error || "Gagal memuat data");
+          setProjects([]);
+        }
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+        setError("Terjadi kesalahan saat memuat data");
+        setProjects([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, [selectedCategory]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#e5e5e5] text-slate-900 font-sans selection:bg-slate-900 selection:text-white">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center py-12">
+            <div className="animate-spin h-12 w-12 border-4 border-primary/50 border-t-primary rounded-full mb-4 mx-auto"></div>
+            <p className="text-lg text-muted-foreground">Memuat jejak karya...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#e5e5e5] text-slate-900 font-sans selection:bg-slate-900 selection:text-white">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center py-12">
+            <p className="text-lg text-destructive">{error}</p>
+            <div className="mt-4">
+              <Link
+                href="/jejak-karya"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
+              >
+                <span>Muat Ulang</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const filteredProjects =
     selectedCategory === "Semua"
-      ? JEJAK_KARYA_LIST
-      : JEJAK_KARYA_LIST.filter((item) => item.category === selectedCategory);
+      ? projects
+      : projects.filter((item) => item.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-slate-900 font-sans selection:bg-slate-900 selection:text-white">
-      {/* ── 1. Hero Header Section ──────────────────────────────────────── */}
       <Hero title="JEJAK KARYA" backgroundImage="/images/hero-berita.jpg" />
 
-      {/* ── 2. Floating Overlapping Category Cards Container ─────────────── */}
       <div className="relative z-20 max-w-6xl mx-auto px-4 -mt-24 md:-mt-28" data-nav-theme="light">
         <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl border border-slate-100">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -112,7 +172,6 @@ export function JejakKaryaClient() {
         </div>
       </div>
 
-      {/* ── 3. Horizontal Scroll Pinned Projects Section ───────────────── */}
       <div className="pt-12">
         <HorizontalProjectsSection
           projects={filteredProjects}
@@ -124,14 +183,12 @@ export function JejakKaryaClient() {
   );
 }
 
-// ── Horizontal Pinned Scroll Section Component ─────────────────────────────────
-
 function HorizontalProjectsSection({
   projects,
   selectedCategory,
   onResetCategory,
 }: {
-  projects: JejakKaryaItem[];
+  projects: Array<any>;
   selectedCategory: string;
   onResetCategory: () => void;
 }) {
@@ -159,9 +216,6 @@ function HorizontalProjectsSection({
     offset: ["start start", "end end"],
   });
 
-  // Horizontal translation finishes at progress = 0.85, leaving the last
-  // 15% of the vertical scroll as a "hold" — the last card stays fully
-  // visible and still before the section releases into normal vertical flow.
   const x = useTransform(scrollYProgress, [0, 0.85], [0, -scrollRange], {
     clamp: true,
   });
@@ -178,7 +232,6 @@ function HorizontalProjectsSection({
           style={{ x }}
           className="flex items-center shrink-0"
         >
-          {/* Title Block — exactly 50% viewport width */}
           <div className="w-[50vw] shrink-0 px-6 sm:px-10 md:px-14 lg:px-16">
             <div className="space-y-6">
               <div className="space-y-3">
@@ -205,15 +258,12 @@ function HorizontalProjectsSection({
             </div>
           </div>
 
-          {/* Divider between title block and first card */}
           <div className="w-px self-stretch bg-slate-300/70 shrink-0" />
 
-          {/* Project Cards — each exactly 50% viewport width */}
           <div className="flex items-center shrink-0">
             {projects.map((project, idx) => (
               <div key={project.slug} className="flex items-center shrink-0">
                 <div className="w-[50vw] shrink-0 px-6 sm:px-10 lg:px-12 group space-y-4">
-                  {/* Card Image Frame */}
                   <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-300 shadow-md border border-black/5">
                     <img
                       src={project.heroImage}
@@ -222,7 +272,6 @@ function HorizontalProjectsSection({
                     />
                   </div>
 
-                  {/* Card Bottom Meta */}
                   <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 px-1">
                     <div className="space-y-1.5 max-w-lg">
                       <h3 className="text-xl sm:text-2xl font-bold text-[#1a1a1a] font-heading group-hover:text-blue-900 transition-colors">
@@ -243,7 +292,6 @@ function HorizontalProjectsSection({
                   </div>
                 </div>
 
-                {/* Divider after each card, except the last */}
                 {idx < projects.length - 1 && (
                   <div className="w-px self-stretch bg-slate-300/70 shrink-0" />
                 )}
