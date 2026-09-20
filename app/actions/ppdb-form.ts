@@ -94,7 +94,17 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
 
     const namaLengkap = asString(formData.get('namaLengkap'));
     const email = asString(formData.get('email'));
-    const fotoFormalUrl = asString(formData.get('fotoFormalUrl'));
+    const existingBiodata = await prisma.biodataSiswa.findUnique({
+      where: { pendaftaranId: pendaftaran.id },
+      select: { fotoFormalUrl: true },
+    });
+
+    const fotoFormalUrl = await saveUploadedFile(
+      formData.get('fotoFormalUrl'),
+      user.userId,
+      'foto-formal',
+      existingBiodata?.fotoFormalUrl
+    );
     const tempatLahir = asString(formData.get('tempatLahir'));
     const tanggalLahirStr = asString(formData.get('tanggalLahir'));
     const nik = asString(formData.get('nik'));
@@ -299,7 +309,17 @@ export async function saveRekomendasiAction(formData: FormData): Promise<FormRes
     const namaPemberiRekomendasi = asString(formData.get('namaPemberiRekomendasi')).trim();
     const jabatanInstansi = asString(formData.get('jabatanInstansi')).trim();
     const noHpPemberiRekomendasi = asString(formData.get('noHpPemberiRekomendasi')).trim();
-    const suratRekomendasiUrl = asString(formData.get('suratRekomendasiUrl')).trim();
+    const existingRekomendasi = await prisma.suratRekomendasi.findUnique({
+      where: { pendaftaranId: pendaftaran.id },
+      select: { suratRekomendasiUrl: true },
+    });
+
+    const suratRekomendasiUrl = (await saveUploadedFile(
+      formData.get('suratRekomendasiUrl'),
+      user.userId,
+      'surat-rekomendasi',
+      existingRekomendasi?.suratRekomendasiUrl
+    )) ?? '';
     const catatanRekomendasi = asString(formData.get('catatanRekomendasi')).trim();
 
     if (!namaPemberiRekomendasi) {
@@ -406,6 +426,10 @@ async function saveUploadedFile(
   fieldName: string,
   existingUrl: string | null | undefined
 ): Promise<string | null> {
+  if (typeof value === 'string' && value.trim() !== '') {
+    return value.trim();
+  }
+
   if (!(value instanceof File) || value.size === 0) {
     return existingUrl ?? null;
   }

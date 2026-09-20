@@ -3,7 +3,9 @@ import sharp from 'sharp';
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 
 export function isImageFile(file: File): boolean {
-  return file.type.startsWith('image/');
+  if (file.type && file.type.startsWith('image/')) return true;
+  const ext = file.name ? file.name.split('.').pop()?.toLowerCase() : '';
+  return ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'heic', 'svg'].includes(ext || '');
 }
 
 export async function convertImageToWebp(file: File): Promise<Buffer> {
@@ -22,5 +24,9 @@ export async function convertImageToWebp(file: File): Promise<Buffer> {
 }
 
 export function isAllowedDocument(file: File): boolean {
-  return isImageFile(file) || file.type === 'application/pdf';
+  if (isImageFile(file)) return true;
+  if (file.type === 'application/pdf') return true;
+  const ext = file.name ? file.name.split('.').pop()?.toLowerCase() : '';
+  return ext === 'pdf';
 }
+
