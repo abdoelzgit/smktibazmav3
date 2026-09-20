@@ -5,8 +5,10 @@ import { useRouter, usePathname } from "next/navigation";
 import gsap from "gsap";
 import { usePortalTransition } from "./portal-transition-context";
 
-const CARD_INSET = 0.08;
-const ENTRY_W = 90;
+// Jumlah strip horizontal untuk efek "blinds"
+const STRIPE_COUNT = 9;
+// Warna penutup strip (warna utama brand #132B6D)
+const REVEAL_COLOR = "#fff";
 
 export function PortalOverlay() {
   const router = useRouter();
@@ -14,39 +16,18 @@ export function PortalOverlay() {
   const { registerTransition } = usePortalTransition();
 
   const backdropRef = useRef<HTMLDivElement>(null);
-  const portalRef = useRef<HTMLDivElement>(null);
   const portalCardRef = useRef<HTMLDivElement>(null);
   const portalTextRef = useRef<HTMLDivElement>(null);
-  const portalPreviewRef = useRef<HTMLDivElement>(null);
+
+  // Container strip horizontal + refs ke tiap "fill" strip
+  const stripesRef = useRef<HTMLDivElement>(null);
+  const stripeFillsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const routeResolverRef = useRef<(() => void) | null>(null);
   const pendingPathRef = useRef<string | null>(null);
   const rafIdRef = useRef<number | null>(null);
 
-  // Set inset persentase pada #portal-card (frame effect biru-putih)
-  const setCardInset = useCallback((frac: number) => {
-    if (!portalCardRef.current) return;
-    gsap.set(portalCardRef.current, {
-      left: `${frac * 100}%`,
-      top: `${frac * 100}%`,
-      width: `${(1 - 2 * frac) * 100}%`,
-      height: `${(1 - 2 * frac) * 100}%`,
-    });
-  }, []);
-
-  // Menutup inset frame ke 0% sehingga menjadi solid putih pekat
-  const collapseCard = useCallback((duration: number) => {
-    return gsap.timeline().to(portalCardRef.current, {
-      left: "0%",
-      top: "0%",
-      width: "100%",
-      height: "100%",
-      duration,
-      ease: "power1.in",
-    });
-  }, []);
-
-  // Efek Decode Teks menggunakan warna biru #132B6D
+  // Efek Decode Teks menggunakan warna putih #FFFFFF di atas background biru #132B6D
   const scrambleInto = useCallback(
     (el: HTMLElement, finalText: string, duration: number) => {
       const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -69,12 +50,12 @@ export function PortalOverlay() {
         spans.forEach((item, i) => {
           if (item.ch === " " || i < resolved) {
             item.s.textContent = item.ch;
-            item.s.style.color = "#132B6D"; // Biru utama solid
+            item.s.style.color = "#132B6D";
             item.s.style.opacity = "1";
           } else {
             item.s.textContent = glyphs[(Math.random() * glyphs.length) | 0];
             item.s.style.color = "#132B6D";
-            item.s.style.opacity = "0.35"; // Biru transparan
+            item.s.style.opacity = "0.35";
           }
         });
         if (p < 1) {
@@ -83,7 +64,7 @@ export function PortalOverlay() {
       }
       rafIdRef.current = requestAnimationFrame(frame);
     },
-    []
+    [],
   );
 
   // Pantau perpindahan route untuk sinkronisasi load page
@@ -97,11 +78,12 @@ export function PortalOverlay() {
         const resolver = routeResolverRef.current;
         routeResolverRef.current = null;
 
-        // Beri waktu browser untuk menyelesaikan layout & paint halaman baru
+        // Beri waktu browser untuk merender halaman baru & reset posisi scroll ke atas
         requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
           setTimeout(() => {
             resolver();
-          }, 150);
+          }, 80);
         });
       }
     }
@@ -110,7 +92,7 @@ export function PortalOverlay() {
   useEffect(() => {
     const handleTransition = async (href: string, label: string) => {
       const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
+        "(prefers-reduced-motion: reduce)",
       ).matches;
 
       if (prefersReducedMotion) {
@@ -118,67 +100,87 @@ export function PortalOverlay() {
         return;
       }
 
-      const portal = portalRef.current;
       const backdrop = backdropRef.current;
+      const card = portalCardRef.current;
       const portalText = portalTextRef.current;
-      const portalPreview = portalPreviewRef.current;
-      if (!portal || !backdrop || !portalText || !portalPreview) {
+      const stripesContainer = stripesRef.current;
+      const stripeFills = stripeFillsRef.current;
+      if (
+        !backdrop ||
+        !card ||
+        !portalText ||
+        !stripesContainer ||
+        stripeFills.length < STRIPE_COUNT
+      ) {
         router.push(href);
         return;
       }
 
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const smallW = ENTRY_W;
-      const smallH = Math.max(54, smallW * (vh / vw));
       const targetPath = href.split("?")[0].split("#")[0];
       const isSamePath = targetPath === pathname;
 
       // =========================================================================
-      // FASE 1: EXIT DARI TENGAH (CENTER GROW)
+      // FASE 1: UNIFIED STAGGERED BLINDS CLOSE + FLOATING TEXT DECODE (NO WHITE CARD)
+      // -------------------------------------------------------------------------
+      // Strip horizontal menutup layar secara staggered (0 -> 1).
+      // Teks decode melayang langsung (tanpa background kotak putih) di atas layar biru.
       // =========================================================================
-      gsap.set(portal, {
+      gsap.set(stripesContainer, { display: "flex" });
+      gsap.set(stripeFills, {
+        scaleY: 0,
+        transformOrigin: "top center",
+        backgroundColor: REVEAL_COLOR,
+      });
+
+      gsap.set(card, {
         display: "flex",
-        opacity: 1,
-        borderRadius: 12,
+        opacity: 0,
+        scale: 0.8,
+        backgroundColor: "transparent",
+        border: "none",
+        boxShadow: "none",
         left: "50%",
         top: "50%",
         xPercent: -50,
         yPercent: -50,
-        width: smallW,
-        height: smallH,
-        force3D: true,
       });
+
       gsap.set(portalText, { display: "flex", opacity: 1 });
-      gsap.set(portalPreview, { display: "none" });
-      portalPreview.innerHTML = "";
-      setCardInset(CARD_INSET);
+      scrambleInto(portalText, label.toUpperCase(), 380);
 
-      // Jalankan animasi decode teks halaman tujuan
-      scrambleInto(portalText, label.toUpperCase(), 460);
+      // Timeline Fase 1: Strip menutup layar + Teks melayang muncul di tengah
+      const tl1 = gsap.timeline();
+      tl1
+        .to(
+          stripeFills,
+          {
+            scaleY: 1,
+            duration: 0.38,
+            ease: "power2.inOut",
+            force3D: true,
+            stagger: {
+              each: 0.028,
+              from: "start",
+            },
+          },
+          0,
+        )
+        .to(
+          card,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.35,
+            ease: "back.out(1.3)",
+          },
+          0.12,
+        );
 
-      // Kotak portal membesar dari tengah ke seluruh viewport
-      await gsap.timeline().to(portal, {
-        left: "50%",
-        top: "50%",
-        xPercent: -50,
-        yPercent: -50,
-        width: vw,
-        height: vh,
-        borderRadius: 0,
-        duration: 0.5,
-        ease: "power3.inOut",
-        force3D: true,
-      });
-
-      // Panel dalam menutup pekat (collapsing border)
-      await collapseCard(0.16);
-
-      // Aktifkan backdrop putih di belakang
-      gsap.set(backdrop, { opacity: 1 });
+      await tl1;
+      await new Promise((r) => setTimeout(r, 100));
 
       // =========================================================================
-      // FASE TUNGGU LOAD HALAMAN BARU (SEAMLESS WAITING)
+      // FASE TUNGGU LOAD HALAMAN BARU & RESET SCROLL
       // =========================================================================
       router.push(href);
 
@@ -186,141 +188,118 @@ export function PortalOverlay() {
         pendingPathRef.current = href;
         await new Promise<void>((resolve) => {
           routeResolverRef.current = resolve;
-          // Fallback timeout jika navigasi instan / cache
           setTimeout(() => {
             if (routeResolverRef.current) {
               routeResolverRef.current = null;
               pendingPathRef.current = null;
               resolve();
             }
-          }, 2500);
+          }, 1800);
         });
       } else {
-        await new Promise((r) => setTimeout(r, 260));
+        await new Promise((r) => setTimeout(r, 180));
       }
 
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+
       // =========================================================================
-      // FASE 2: ENTRY / REVEAL (HANYA BINGKAI MEMBESAR, KONTEN TETAP NORMAL 1:1)
+      // FASE 2: UNIFIED TEXT FADE-OUT + STAGGERED BLINDS REVEAL PAGE BARU
+      // -------------------------------------------------------------------------
+      // Teks melayang fade-out halus ke atas,
+      // sementara strip horizontal menyusut (1 -> 0) secara staggered dari atas
+      // ke bawah memperlihatkan halaman baru secara utuh.
       // =========================================================================
-      // Salin snapshot konten halaman baru ke dalam preview
-      const contentEl =
-        document.getElementById("public-page-content") ||
-        document.querySelector("main") ||
-        document.body;
+      const tl2 = gsap.timeline();
+      tl2
+        .to(
+          card,
+          {
+            opacity: 0,
+            scale: 0.95,
+            y: -20,
+            duration: 0.25,
+            ease: "power2.in",
+          },
+          0,
+        )
+        .to(
+          stripeFills,
+          {
+            scaleY: 0,
+            duration: 0.45,
+            ease: "power2.inOut",
+            force3D: true,
+            stagger: {
+              each: 0.032,
+              from: "start",
+            },
+          },
+          0.08,
+        );
 
-      if (contentEl) {
-        portalPreview.innerHTML = contentEl.innerHTML;
-      }
+      await tl2;
 
-      gsap.set(portalText, { display: "none" });
-      // Konten halaman diatur berukuran 100% viewport tetap (scale: 1, tidak diperbesar/zoom)
-      gsap.set(portalPreview, {
-        display: "block",
-        width: vw,
-        height: vh,
-        left: "50%",
-        top: "50%",
-        xPercent: -50,
-        yPercent: -50,
-        transformOrigin: "50% 50%",
-        scale: 1,
-        opacity: 1,
-      });
+      // Selesai transisi: sembunyikan container
+      gsap.set([stripesContainer, card], { display: "none" });
 
-      setCardInset(CARD_INSET);
-      gsap.set(portal, {
-        borderRadius: 12,
-        left: "50%",
-        top: "50%",
-        xPercent: -50,
-        yPercent: -50,
-        width: smallW,
-        height: smallH,
-        force3D: true,
-      });
-
-      // Hanya bingkai portal yang membesar membuka ke seluruh layar
-      await gsap.timeline().to(portal, {
-        left: "50%",
-        top: "50%",
-        xPercent: -50,
-        yPercent: -50,
-        width: vw,
-        height: vh,
-        borderRadius: 0,
-        duration: 0.52,
-        ease: "power3.inOut",
-        force3D: true,
-      });
-
-      await collapseCard(0.14);
-
-      // Fade out penutup lembut
-      await gsap
-        .timeline()
-        .to(portal, { opacity: 0, duration: 0.22, ease: "power1.out" }, 0)
-        .to(backdrop, { opacity: 0, duration: 0.22, ease: "power1.out" }, 0);
-
-      gsap.set(portal, { display: "none" });
-      portalPreview.innerHTML = "";
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current);
       }
     };
 
     registerTransition(handleTransition);
-  }, [
-    router,
-    pathname,
-    registerTransition,
-    scrambleInto,
-    setCardInset,
-    collapseCard,
-  ]);
+  }, [router, pathname, registerTransition, scrambleInto]);
 
   return (
     <>
-      {/* Backdrop penutup layar (Putih Bersih) */}
+      {/* Backdrop penutup layar putih (Fallback) */}
       <div
         ref={backdropRef}
         className="fixed inset-0 z-[9998] pointer-events-none bg-white opacity-0"
         aria-hidden="true"
       />
 
-      {/* Portal Container Outer (Biru Brand #132B6D) */}
+      {/* Container Strip Horizontal Blinds (Z-Index 10000) */}
       <div
-        ref={portalRef}
-        className="fixed z-[9999] hidden items-center justify-center pointer-events-none bg-[#132B6D] shadow-2xl will-change-[width,height,transform,opacity]"
+        ref={stripesRef}
+        className="fixed inset-0 z-[10000] hidden flex-col pointer-events-none"
+        style={{ display: "none" }}
         aria-hidden="true"
       >
-        {/* Portal Card Inner (Lubang / Window Inset dengan overflow: hidden) */}
-        <div
-          ref={portalCardRef}
-          className="absolute bg-white rounded-md overflow-hidden flex items-center justify-center will-change-[width,height,left,top]"
-          style={{
-            left: `${CARD_INSET * 100}%`,
-            top: `${CARD_INSET * 100}%`,
-            width: `${(1 - 2 * CARD_INSET) * 100}%`,
-            height: `${(1 - 2 * CARD_INSET) * 100}%`,
-          }}
-        >
-          {/* Text Decoder (Fase 1: Teks Decoder) */}
+        {Array.from({ length: STRIPE_COUNT }).map((_, i) => (
           <div
-            ref={portalTextRef}
-            className="flex items-center gap-1 font-heading text-lg sm:text-2xl font-bold tracking-wider text-[#132B6D] whitespace-pre select-none uppercase px-6"
-          />
+            key={i}
+            className="relative w-full flex-1"
+            style={{ overflow: "visible" }}
+          >
+            <div
+              ref={(el) => {
+                stripeFillsRef.current[i] = el;
+              }}
+              className="absolute inset-x-0 w-full"
+              style={{
+                top: "-1px",
+                height: "calc(100% + 2px)",
+                backgroundColor: REVEAL_COLOR,
+                transform: "scaleY(0)",
+                transformOrigin: "top center",
+                willChange: "transform",
+              }}
+            />
+          </div>
+        ))}
+      </div>
 
-          {/* Portal Preview (Fase 2: Konten Halaman Baru Tetap Skala 1:1 Normal) */}
-          <div
-            ref={portalPreviewRef}
-            className="absolute pointer-events-none overflow-hidden"
-            style={{
-              left: "50%",
-              top: "50%",
-              transformOrigin: "50% 50%",
-            }}
-          />
-        </div>
+      {/* Teks Decode Melayang Tanpa Kotak Putih (Z-Index 10010 - Di Atas Strip Blinds) */}
+      <div
+        ref={portalCardRef}
+        className="fixed z-[10010] hidden pointer-events-none items-center justify-center will-change-[transform,opacity]"
+        aria-hidden="true"
+      >
+        <div
+          ref={portalTextRef}
+          className="flex items-center gap-1 font-heading text-xl sm:text-3xl font-bold tracking-widest text-white whitespace-pre select-none uppercase px-6 drop-shadow-lg"
+        />
       </div>
     </>
   );
