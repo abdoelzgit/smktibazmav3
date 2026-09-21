@@ -9,20 +9,14 @@ export const STAFF_CATEGORIES: StaffCategory[] = [
     members: [
       {
         id: "waka-1",
-        name: "[Nama Wakil Kepala Sekolah]",
+        name: "M. Dzikri Fauzan, S.Kom",
         role: "Waka. Bidang Kurikulum & Akademik",
         isPlaceholder: true,
       },
       {
         id: "waka-2",
-        name: "[Nama Wakil Kepala Sekolah]",
-        role: "Waka. Bidang Kesiswaan & Asrama",
-        isPlaceholder: true,
-      },
-      {
-        id: "waka-3",
-        name: "[Nama Wakil Kepala Sekolah]",
-        role: "Waka. Hubungan Industri & Sarpras",
+        name: "Indra Sujitno, S.I.Kom",
+        role: "Waka. Bidang Kesiswaan",
         isPlaceholder: true,
       },
     ],
@@ -35,8 +29,8 @@ export const STAFF_CATEGORIES: StaffCategory[] = [
     members: [
       {
         id: "kaprog-1",
-        name: "[Nama Kepala Program]",
-        role: "Kepala Program Keahlian SIJA",
+        name: "Parni Handayani, S.Tr.T",
+        role: "Kepala Lab Komputer",
         isPlaceholder: true,
       },
       {
