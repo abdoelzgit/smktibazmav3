@@ -76,13 +76,12 @@ export function ImageAutoSlider({ itemCount = 8, logos }: ImageAutoSliderProps) 
           <div className="w-full max-w-7xl">
             <div
               ref={scrollRef}
-              // Gap diperkecil lagi menjadi gap-2 md:gap-4 agar lebih rapat
-              className="infinite-scroll flex gap-2 md:gap-1 w-max"
+              className="infinite-scroll flex gap-1 sm:gap-2 md:gap-3 w-max items-center"
             >
               {duplicatedItems.map((logoFile, index) => (
                 <div
                   key={`${logoFile}-${index}`}
-                  className="flex-shrink-0 w-64 h-32 md:w-80 md:h-40 lg:w-96 lg:h-48 rounded-xl overflow-hidden bg-white flex items-center justify-center p-6"
+                  className="flex-shrink-0 w-36 h-20 sm:w-48 sm:h-28 md:w-72 md:h-36 lg:w-80 lg:h-40 rounded-xl overflow-hidden bg-white flex items-center justify-center p-2.5 sm:p-4 md:p-6"
                 >
                   <img
                     src={`/images/mitra/${logoFile}`}
@@ -97,9 +96,9 @@ export function ImageAutoSlider({ itemCount = 8, logos }: ImageAutoSliderProps) 
           </div>
         </div>
 
-        <div className="absolute top-0 left-0 z-20 h-full w-32 md:w-80 pointer-events-none bg-gradient-to-r from-white via-white/90 to-transparent" />
+        <div className="absolute top-0 left-0 z-20 h-full w-12 sm:w-24 md:w-48 lg:w-64 pointer-events-none bg-gradient-to-r from-white via-white/80 to-transparent" />
 
-        <div className="absolute top-0 right-0 z-20 h-full w-32 md:w-80 pointer-events-none bg-gradient-to-l from-white via-white/90 to-transparent" />
+        <div className="absolute top-0 right-0 z-20 h-full w-12 sm:w-24 md:w-48 lg:w-64 pointer-events-none bg-gradient-to-l from-white via-white/80 to-transparent" />
       </div>
     </>
   );

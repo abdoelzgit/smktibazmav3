@@ -38,19 +38,16 @@ export default function Summary() {
         </motion.div>
 
         {/* Bagian Gambar dengan Rounded Corner */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
-          whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-          transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          viewport={{ once: true, margin: "-5%" }}
+         <div
+
           className="relative w-full overflow-hidden rounded-2xl shadow-lg aspect-[16/9] sm:aspect-[21/9]"
         >
-          <img 
-            src="/images/foto.webp" 
-            alt="Siswa-siswi SMK TI Bazma" 
+          <img
+            src="/images/foto.webp"
+            alt="Siswa-siswi SMK TI Bazma"
             className="w-full h-full object-cover"
           />
-        </motion.div>
+        </div>
 
       </div>
     </section>

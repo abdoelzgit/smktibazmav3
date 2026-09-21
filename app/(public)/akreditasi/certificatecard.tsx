@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
+import { PortalLink } from "@/components/portal-transition";
 
 export function CertificateCard() {
   return (
@@ -21,13 +21,14 @@ export function CertificateCard() {
             BAN-S/M dapat dilihat langsung atau diunduh dalam format PDF untuk
             keperluan verifikasi.
           </p>
-          <Link
+          <PortalLink
             href="/sertifikat-akreditasi"
-            className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-blue-900 transition-all duration-300"
+            label="Akreditasi"
+            className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-blue-900 transition-all duration-300 cursor-pointer"
           >
             Selengkapnya
             <ArrowUpRight className="w-4 h-4" />
-          </Link>
+          </PortalLink>
         </div>
       </div>
     </section>

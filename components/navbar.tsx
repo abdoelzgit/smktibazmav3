@@ -330,9 +330,9 @@ export function Navbar() {
 
   const navText = showInverted
     ? "text-white/85 hover:text-white"
-    : "text-primary/80 hover:text-primary";
-  const iconLineColor = showInverted ? "bg-white" : "bg-primary";
-  const navUnderline = showInverted ? "bg-white" : "bg-primary";
+    : "text-black/85 hover:text-black";
+  const iconLineColor = showInverted ? "bg-white" : "bg-black";
+  const navUnderline = showInverted ? "bg-white" : "bg-black";
   const logoSrc = showInverted
     ? "/images/logo-secondary.png"
     : "/images/logo.png";

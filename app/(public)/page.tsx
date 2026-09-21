@@ -34,7 +34,7 @@ export default function Home() {
               title="Sistem Informasi, Jaringan & Aplikasi (SIJA)"
               description="SIJA adalah perpaduan antara Teknik Komputer & Jaringan (TKJ) dan Rekayasa Perangkat Lunak (RPL). Sekolah kami dilengkapi dengan teknologi terbaru dalam bidang cloud computing untuk mempersiapkan siswa menghadapi tantangan masa depan."
               ctaLabel="Lebih lengkap"
-              ctaHref="/jurusan/sija"
+              ctaHref="/profil-jurusan"
             />
           </div>
         </div>

@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import { MapPin, Phone, Mail } from "lucide-react";
+import { PortalLink } from "@/components/portal-transition";
 
 type FooterLink = {
   label: string;
@@ -61,7 +61,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_auto] lg:gap-16">
           {/* Left Side: Logo, Tagline & Contact */}
           <div className="max-w-md">
-            <Link href="/" className="inline-block">
+            <PortalLink href="/" label="SMK TI BAZMA" className="inline-block cursor-pointer">
               <Image
                 src="/images/logo-secondary.png"
                 width={240}
@@ -70,7 +70,7 @@ export default function Footer() {
                 priority
                 className="h-14 w-auto object-contain"
               />
-            </Link>
+            </PortalLink>
 
             <h2 className="mt-8 text-2xl font-bold tracking-wider text-white sm:text-3xl">
               ENERGI MASA DEPAN INDONESIA
@@ -97,12 +97,13 @@ export default function Footer() {
             {footerColumns.map((column) => (
               <div key={column.title}>
                 {column.href ? (
-                  <Link
+                  <PortalLink
                     href={column.href}
-                    className="font-sans text-base font-bold text-white hover:text-white/80 transition-colors"
+                    label={column.title}
+                    className="font-sans text-base font-bold text-white hover:text-white/80 transition-colors cursor-pointer"
                   >
                     {column.title}
-                  </Link>
+                  </PortalLink>
                 ) : (
                   <h3 className="font-sans text-base font-bold text-white">
                     {column.title}
@@ -113,14 +114,24 @@ export default function Footer() {
                   <ul className="mt-4 space-y-3">
                     {column.links.map((link) => (
                       <li key={link.label}>
-                        <Link
-                          href={link.href}
-                          target={link.external ? "_blank" : undefined}
-                          rel={link.external ? "noopener noreferrer" : undefined}
-                          className="font-sans text-sm font-normal text-white/80 hover:text-white transition-colors duration-200"
-                        >
-                          {link.label}
-                        </Link>
+                        {link.external ? (
+                          <a
+                            href={link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-sans text-sm font-normal text-white/80 hover:text-white transition-colors duration-200"
+                          >
+                            {link.label}
+                          </a>
+                        ) : (
+                          <PortalLink
+                            href={link.href}
+                            label={link.label}
+                            className="font-sans text-sm font-normal text-white/80 hover:text-white transition-colors duration-200 cursor-pointer"
+                          >
+                            {link.label}
+                          </PortalLink>
+                        )}
                       </li>
                     ))}
                   </ul>

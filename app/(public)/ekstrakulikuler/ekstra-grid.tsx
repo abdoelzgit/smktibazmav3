@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
+import { PortalLink } from "@/components/portal-transition";
 
 interface EkstraItem {
   title: string;
@@ -45,10 +45,11 @@ export function EkstraGrid() {
     <section className="w-full max-w-[1111px] mx-auto pt-8 sm:pt-12 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {ekstraData.map((item) => (
-          <Link
+          <PortalLink
             key={item.slug}
             href={`/ekstrakulikuler/${item.slug}`}
-            className="group relative rounded-2xl overflow-hidden aspect-[4/3] block"
+            label={item.title}
+            className="group relative rounded-2xl overflow-hidden aspect-[4/3] block cursor-pointer"
           >
             {/* Background Image */}
             <div
@@ -69,7 +70,7 @@ export function EkstraGrid() {
                 </div>
               </div>
             </div>
-          </Link>
+          </PortalLink>
         ))}
       </div>
     </section>

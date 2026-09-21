@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import Link from "next/link";
 import { Globe, Palette, Video, Zap } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Hero } from "@/components/hero";
 import { getPublishedJejakKaryaAction } from "@/app/actions/jejak-karya-list";
+import { PortalLink } from "@/components/portal-transition";
 
 type CategoryFilter = "Semua" | "Website" | "Design" | "Video" | "IoT";
 
@@ -281,13 +281,14 @@ function HorizontalProjectsSection({
                         </p>
                       </div>
 
-                      <Link
+                      <PortalLink
                         href={`/jejak-karya/${project.slug}`}
-                        className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-[#222] border-b border-[#666] hover:border-black pb-1 shrink-0 font-bold transition-all hover:text-black self-start sm:self-auto"
+                        label={project.title || "Jejak Karya"}
+                        className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-[#222] border-b border-[#666] hover:border-black pb-1 shrink-0 font-bold transition-all hover:text-black self-start sm:self-auto cursor-pointer"
                       >
                         <span>EXPLORE PROJECT</span>
                         <span>→</span>
-                      </Link>
+                      </PortalLink>
                     </div>
                   </div>
 

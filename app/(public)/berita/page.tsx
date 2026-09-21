@@ -4,7 +4,7 @@ import {
   getPublishedCategoriesAction,
 } from "@/app/actions/berita-list";
 import { BeritaSearchFilter } from "./berita-search-filter";
-import Link from "next/link";
+import { PortalLink } from "@/components/portal-transition";
 import { Newspaper, Calendar, ArrowRight, SearchX } from "lucide-react";
 
 interface BeritaPageProps {
@@ -64,7 +64,11 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
                 key={berita.id}
                 className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xs hover:shadow-md transition-all duration-300 hover:border-primary/30"
               >
-                <Link href={`/berita/${berita.slug}`} className="flex flex-col h-full">
+                <PortalLink
+                  href={`/berita/${berita.slug}`}
+                  label={berita.category || "Berita"}
+                  className="flex flex-col h-full cursor-pointer"
+                >
                   {/* Cover Image */}
                   <div className="aspect-video w-full overflow-hidden bg-muted/40 relative">
                     {berita.coverImage ? (
@@ -109,7 +113,7 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
                       </span>
                     </div>
                   </div>
-                </Link>
+                </PortalLink>
               </article>
             ))
           ) : (

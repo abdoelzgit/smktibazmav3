@@ -13,8 +13,10 @@ export default function MitraPage() {
       
       <MitraContent />
       
-      {/* 1. Marquee Slider (Logo bergerak) */}
-      <ImageAutoSlider itemCount={8} />
+      {/* 1. Marquee Slider (Logo bergerak) dengan jarak proporsional */}
+      <div className="w-full pt-2 pb-16 sm:pb-20 md:pb-24 bg-white">
+        <ImageAutoSlider itemCount={8} />
+      </div>
 
       {/* 2. Profil Mitra (Card) */}
       <ProfileMitraFullScreen />
