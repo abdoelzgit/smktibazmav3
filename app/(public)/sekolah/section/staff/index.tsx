@@ -199,11 +199,11 @@ export default function StaffSection({ className }: { className?: string }) {
                 "no-scrollbar"
               )}
             >
-              {category.members.map((member) => (
-                <div key={member.id} className="shrink-0 lg:shrink flex lg:contents snap-center">
-                  <StaffCard member={member} />
-                </div>
-              ))}
+            {category.members.map((member, index) => (
+  <div key={`${member.id}-${index}`} className="shrink-0 lg:shrink flex lg:contents snap-center">
+    <StaffCard member={member} />
+  </div>
+))}
             </div>
           </div>
         ))}
