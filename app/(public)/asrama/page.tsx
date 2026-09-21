@@ -9,7 +9,7 @@ export default function AsramaPage() {
     <main className="flex min-h-full flex-col items-center">
       <Hero
         title="Profil Asrama"
-        backgroundImage="/images/hero-network.jpg"
+        backgroundImage="/images/asrama.webp"
       />
       <SummaryAsrama />
       <ProgramAsrama />
