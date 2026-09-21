@@ -13,7 +13,7 @@ interface Program {
   description: string;
   image: string;
 }
-
+const SCROLL_DISTANCE_PER_CARD = 1000;
 const programs: Program[] = [
   {
     id: 1,
