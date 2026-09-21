@@ -17,21 +17,21 @@ interface Pembina {
 const pembina: Pembina[] = [
     {
         id: 1,
-        name: "[Isi Nama Penyelia 1]",
+        name: "Ahmad Rifai",
         role: "Penyelia I",
-        image: "/images/pembina-asrama/penyelia-1.jpg",
+        image: "/images/asrama/penyelia/1.webp",
     },
     {
         id: 2,
-        name: "Muhamamd Abdul Aziz",
+        name: "Achmad Fauzi, S.Ap",
         role: "Wali Asrama",
-        image: "/images/pembina-asrama/wali-asrama.jpg",
+        image: "/images/asrama/penyelia/wali.webp",
     },
     {
         id: 3,
-        name: "[Isi Nama Penyelia 2]",
+        name: "Ratno Wijaya",
         role: "Penyelia II",
-        image: "/images/pembina-asrama/penyelia-2.jpg",
+        image: "/images/asrama/penyelia/2.webp",
     },
 ];
 
