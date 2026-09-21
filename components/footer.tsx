@@ -40,10 +40,6 @@ const footerColumns: FooterColumn[] = [
     ],
   },
   {
-<<<<<<< HEAD
-    title: "PPDB",
-    href: "/dashboard-ppdb/login",
-=======
     title: "Portofolio",
     links: [
       { label: "Catalog Talent", href: "https://best.smktibazma.com/", external: true },
@@ -54,7 +50,6 @@ const footerColumns: FooterColumn[] = [
   {
     title: "SPMB",
     href: "/spmb",
->>>>>>> d067fcdb9ef5896eac821f709a75d634a9cc8f5f
   },
 ];
 
