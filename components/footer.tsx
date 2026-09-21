@@ -50,7 +50,7 @@ const footerColumns: FooterColumn[] = [
   },
   {
     title: "SPMB",
-    href: "/#spmb",
+    href: "/spmb",
   },
 ];
 

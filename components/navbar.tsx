@@ -44,7 +44,7 @@ const navLinks: NavLink[] = [
   },
   { label: "Jejak Karya", href: "/jejak-karya" },
   { label: "Berita", href: "/berita" },
-  { label: "SPMB", href: "#spmb" },
+  { label: "SPMB", href: "/spmb" },
 ];
 
 // ─── Drawer constants (mirror MultiLevelDrawerMenu) ────────────────────────
