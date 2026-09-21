@@ -15,42 +15,33 @@ type FooterColumn = {
 };
 
 const footerColumns: FooterColumn[] = [
+
   {
-    title: "Beranda",
+    title: "Tentang",
     links: [
-      { label: "Sambutan", href: "/#sambutan" },
-      { label: "Jurusan", href: "/#jurusan" },
-      { label: "Prestasi", href: "/#prestasi" },
-      { label: "Galeri", href: "/#galeri" },
-      { label: "Mitra", href: "/#mitra" },
+      { label: "Profil Sekolah", href: "/sekolah" },
+      { label: "Profil Jurusan", href: "/profil-jurusan" },
+      { label: "Akreditasi", href: "/akreditasi" },
+      { label: "Asrama", href: "/asrama" },
     ],
   },
   {
-    title: "Tentang Kami",
+    title: "Program",
     links: [
-      { label: "Profil Sekolah", href: "/#sekolah" },
-      { label: "Akreditasi", href: "/#akreditasi" },
-      { label: "Kontak", href: "/#kontak" },
+      { label: "Ekstrakurikuler", href: "/ekstrakulikuler" },
+      { label: "Mitra", href: "/mitra" },
     ],
   },
   {
-    title: "Berita",
+    title: "Informasi",
     links: [
-      { label: "Terbaru", href: "/#berita" },
-      { label: "Terpopuler", href: "/#berita" },
+      { label: "Berita", href: "/berita" },
+      { label: "Jejak Karya", href: "/jejak-karya" },
     ],
   },
   {
-    title: "Portofolio",
-    links: [
-      { label: "Catalog Talent", href: "https://best.smktibazma.com/", external: true },
-      { label: "Smart PKL", href: "https://smartpkl.smktibazma.com", external: true },
-      { label: "Sesama", href: "/#karya" },
-    ],
-  },
-  {
-    title: "SPMB",
-    href: "/#spmb",
+    title: "PPDB",
+    href: "/dashboard-ppdb/login",
   },
 ];
 

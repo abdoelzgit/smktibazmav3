@@ -41,98 +41,99 @@ export default function StaffSection({ className }: { className?: string }) {
           gsap.set(panel, { opacity: i === 0 ? 1 : 0, force3D: true });
         });
 
-        // Reset semua grid ke posisi scroll paling atas
-        gridRefs.current.forEach((grid) => {
-          if (!grid) return;
-          gsap.set(grid, { scrollTop: 0 });
-        });
+        // Tunggu layout settle sebelum hitung overflow
+        gsap.delayedCall(0.1, () => {
+          // Reset semua grid ke posisi scroll paling atas
+          gridRefs.current.forEach((grid) => {
+            if (!grid) return;
+            gsap.set(grid, { scrollTop: 0 });
+          });
 
-        // Hitung berapa px tiap grid "kelebihan tinggi" dibanding kotaknya
-        const overflowAmounts = gridRefs.current.map((grid) => {
-          if (!grid) return 0;
-          return Math.max(0, grid.scrollHeight - grid.clientHeight);
-        });
+          // Hitung overflow setelah layout stabilize
+          const overflowAmounts = gridRefs.current.map((grid) => {
+            if (!grid) return 0;
+            return Math.max(0, grid.scrollHeight - grid.clientHeight);
+          });
 
-        const masterTl = gsap.timeline({ paused: true });
+          const masterTl = gsap.timeline({ paused: true });
 
-        let currentTime = 0;
-        const fadeDuration = 0.8;
-        const baseHoldDuration = 1.0;
-        const scrollPxPerSecond = 500; // makin kecil = makin lama waktu buat scroll grid panjang
+          let currentTime = 0;
+          const fadeDuration = 1.2;
+          const baseHoldDuration = 1.5;
+          const scrollPxPerSecond = 250;
 
-        const getHoldTime = (index: number) => {
-          const membersCount = STAFF_CATEGORIES[index].members.length;
-          const base = membersCount > 4 ? baseHoldDuration * 1.6 : baseHoldDuration;
-          const extraForScroll = overflowAmounts[index] / scrollPxPerSecond;
-          return base + extraForScroll;
-        };
+          const getHoldTime = (index: number) => {
+            const membersCount = STAFF_CATEGORIES[index].members.length;
+            const base = membersCount > 4 ? baseHoldDuration * 1.6 : baseHoldDuration;
+            const extraForScroll = overflowAmounts[index] / scrollPxPerSecond;
+            return base + extraForScroll;
+          };
 
-        for (let i = 0; i < totalCategories - 1; i++) {
-          const holdStart = currentTime;
-          const holdTime = getHoldTime(i);
+          for (let i = 0; i < totalCategories - 1; i++) {
+            const holdStart = currentTime;
+            const holdTime = getHoldTime(i);
 
-          // Kalau grid kategori ini lebih tinggi dari kotaknya, scroll dulu sampai habis
-          if (overflowAmounts[i] > 0 && gridRefs.current[i]) {
+            if (overflowAmounts[i] > 0 && gridRefs.current[i]) {
+              masterTl.to(
+                gridRefs.current[i],
+                {
+                  scrollTop: overflowAmounts[i],
+                  duration: holdTime,
+                  ease: "none",
+                },
+                holdStart
+              );
+            }
+            currentTime += holdTime;
+
+            const animStartTime = currentTime;
+            const currentPanel = panelRefs.current[i];
+            const nextPanel = panelRefs.current[i + 1];
+            if (!currentPanel || !nextPanel) continue;
+
             masterTl.to(
-              gridRefs.current[i],
+              currentPanel,
+              { opacity: 0, duration: fadeDuration, ease: "power1.inOut", force3D: true },
+              animStartTime
+            );
+            masterTl.to(
+              nextPanel,
+              { opacity: 1, duration: fadeDuration, ease: "power1.inOut", force3D: true },
+              animStartTime
+            );
+
+            currentTime += fadeDuration;
+          }
+
+          const lastIndex = totalCategories - 1;
+          const lastHoldStart = currentTime;
+          const lastHoldTime = getHoldTime(lastIndex);
+          if (overflowAmounts[lastIndex] > 0 && gridRefs.current[lastIndex]) {
+            masterTl.to(
+              gridRefs.current[lastIndex],
               {
-                scrollTop: overflowAmounts[i],
-                duration: holdTime,
+                scrollTop: overflowAmounts[lastIndex],
+                duration: lastHoldTime,
                 ease: "none",
               },
-              holdStart
+              lastHoldStart
             );
           }
-          currentTime += holdTime;
+          currentTime += lastHoldTime;
 
-          const animStartTime = currentTime;
-          const currentPanel = panelRefs.current[i];
-          const nextPanel = panelRefs.current[i + 1];
-          if (!currentPanel || !nextPanel) continue;
+          const totalScrollDistance = currentTime * 400;
 
-          masterTl.to(
-            currentPanel,
-            { opacity: 0, duration: fadeDuration, ease: "power1.inOut", force3D: true },
-            animStartTime
-          );
-          masterTl.to(
-            nextPanel,
-            { opacity: 1, duration: fadeDuration, ease: "power1.inOut", force3D: true },
-            animStartTime
-          );
-
-          currentTime += fadeDuration;
-        }
-
-        // Hold + scroll untuk kategori terakhir sebelum unpin
-        const lastIndex = totalCategories - 1;
-        const lastHoldStart = currentTime;
-        const lastHoldTime = getHoldTime(lastIndex);
-        if (overflowAmounts[lastIndex] > 0 && gridRefs.current[lastIndex]) {
-          masterTl.to(
-            gridRefs.current[lastIndex],
-            {
-              scrollTop: overflowAmounts[lastIndex],
-              duration: lastHoldTime,
-              ease: "none",
-            },
-            lastHoldStart
-          );
-        }
-        currentTime += lastHoldTime;
-
-        const totalScrollDistance = currentTime * 400;
-
-        ScrollTrigger.create({
-          trigger: section,
-          pin: true,
-          pinSpacing: true,
-          start: "top top",
-          end: `+=${totalScrollDistance}`,
-          scrub: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          animation: masterTl,
+          ScrollTrigger.create({
+            trigger: section,
+            pin: true,
+            pinSpacing: true,
+            start: "top top",
+            end: `+=${totalScrollDistance}`,
+            scrub: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            animation: masterTl,
+          });
         });
       });
 
@@ -187,20 +188,22 @@ export default function StaffSection({ className }: { className?: string }) {
               </p>
             </div>
 
-            {/* Kolom Kanan: Grid — bisa scroll internal kalau kartunya lebih tinggi dari layar */}
+            {/* Kolom Kanan: Grid (desktop 2-col) atau Carousel (mobile horizontal) */}
             <div
               ref={(el) => {
                 gridRefs.current[catIndex] = el;
               }}
-              className="w-full lg:w-[60%] xl:w-[62%] lg:grow lg:h-full lg:overflow-y-auto no-scrollbar"
+              className={cn(
+                "w-full lg:w-[60%] xl:w-[62%] lg:grow lg:h-full px-0 lg:pr-4",
+                "flex lg:grid lg:grid-cols-2 flex-row lg:flex-row overflow-x-auto lg:overflow-y-auto gap-4 lg:gap-x-6 lg:gap-y-12 snap-x snap-mandatory lg:snap-none py-2",
+                "no-scrollbar"
+              )}
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 xl:gap-8 justify-items-start py-2">
-                {category.members.map((member) => (
-                  <div key={member.id} className="w-full flex justify-center sm:justify-start">
-                    <StaffCard member={member} />
-                  </div>
-                ))}
-              </div>
+              {category.members.map((member) => (
+                <div key={member.id} className="shrink-0 lg:shrink flex lg:contents snap-center">
+                  <StaffCard member={member} />
+                </div>
+              ))}
             </div>
           </div>
         ))}
