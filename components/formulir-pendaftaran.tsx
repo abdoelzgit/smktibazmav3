@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DataDiriTab from "@/components/tabs/DataDiriTab";
 import DataOrangTuaTab from "@/components/tabs/DataOrangTuaTab";
 import BerkasTab from "@/components/tabs/BerkasTab";
@@ -10,6 +10,21 @@ import DataSekolahAsalTab from "@/components/tabs/DataSekolahAsalTab";
 export default function PendaftaranPpdb() {
   // 1. State untuk menyimpan tab yang aktif
   const [activeTab, setActiveTab] = useState<string>("Data Diri");
+
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    const allowedTabs = [
+      "Data Diri",
+      "Data orang Tua",
+      "Berkas",
+      "Surat Rekomendasi",
+      "Data sekolah Asal",
+    ];
+
+    if (tab && allowedTabs.includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, []);
 
   const navTabs = [
     "Data Diri",

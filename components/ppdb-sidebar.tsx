@@ -56,12 +56,12 @@ export function PpdbSidebar({ user, ...props }: React.ComponentProps<typeof Side
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<a href="#" />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <TerminalIcon className="size-4" />
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
+                <img src="/images/logo.avif" alt="Logo SMK TI BAZMA" className="size-8 object-contain" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">Acme Inc</span>
-                <span className="truncate text-xs">Enterprise</span>
+                <span className="truncate font-medium">SMK TI BAZMA</span>
+                <span className="truncate text-xs">Calon Siswa</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

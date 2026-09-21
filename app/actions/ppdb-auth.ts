@@ -80,7 +80,7 @@ export async function loginPpdbAction(formData: FormData): Promise<PpdbAuthResul
 
     let isPasswordValid = false;
 
-    if (user.password.startsWith('$2')) {
+    if (user.password?.startsWith('$2')) {
       isPasswordValid = await bcrypt.compare(password, user.password);
     } else if (password === user.password) {
       isPasswordValid = true;

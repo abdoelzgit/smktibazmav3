@@ -66,7 +66,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex min-w-0 w-full flex-1 flex-col gap-4 p-4 pt-0">
          {children}
         </div>
       </SidebarInset>
