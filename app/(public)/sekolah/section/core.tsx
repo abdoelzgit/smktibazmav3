@@ -107,12 +107,18 @@ export default function CoreValue() {
   const headerY = useTransform(scrollYProgress, [0, 0.15], [0, -12])
 
   return (
-    // TRACK SCROLL: Wrapper luar ini yang memberikan "jarak" untuk scroll
-    // TIDAK sticky, hanya berfungsi sebagai pengukur durasi animasi
-    <div ref={trackRef} className="w-full bg-[#f1f5f9] min-h-[250vh] px-4 sm:px-6 lg:px-8">
-      
-      {/* STICKY AREA: Tingginya HANYA h-screen. 
-          Ini menjamin header & kartu pertama SELALU terlihat di viewport */}
+    // TRACK SCROLL: hanya memberi "jarak" scroll untuk animasi.
+    // - TANPA margin negatif & TANPA isolate: tidak ada section lain yang menimpa card.
+    // - min-h-[350vh] -> 350vh - 100vh (sticky) = 250vh jarak scroll efektif.
+    // - Card baru meninggalkan layar saat track selesai dilewati secara natural.
+    <div
+      ref={trackRef}
+      data-nav-theme="light"
+      className="relative w-full bg-[#f1f5f9] min-h-[350vh] px-4 sm:px-6 lg:px-8"
+    >
+
+      {/* STICKY AREA: tinggi h-screen, header & tumpukan card tetap di viewport
+          sampai progress 1 (bawah track menyentuh bawah layar) */}
       <div className="sticky top-0 h-screen flex items-start pt-[18vh] sm:pt-[22vh] pb-0">
 
         <div className="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16">

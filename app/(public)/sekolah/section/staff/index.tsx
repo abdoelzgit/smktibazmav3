@@ -154,34 +154,14 @@ export default function StaffSection({ className }: { className?: string }) {
           </div>
         </div>
 
-        {/* Kolom Kanan: Area Horizontal Staff (~58% pada desktop) */}
-        <div
-          ref={trackContainerRef}
-          className={cn(
-            "mt-10 lg:mt-0 w-full lg:w-[58%] lg:max-w-[58%] lg:grow",
-            // Desktop: overflow hidden agar track digerakkan oleh GSAP x
-            "lg:overflow-hidden",
-            // Mobile: overflow-x auto untuk touch swipe horizontal natural
-            "overflow-x-auto overflow-y-hidden scrollbar-none snap-x snap-mandatory"
-          )}
-        >
-          {/* Track Horizontal: Satu alur berkesinambungan berisi seluruh kategori */}
-          <div
-            ref={trackRef}
-            className="flex flex-row items-start w-max will-change-transform py-4"
-          >
-            {STAFF_CATEGORIES.map((category, catIndex) => (
-              <div
-                key={category.id}
-                ref={(el) => {
-                  categoryGroupRefs.current[catIndex] = el;
-                }}
-                className={cn(
-                  "flex flex-row items-start gap-6 sm:gap-8",
-                  // Jarak antar-kategori dalam satu track yang menyatu
-                  catIndex < STAFF_CATEGORIES.length - 1 ? "mr-12 sm:mr-16 lg:mr-24" : "mr-6 sm:mr-10 lg:mr-16"
-                )}
-              >
+            {/* Kolom Kanan: Grid — bisa scroll internal kalau kartunya lebih tinggi dari layar */}
+            <div
+              ref={(el) => {
+                gridRefs.current[catIndex] = el;
+              }}
+              className="w-full lg:w-[60%] xl:w-[62%] lg:grow lg:h-full lg:overflow-y-auto no-scrollbar px-0 lg:pr-4"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 lg:gap-6 justify-items-start py-2">
                 {category.members.map((member) => (
                   <div key={member.id} className="snap-start">
                     <StaffCard member={member} />
