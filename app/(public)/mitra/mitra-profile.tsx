@@ -188,50 +188,9 @@ export default function MitraProfileFullScreen() {
     }
   }, [hijackActive]);
 
-  const progressRefs = useRef<Array<HTMLSpanElement | null>>([]);
-
-  const setBarInstant = useCallback((index: number, filled: boolean) => {
-    const el = progressRefs.current[index];
-    if (!el) return;
-    el.style.transition = "none";
-    el.style.transform = filled ? "scaleX(1)" : "scaleX(0)";
-  }, []);
-
-  const startBarCountdown = useCallback((index: number, ms: number) => {
-    const el = progressRefs.current[index];
-    if (!el || ms <= 0) return;
-    el.style.transition = "none";
-    el.style.transform = "scaleX(0)";
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!el) return;
-        void el.offsetWidth;
-        el.style.transition = `transform ${ms}ms linear`;
-        el.style.transform = "scaleX(1)";
-      });
-    });
-  }, []);
-
-  const freezeBar = useCallback((index: number) => {
-    const el = progressRefs.current[index];
-    if (!el) return;
-    const computed = window.getComputedStyle(el).transform;
-    el.style.transition = "none";
-    el.style.transform = computed === "none" ? "scaleX(0)" : computed;
-  }, []);
-
   // Auto-slide setiap 6 detik jika seksi sedang terlihat dan kursor tidak sedang hover
   useEffect(() => {
-    progressRefs.current.forEach((_, i) => {
-      if (i !== activeIndex) setBarInstant(i, false);
-    });
-
-    if (!isInView || isPaused) {
-      freezeBar(activeIndex);
-      return;
-    }
-
-    startBarCountdown(activeIndex, 6000);
+    if (!isInView || isPaused) return;
 
     const timer = setTimeout(() => {
       const nextIndex = (activeIndex + 1) % mitras.length;
@@ -241,7 +200,7 @@ export default function MitraProfileFullScreen() {
     return () => {
       clearTimeout(timer);
     };
-  }, [isInView, isPaused, activeIndex, handleSelectMitra, setBarInstant, startBarCountdown, freezeBar]);
+  }, [isInView, isPaused, activeIndex, handleSelectMitra]);
 
   return (
     <div
@@ -364,46 +323,6 @@ export default function MitraProfileFullScreen() {
                 })}
               </div>
             </div>
-
-            {/* Navigasi / Progress Bar Seperti Hero Homepage */}
-            <nav className="relative z-10 mt-8 sm:mt-10 w-full" aria-label="Navigasi Mitra">
-              <ul className="flex w-full gap-2 sm:gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-                {mitras.map((mitra, i) => {
-                  const isActive = i === activeIndex;
-                  return (
-                    <li key={mitra.id} className="flex-1 min-w-[100px] sm:min-w-0">
-                      <button
-                        type="button"
-                        onClick={() => handleSelectMitra(i)}
-                        aria-current={isActive ? "true" : undefined}
-                        className="group flex h-auto w-full flex-col items-start justify-start gap-0 rounded-none px-4 text-left cursor-pointer focus:outline-none"
-                      >
-                        <span
-                          className={cn(
-                            "block text-[11px] tracking-wide transition-colors duration-300 sm:text-xs",
-                            isActive
-                              ? "text-white"
-                              : "text-white/40 group-hover:text-white/70"
-                          )}
-                        >
-                          {mitra.title}
-                        </span>
-
-                        <span className="mt-3 block h-[1px] w-full bg-white/10">
-                          <span
-                            ref={(el) => {
-                              progressRefs.current[i] = el;
-                            }}
-                            className="block h-full w-full origin-left bg-gradient-to-r from-lime-400 to-emerald-400"
-                            style={{ transform: "scaleX(0)" }}
-                          />
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
           </div>
 
         </div>
