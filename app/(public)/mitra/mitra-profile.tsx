@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { ArrowUpRight, ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Mitra {
@@ -14,51 +15,51 @@ interface Mitra {
 }
 
 const mitras: Mitra[] = [
-  { 
-    id: 1, 
-    title: "Pertamina Hulu Rokan", 
+  {
+    id: 1,
+    title: "Pertamina Hulu Rokan",
     logo: "/images/mitra/pertamina-hulu-rokan.webp?v=transparan",
-    description: "Subholding Upstream Pertamina yang mengelola wilayah kerja migas strategis di Blok Rokan. Berkolaborasi aktif dalam penguatan kompetensi teknologi energi siswa dan penyediaan program beasiswa pendidikan vokasi.", 
+    description: "Subholding Upstream Pertamina yang mengelola wilayah kerja migas strategis di Blok Rokan. Berkolaborasi aktif dalam penguatan kompetensi teknologi energi siswa dan penyediaan program beasiswa pendidikan vokasi.",
     image: "/images/mitra/office/hulu-rokan-office.webp",
     url: "https://phr.pertamina.com"
   },
-  { 
-    id: 2, 
-    title: "Pertamina Patra Niaga", 
+  {
+    id: 2,
+    title: "Pertamina Patra Niaga",
     logo: "/images/mitra/pertamina-patra-niaga.webp?v=transparan",
-    description: "Subholding Commercial & Trading Pertamina yang mengelola rantai pasok dan distribusi energi nasional. Mendukung kurikulum industri terapan, program magang profesional, dan kesiapan karir lulusan.", 
+    description: "Subholding Commercial & Trading Pertamina yang mengelola rantai pasok dan distribusi energi nasional. Mendukung kurikulum industri terapan, program magang profesional, dan kesiapan karir lulusan.",
     image: "/images/mitra/office/patra-niaga-office.webp",
     url: "https://pertaminapatraniaga.com"
   },
-  { 
-    id: 3, 
-    title: "Tugu Insurance", 
+  {
+    id: 3,
+    title: "Tugu Insurance",
     logo: "/images/mitra/tugu-insurance.webp?v=transparan",
-    description: "Perusahaan asuransi umum nasional terkemuka yang menyediakan solusi perlindungan komprehensif bagi kesehatan, keselamatan, dan manajemen risiko seluruh warga sekolah dan aset pendidikan.", 
+    description: "Perusahaan asuransi umum nasional terkemuka yang menyediakan solusi perlindungan komprehensif bagi kesehatan, keselamatan, dan manajemen risiko seluruh warga sekolah dan aset pendidikan.",
     image: "/images/mitra/office/tugu-insurance-office.webp",
     url: "https://tugu.com"
   },
-  { 
-    id: 4, 
-    title: "YAKES Pertamina", 
+  {
+    id: 4,
+    title: "YAKES Pertamina",
     logo: "/images/mitra/yakes-pertamina.webp?v=transparan",
-    description: "Yayasan Kesehatan Pertamina yang menghadirkan layanan kesehatan terpadu, pemeriksaan preventif berkala, serta edukasi gaya hidup sehat untuk menunjang kesejahteraan warga sekolah.", 
+    description: "Yayasan Kesehatan Pertamina yang menghadirkan layanan kesehatan terpadu, pemeriksaan preventif berkala, serta edukasi gaya hidup sehat untuk menunjang kesejahteraan warga sekolah.",
     image: "/images/mitra/office/yakes-office.webp",
     url: "https://yakespertamina.com"
   },
-  { 
-    id: 5, 
-    title: "Ashnet", 
+  {
+    id: 5,
+    title: "Ashnet",
     logo: "/images/mitra/ashnet.webp?v=transparan",
-    description: "Penyedia solusi teknologi informasi dan infrastruktur jaringan internet berkecepatan tinggi yang menopang laboratorium komputer dan pengembangan ekosistem digital pembelajaran modern.", 
+    description: "Penyedia solusi teknologi informasi dan infrastruktur jaringan internet berkecepatan tinggi yang menopang laboratorium komputer dan pengembangan ekosistem digital pembelajaran modern.",
     image: "/images/mitra/office/asnet-office.webp",
     url: "https://ashnet.id"
   },
-  { 
-    id: 6, 
-    title: "Pertamina Retail", 
+  {
+    id: 6,
+    title: "Pertamina Retail",
     logo: "/images/mitra/pertamina-retail.webp?v=transparan",
-    description: "Entitas hilir Pertamina di sektor ritel SPBU dan non-fuel. Berperan strategis dalam program pelatihan kewirausahaan siswa, tata kelola bisnis modern, dan pengembangan kemandirian ekonomi.", 
+    description: "Entitas hilir Pertamina di sektor ritel SPBU dan non-fuel. Berperan strategis dalam program pelatihan kewirausahaan siswa, tata kelola bisnis modern, dan pengembangan kemandirian ekonomi.",
     image: "/images/mitra/office/retail-office.webp",
     url: "https://pertaminaretail.com"
   },
@@ -188,50 +189,17 @@ export default function MitraProfileFullScreen() {
     }
   }, [hijackActive]);
 
-  const progressRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const handlePrev = useCallback(() => {
+    handleSelectMitra((activeIndex - 1 + mitras.length) % mitras.length);
+  }, [activeIndex, handleSelectMitra]);
 
-  const setBarInstant = useCallback((index: number, filled: boolean) => {
-    const el = progressRefs.current[index];
-    if (!el) return;
-    el.style.transition = "none";
-    el.style.transform = filled ? "scaleX(1)" : "scaleX(0)";
-  }, []);
-
-  const startBarCountdown = useCallback((index: number, ms: number) => {
-    const el = progressRefs.current[index];
-    if (!el || ms <= 0) return;
-    el.style.transition = "none";
-    el.style.transform = "scaleX(0)";
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!el) return;
-        void el.offsetWidth;
-        el.style.transition = `transform ${ms}ms linear`;
-        el.style.transform = "scaleX(1)";
-      });
-    });
-  }, []);
-
-  const freezeBar = useCallback((index: number) => {
-    const el = progressRefs.current[index];
-    if (!el) return;
-    const computed = window.getComputedStyle(el).transform;
-    el.style.transition = "none";
-    el.style.transform = computed === "none" ? "scaleX(0)" : computed;
-  }, []);
+  const handleNext = useCallback(() => {
+    handleSelectMitra((activeIndex + 1) % mitras.length);
+  }, [activeIndex, handleSelectMitra]);
 
   // Auto-slide setiap 6 detik jika seksi sedang terlihat dan kursor tidak sedang hover
   useEffect(() => {
-    progressRefs.current.forEach((_, i) => {
-      if (i !== activeIndex) setBarInstant(i, false);
-    });
-
-    if (!isInView || isPaused) {
-      freezeBar(activeIndex);
-      return;
-    }
-
-    startBarCountdown(activeIndex, 6000);
+    if (!isInView || isPaused) return;
 
     const timer = setTimeout(() => {
       const nextIndex = (activeIndex + 1) % mitras.length;
@@ -241,7 +209,7 @@ export default function MitraProfileFullScreen() {
     return () => {
       clearTimeout(timer);
     };
-  }, [isInView, isPaused, activeIndex, handleSelectMitra, setBarInstant, startBarCountdown, freezeBar]);
+  }, [isInView, isPaused, activeIndex, handleSelectMitra]);
 
   return (
     <div
@@ -270,7 +238,7 @@ export default function MitraProfileFullScreen() {
               <div
                 key={mitra.id}
                 className={cn(
-                  "absolute inset-0 transition-opacity duration-700 ease-in-out pointer-events-none",
+                  "absolute inset-0 transition-opacity duration-1000 ease-in-out pointer-events-none",
                   isActive ? "opacity-100 z-[1]" : "opacity-0 z-0"
                 )}
               >
@@ -297,113 +265,115 @@ export default function MitraProfileFullScreen() {
 
           {/* Header Section (Dynamic Headline & Subheadline) */}
           <div className="mb-6 md:mb-10 pt-14 sm:pt-20 md:pt-28 lg:pt-32">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl font-heading transition-all duration-300">
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl font-heading transition-all duration-500 ease-out">
               {currentMitra.title}
             </h2>
-            <p className="mt-3 sm:mt-4 max-w-3xl lg:max-w-4xl text-base text-white/85 sm:text-lg leading-relaxed min-h-[3rem] sm:min-h-[3.5rem] transition-all duration-300">
+            <p className="mt-3 sm:mt-4 max-w-3xl lg:max-w-4xl text-base text-white/85 sm:text-lg leading-relaxed min-h-[3rem] sm:min-h-[3.5rem] transition-all duration-500 ease-out">
               {currentMitra.description}
             </p>
           </div>
 
-          {/* Area Kartu Logo Mitra (Full Width Slider) */}
-          <div 
-            className="w-full"
+          {/* Area Kartu Logo Mitra & Navigasi Panah */}
+          <div
+            className="w-full flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            <div className="overflow-hidden py-4 -my-4 px-1">
-              <div
-                ref={trackRef}
-                className={cn(
-                  "flex gap-4 py-4 px-1 items-stretch", 
-                  !hijackActive && "overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
-                )}
-                style={{
-                  transform: hijackActive ? `translateX(${translateX}px)` : "none",
-                  transition: hijackActive ? "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)" : undefined,
-                }}
-              >
-                {mitras.map((mitra, index) => {
-                  const isActive = activeIndex === index;
-                  return (
-                    <div
-                      key={mitra.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleSelectMitra(index)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleSelectMitra(index);
-                        }
-                      }}
-                      aria-pressed={isActive}
-                      className={cn(
-                        "group relative flex items-center justify-center p-4 sm:p-5 md:p-6 rounded-2xl border transition-all duration-500 ease-out min-w-[200px] sm:min-w-[240px] md:min-w-[280px] h-28 sm:h-32 md:h-36 snap-start cursor-pointer select-none",
-                        isActive
-                          ? "bg-white border-white shadow-2xl scale-[1.04] opacity-100"
-                          : "bg-white/10 border-white/20 hover:bg-white/20 backdrop-blur-md opacity-60 hover:opacity-95"
-                      )}
-                    >
-                      <div className="relative w-full h-full flex items-center justify-center">
-                        <Image
-                          src={logoError[mitra.id] ? FALLBACK_LOGO : mitra.logo}
-                          alt={`Logo ${mitra.title}`}
-                          width={260}
-                          height={90}
-                          unoptimized
-                          onError={() => setLogoError(prev => ({ ...prev, [mitra.id]: true }))}
-                          className={cn(
-                            "w-auto h-auto max-h-16 sm:max-h-20 md:max-h-24 max-w-[90%] object-contain transition-transform duration-300",
-                            isActive ? "scale-105" : "group-hover:scale-105"
-                          )}
-                        />
+            {/* Track Kartu */}
+            <div className="w-full lg:w-3/4 xl:w-4/5">
+              <div className="relative overflow-hidden py-4 -my-4 px-1 [mask-image:linear-gradient(to_right,transparent_0%,rgba(0,0,0,0.2)_24px,rgba(0,0,0,0.85)_64px,black_100px,black_calc(100%-100px),rgba(0,0,0,0.85)_calc(100%-64px),rgba(0,0,0,0.2)_calc(100%-24px),transparent_100%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,rgba(0,0,0,0.2)_24px,rgba(0,0,0,0.85)_64px,black_100px,black_calc(100%-100px),rgba(0,0,0,0.85)_calc(100%-64px),rgba(0,0,0,0.2)_calc(100%-24px),transparent_100%)]">
+                <div
+                  ref={trackRef}
+                  className={cn(
+                    "flex gap-4 py-4 px-1 items-stretch scroll-smooth",
+                    !hijackActive && "overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+                  )}
+                  style={{
+                    transform: hijackActive ? `translateX(${translateX}px)` : "none",
+                    transition: hijackActive ? "transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)" : undefined,
+                  }}
+                >
+                  {mitras.map((mitra, index) => {
+                    const isActive = activeIndex === index;
+                    return (
+                      <div
+                        key={mitra.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleSelectMitra(index)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleSelectMitra(index);
+                          }
+                        }}
+                        aria-pressed={isActive}
+                        className={cn(
+                          "group relative flex items-center justify-center p-4 sm:p-5 md:p-6 rounded-2xl border transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] min-w-[200px] sm:min-w-[240px] md:min-w-[280px] h-28 sm:h-32 md:h-36 snap-start cursor-pointer select-none",
+                          isActive
+                            ? "bg-white border-white shadow-2xl scale-[1.04]"
+                            : "bg-white/10 border-white/20 hover:bg-white/20 backdrop-blur-md hover:scale-[1.02]"
+                        )}
+                      >
+                        {/* Arrow Icon ke Website Perusahaan (Putih Solid saat belum selected) */}
+                        <a
+                          href={mitra.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          title={`Kunjungi website ${mitra.title}`}
+                          aria-label={`Buka website ${mitra.title} di tab baru`}
+                          className="absolute bottom-3 right-3 z-10 text-white transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                        >
+                          <ArrowUpRight className={cn("h-6 w-6 opacity-100 drop-shadow-sm", isActive ? "text-[#132B6D]" : "text-white")} />
+                        </a>
+
+                        <div className="relative w-full h-full flex items-center justify-center">
+                          <Image
+                            src={logoError[mitra.id] ? FALLBACK_LOGO : mitra.logo}
+                            alt={`Logo ${mitra.title}`}
+                            width={260}
+                            height={90}
+                            unoptimized
+                            onError={() => setLogoError(prev => ({ ...prev, [mitra.id]: true }))}
+                            className={cn(
+                              "w-auto h-auto max-h-16 sm:max-h-20 md:max-h-24 max-w-[90%] object-contain transition-all duration-300",
+                              isActive ? "scale-105 opacity-100" : "opacity-80 group-hover:opacity-100 group-hover:scale-105"
+                            )}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
-            {/* Navigasi / Progress Bar Seperti Hero Homepage */}
-            <nav className="relative z-10 mt-8 sm:mt-10 w-full" aria-label="Navigasi Mitra">
-              <ul className="flex w-full gap-2 sm:gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-                {mitras.map((mitra, i) => {
-                  const isActive = i === activeIndex;
-                  return (
-                    <li key={mitra.id} className="flex-1 min-w-[100px] sm:min-w-0">
-                      <button
-                        type="button"
-                        onClick={() => handleSelectMitra(i)}
-                        aria-current={isActive ? "true" : undefined}
-                        className="group flex h-auto w-full flex-col items-start justify-start gap-0 rounded-none px-4 text-left cursor-pointer focus:outline-none"
-                      >
-                        <span
-                          className={cn(
-                            "block text-[11px] tracking-wide transition-colors duration-300 sm:text-xs",
-                            isActive
-                              ? "text-white"
-                              : "text-white/40 group-hover:text-white/70"
-                          )}
-                        >
-                          {mitra.title}
-                        </span>
+            {/* Navigasi Panah (Prev / Next seperti di Profil Asrama) */}
+            <div className="flex items-center justify-between lg:flex-col lg:items-start gap-4 shrink-0 pb-2">
+              <span className="text-sm font-medium text-white/60 hidden lg:block">
+                Navigasi Mitra
+              </span>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  aria-label="Mitra sebelumnya"
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-colors hover:bg-white hover:text-[#132B6D] cursor-pointer active:scale-95"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  aria-label="Mitra berikutnya"
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-colors hover:bg-white hover:text-[#132B6D] cursor-pointer active:scale-95"
+                >
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
 
-                        <span className="mt-3 block h-[1px] w-full bg-white/10">
-                          <span
-                            ref={(el) => {
-                              progressRefs.current[i] = el;
-                            }}
-                            className="block h-full w-full origin-left bg-gradient-to-r from-lime-400 to-emerald-400"
-                            style={{ transform: "scaleX(0)" }}
-                          />
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
           </div>
 
         </div>
