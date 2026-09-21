@@ -4,7 +4,8 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { ArrowUpRight, ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 interface Program {
