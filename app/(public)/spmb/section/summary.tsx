@@ -73,7 +73,7 @@ export function Sambutan({
                                 {description}
                             </p>
                             <Button
-                                variant="outline"
+                                variant="outline"   
                                 onClick={onCtaClick}
                                 className="mt-5 rounded-full border-blue-950 text-blue-950 hover:bg-blue-950 hover:text-white"
                             >
