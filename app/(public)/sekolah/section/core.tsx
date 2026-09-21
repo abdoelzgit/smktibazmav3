@@ -148,6 +148,10 @@ export default function CoreValue() {
     // - Card baru meninggalkan layar saat track selesai dilewati secara natural.
     <div
       ref={trackRef}
+<<<<<<< HEAD
+=======
+      data-nav-theme="light"
+>>>>>>> asrama
       className="relative w-full bg-[#f1f5f9] min-h-[350vh] px-4 sm:px-6 lg:px-8"
     >
 
