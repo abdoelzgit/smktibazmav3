@@ -61,8 +61,7 @@ const MOCK_TIMELINE: TimelineItem[] = [
     id: "pengumuman-akademik",
     date: "7 – 8 Feb 2026",
     title: "Pengumuman Tes Akademik",
-    description:
-      "Pengumuman hasil tes akademik calon peserta didik.",
+    description: "Pengumuman hasil tes akademik calon peserta didik.",
     status: "future",
   },
   {
@@ -85,16 +84,14 @@ const MOCK_TIMELINE: TimelineItem[] = [
     id: "interview",
     date: "6 – 11 Apr 2026",
     title: "Interview",
-    description:
-      "Pelaksanaan wawancara calon peserta didik.",
+    description: "Pelaksanaan wawancara calon peserta didik.",
     status: "future",
   },
   {
     id: "psikotes",
     date: "18 – 19 Apr 2026",
     title: "Psikotes Online & Offline",
-    description:
-      "Pelaksanaan psikotes secara online maupun offline.",
+    description: "Pelaksanaan psikotes secara online maupun offline.",
     status: "future",
   },
   {
@@ -116,27 +113,23 @@ const MOCK_TIMELINE: TimelineItem[] = [
 ];
 
 /* -------------------------------------------------------------------------- */
-/*  Style maps per status                                                     */
+/*  Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-const CARD_STYLE: Record<TimelineStatus, string> = {
-  past: "border-slate-200 bg-slate-50",
-  current:
-    "border-[#37497A] bg-white ring-1 ring-[#37497A] shadow-[0_16px_36px_-10px_rgba(55,73,122,0.45)]",
-  future: "border-slate-200 bg-white",
-};
+function padNumber(n: number) {
+  return String(n).padStart(2, "0");
+}
 
-const DATE_BADGE_STYLE: Record<TimelineStatus, string> = {
-  past: "bg-slate-200 text-slate-600",
-  current: "bg-[#37497A] text-white",
-  future: "bg-[#37497A]/10 text-[#37497A]",
-};
+const LINE_TOP = 40;
 
-const TITLE_STYLE: Record<TimelineStatus, string> = {
-  past: "text-slate-600",
-  current: "text-[#37497A]",
-  future: "text-slate-900",
-};
+const SCROLL_FACTOR = 1.2;
+
+const DWELL_RATIO = 0.55;
+
+function easeSmoothstep(t: number) {
+  const clamped = Math.min(1, Math.max(0, t));
+  return clamped * clamped * (3 - 2 * clamped);
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Sub-components                                                            */
@@ -172,30 +165,125 @@ function StatusIndicator({ status }: { status: TimelineStatus }) {
   );
 }
 
-function TimelineCard({ item }: { item: TimelineItem }) {
+function DesktopNode({
+  item,
+  index,
+  isFocused,
+}: {
+  item: TimelineItem;
+  index: number;
+  isFocused: boolean;
+}) {
+  const nodeClass =
+    item.status === "past"
+      ? "relative z-10 h-2.5 w-2.5 rounded-full bg-[#37497A]/60"
+      : item.status === "current"
+        ? "relative z-10 h-3.5 w-3.5 rounded-full bg-[#37497A]"
+        : "relative z-10 h-2.5 w-2.5 rounded-full border-2 border-slate-300 bg-white";
+
+  const titleClass =
+    item.status === "past"
+      ? "text-slate-500"
+      : item.status === "current" || isFocused
+        ? "text-[#37497A]"
+        : "text-slate-800";
+
   return (
     <li
-      aria-current={item.status === "current" ? "step" : undefined}
-      // MOBILE FIRST: Lebar responsif (85vw di mobile, fixed di desktop)
-      className={`flex min-h-[320px] w-[85vw] shrink-0 snap-center flex-col gap-4 rounded-2xl border p-6 sm:w-[360px] md:w-[400px] lg:w-[440px] xl:w-[480px] ${CARD_STYLE[item.status]}`}
+      data-timeline-item
+      className="relative flex w-[230px] shrink-0 flex-col px-3 sm:w-[270px] lg:w-[300px] xl:w-[320px]"
     >
-      <span
-        className={`inline-flex w-fit items-center rounded-lg px-3 py-1.5 text-sm font-semibold ${DATE_BADGE_STYLE[item.status]}`}
+      <div className="flex h-4 items-center">
+        <span className="text-[11px] font-semibold tracking-[0.15em] text-slate-400">
+          {padNumber(index + 1)}
+        </span>
+      </div>
+
+      <div className="mt-3 flex h-6 items-center">
+        <span className={nodeClass} aria-hidden="true">
+          {item.status === "current" && (
+            <span className="absolute -inset-1 animate-ping rounded-full bg-[#37497A]/30 motion-reduce:animate-none" />
+          )}
+        </span>
+      </div>
+
+      <div
+        className={`mt-4 transition-opacity duration-300 ${isFocused ? "opacity-100" : "opacity-55"
+          }`}
       >
-        {item.date}
+        <h3 className={`text-base font-bold leading-snug ${titleClass}`}>
+          {item.title}
+        </h3>
+
+        <p className="mt-1 text-sm font-medium text-slate-500">
+          {item.date}
+        </p>
+
+        {isFocused && (
+          <p className="mt-2 max-w-[230px] text-sm leading-relaxed text-slate-500">
+            {item.description}
+          </p>
+        )}
+      </div>
+    </li>
+  );
+}
+
+function MobileTimelineItem({
+  item,
+  index,
+  isLast,
+}: {
+  item: TimelineItem;
+  index: number;
+  isLast: boolean;
+}) {
+  const dotClass =
+    item.status === "past"
+      ? "h-3 w-3 rounded-full bg-[#37497A]/60"
+      : item.status === "current"
+        ? "h-3.5 w-3.5 rounded-full bg-[#37497A] ring-4 ring-[#37497A]/15"
+        : "h-3 w-3 rounded-full border-2 border-slate-300 bg-white";
+
+  const titleClass =
+    item.status === "past"
+      ? "text-slate-500"
+      : item.status === "current"
+        ? "text-[#37497A]"
+        : "text-slate-900";
+
+  return (
+    <li className={`relative pl-8 ${isLast ? "" : "pb-8"}`}>
+      {!isLast && (
+        <span
+          className="absolute left-[5px] top-4 w-px bg-slate-200"
+          style={{ height: "calc(100% - 0.25rem)" }}
+          aria-hidden="true"
+        />
+      )}
+
+      <span
+        className={`absolute left-0 top-1 z-10 ${dotClass}`}
+        aria-hidden="true"
+      />
+
+      <span className="text-[11px] font-semibold tracking-[0.15em] text-slate-400">
+        {padNumber(index + 1)}
       </span>
 
-      <h3
-        className={`text-xl font-bold leading-snug ${TITLE_STYLE[item.status]}`}
-      >
+      <h3 className={`mt-1 text-lg font-bold leading-snug ${titleClass}`}>
         {item.title}
       </h3>
 
-      <p className="text-base leading-relaxed text-slate-500">
+      <p className="mt-1 text-sm font-medium text-slate-500">
+        {item.date}
+      </p>
+
+      <p className="mt-2 text-sm leading-relaxed text-slate-500">
         {item.description}
       </p>
 
-      <div className="mt-auto border-t border-slate-200 pt-4">
+      <div className="mt-3">
         <StatusIndicator status={item.status} />
       </div>
     </li>
@@ -205,8 +293,6 @@ function TimelineCard({ item }: { item: TimelineItem }) {
 /* -------------------------------------------------------------------------- */
 /*  Main component                                                            */
 /* -------------------------------------------------------------------------- */
-
-const SCROLL_FACTOR = 1.2;
 
 export default function TimelineSection({
   title = "Timeline SPMB 2026",
@@ -223,200 +309,249 @@ export default function TimelineSection({
   const [canNext, setCanNext] = useState(true);
   const [isDesktop, setIsDesktop] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  
-  // State untuk menyimpan dimensi track agar perhitungan tinggi wrapper akurat sejak awal
-  const [trackScrollWidth, setTrackScrollWidth] = useState(0);
 
+  const [trackScrollWidth, setTrackScrollWidth] = useState(0);
   const [translateX, setTranslateX] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+
   const activeIndexRef = useRef(0);
 
   const hijackActive = isDesktop && !reducedMotion;
 
-  // 1. Deteksi Layar & Reduced Motion
   useEffect(() => {
     const checkFlags = () => {
       setIsDesktop(window.innerWidth >= 1024);
-      setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+      setReducedMotion(
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      );
     };
+
     checkFlags();
+
     window.addEventListener("resize", checkFlags);
-    return () => window.removeEventListener("resize", checkFlags);
+
+    return () => {
+      window.removeEventListener("resize", checkFlags);
+    };
   }, []);
 
-  // 2. Resize Observer untuk mengukur Track secara akurat
   useEffect(() => {
     const trackEl = trackRef.current;
+
     if (!trackEl) return;
 
     const updateDimensions = () => {
       setTrackScrollWidth(trackEl.scrollWidth);
     };
 
-    // Panggil sekali di awal
     updateDimensions();
 
     const resizeObserver = new ResizeObserver(updateDimensions);
+
     resizeObserver.observe(trackEl);
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [items]);
 
-  // 3. Reset Posisi Saat Masuk Mode Mobile
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track || isDesktop) return;
-
-    // Reset ke awal
-    track.scrollTo({ left: 0, behavior: "auto" });
-    
-    // Reset state navigasi
-    activeIndexRef.current = 0;
-    setCanPrev(false);
-    // Cek apakah ada konten yang overflow untuk mengaktifkan tombol next
-    setCanNext(track.scrollWidth > track.clientWidth + 10);
-  }, [isDesktop, items]);
-
-  // 4. Logika Scroll Hijack (Desktop)
   const handleScroll = useCallback(() => {
-    if (!hijackActive || !wrapperRef.current || !trackRef.current) return;
+    if (!hijackActive || !wrapperRef.current || !trackRef.current) {
+      return;
+    }
 
     const wrapper = wrapperRef.current;
     const track = trackRef.current;
 
     const wrapperRect = wrapper.getBoundingClientRect();
-    const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
 
-    if (scrollableHeight <= 0) return;
+    const scrollableHeight =
+      wrapper.offsetHeight - window.innerHeight;
 
-    const progress = Math.min(1, Math.max(0, -wrapperRect.top / scrollableHeight));
-    
-    // Gunakan trackScrollWidth dari state agar lebih stabil
-    const maxTranslate = trackScrollWidth - track.clientWidth;
-    
-    if (maxTranslate <= 0) return;
+    if (scrollableHeight <= 0) {
+      return;
+    }
 
-    const nextTranslate = -progress * maxTranslate;
-    
+    const progress = Math.min(
+      1,
+      Math.max(0, -wrapperRect.top / scrollableHeight),
+    );
+
+    const itemEls = Array.from(
+      track.querySelectorAll<HTMLElement>("[data-timeline-item]"),
+    );
+
+    const n = itemEls.length;
+
+    if (n < 2) {
+      return;
+    }
+
+    const scaledProgress = progress * (n - 1);
+
+    const segmentIndex = Math.min(
+      n - 2,
+      Math.floor(scaledProgress),
+    );
+
+    const segmentProgress =
+      scaledProgress - segmentIndex;
+
+    const fromOffset =
+      itemEls[segmentIndex].offsetLeft;
+
+    const toOffset =
+      itemEls[segmentIndex + 1].offsetLeft;
+
+    let movementProgress = 0;
+
+    if (segmentProgress > DWELL_RATIO) {
+      movementProgress =
+        (segmentProgress - DWELL_RATIO) /
+        (1 - DWELL_RATIO);
+    }
+
+    movementProgress = easeSmoothstep(movementProgress);
+
+    const currentOffset =
+      fromOffset +
+      (toOffset - fromOffset) * movementProgress;
+
+    const nextTranslate = -currentOffset;
+
     requestAnimationFrame(() => {
       setTranslateX(nextTranslate);
     });
 
-    // Update Active Index
-    const cardEls = Array.from(track.children) as HTMLElement[];
-    if (cardEls.length > 0) {
-      let closestIndex = 0;
-      let minDistance = Infinity;
+    let closestIndex = 0;
+    let minDistance = Infinity;
 
-      cardEls.forEach((el, idx) => {
-        const distanceFromView = Math.abs(el.offsetLeft + nextTranslate);
-        if (distanceFromView < minDistance) {
-          minDistance = distanceFromView;
-          closestIndex = idx;
-        }
-      });
+    itemEls.forEach((el, idx) => {
+      const distance = Math.abs(
+        el.offsetLeft + nextTranslate,
+      );
 
-      if (activeIndexRef.current !== closestIndex) {
-        activeIndexRef.current = closestIndex;
-        setCanPrev(closestIndex > 0);
-        setCanNext(closestIndex < items.length - 1);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = idx;
       }
+    });
+
+    if (activeIndexRef.current !== closestIndex) {
+      activeIndexRef.current = closestIndex;
+
+      setActiveIndex(closestIndex);
+      setCanPrev(closestIndex > 0);
+      setCanNext(closestIndex < n - 1);
     }
-  }, [hijackActive, items.length, trackScrollWidth]);
+  }, [hijackActive]);
 
   useEffect(() => {
     if (!hijackActive) {
       setTranslateX(0);
       return;
     }
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); 
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      { passive: true },
+    );
+
+    handleScroll();
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+      );
+    };
   }, [hijackActive, handleScroll]);
 
-  // 5. Listener Scroll Native untuk Mobile (Agar tombol Next/Prev sinkron setelah swipe)
-  useEffect(() => {
-    if (!hijackActive && trackRef.current) {
-      const el = trackRef.current;
-      
-      const updateMobileNav = () => {
-        const cards = Array.from(el.children) as HTMLElement[];
-        if (cards.length === 0) return;
-
-        let closestIndex = 0;
-        let minDistance = Infinity;
-
-        // Cari kartu yang paling dekat dengan tengah viewport atau kiri viewport
-        // Di sini kita pakai logika sederhana: kartu mana yang offsetLeft-nya paling dekat dengan scrollLeft
-        cards.forEach((card, index) => {
-            // Kita cari kartu yang 'paling masuk' ke area pandang
-            // Jarak antara sisi kiri kartu terhadap sisi kiri container (scrollLeft)
-            const distance = Math.abs(card.offsetLeft - el.scrollLeft);
-            
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestIndex = index;
-            }
-        });
-
-        activeIndexRef.current = closestIndex;
-        setCanPrev(el.scrollLeft > 10);
-        setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
-      };
-
-      el.addEventListener("scroll", updateMobileNav);
-      // Panggil sekali untuk inisialisasi state tombol
-      updateMobileNav();
-
-      return () => el.removeEventListener("scroll", updateMobileNav);
-    }
-  }, [hijackActive, items]);
-
-  // 6. Fungsi Navigasi Tombol
   const scrollToIndex = (targetIndex: number) => {
-    const safeIndex = Math.max(0, Math.min(items.length - 1, targetIndex));
+    const safeIndex = Math.max(
+      0,
+      Math.min(items.length - 1, targetIndex),
+    );
+
     const track = trackRef.current;
-    if (!track) return;
+
+    if (!track) {
+      return;
+    }
 
     if (hijackActive && wrapperRef.current) {
-      // Desktop: Scroll Window Vertically
       const wrapper = wrapperRef.current;
-      const targetCard = track.children[safeIndex] as HTMLElement;
-      if (!targetCard) return;
 
-      const maxTranslate = trackScrollWidth - track.clientWidth;
-      if (maxTranslate <= 0) return;
-      
-      const targetTranslate = -targetCard.offsetLeft;
-      const targetProgress = -targetTranslate / maxTranslate;
+      const n = items.length;
 
-      const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
-      const wrapperTopAbsolute = wrapper.getBoundingClientRect().top + window.scrollY;
-      const targetScrollY = wrapperTopAbsolute + targetProgress * scrollableHeight;
-
-      window.scrollTo({ top: targetScrollY, behavior: "smooth" });
-    } else {
-      // Mobile: Native Horizontal Scroll
-      const card = track.children[safeIndex] as HTMLElement;
-      if (card) {
-        card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      if (n < 2) {
+        return;
       }
+
+      const targetProgress =
+        safeIndex === n - 1
+          ? 1
+          : (safeIndex + DWELL_RATIO / 2) / (n - 1);
+
+      const scrollableHeight =
+        wrapper.offsetHeight - window.innerHeight;
+
+      const wrapperTopAbsolute =
+        wrapper.getBoundingClientRect().top +
+        window.scrollY;
+
+      const targetScrollY =
+        wrapperTopAbsolute +
+        targetProgress * scrollableHeight;
+
+      window.scrollTo({
+        top: targetScrollY,
+        behavior: "smooth",
+      });
+    } else {
+      const el =
+        track.querySelectorAll<HTMLElement>(
+          "[data-timeline-item]",
+        )[safeIndex];
+
+      el?.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
     }
   };
 
-  const handlePrev = () => scrollToIndex(activeIndexRef.current - 1);
-  const handleNext = () => scrollToIndex(activeIndexRef.current + 1);
+  const handlePrev = () => {
+    scrollToIndex(
+      activeIndexRef.current - 1,
+    );
+  };
+
+  const handleNext = () => {
+    scrollToIndex(
+      activeIndexRef.current + 1,
+    );
+  };
 
   const arrowClass =
-    "flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-[#37497A] transition-colors hover:border-[#37497A] hover:bg-[#37497A] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#37497A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-white disabled:text-slate-300 cursor-pointer shadow-sm";
+    "flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-[#37497A] transition-colors hover:border-[#37497A] hover:bg-[#37497A] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#37497A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-white disabled:text-slate-300 cursor-pointer shadow-sm";
+
+  const progressWidth = Math.min(
+    trackScrollWidth,
+    Math.abs(translateX),
+  );
 
   return (
     <div
       ref={wrapperRef}
       className="relative w-full bg-white"
       style={{
-        // Hitung tinggi berdasarkan trackScrollWidth state
         height: hijackActive
-          ? `calc(100vh + ${trackScrollWidth * SCROLL_FACTOR}px)`
+          ? `calc(100vh + ${trackScrollWidth * SCROLL_FACTOR
+          }px)`
           : "auto",
       }}
     >
@@ -425,71 +560,133 @@ export default function TimelineSection({
         aria-labelledby="timeline-title"
         className={
           hijackActive
-            ? "sticky top-0 flex h-screen w-full items-center overflow-hidden py-12 lg:py-24"
-            : "relative w-full bg-white py-12 sm:py-16 lg:py-24"
+            ? "sticky top-0 flex h-screen w-full items-center overflow-hidden py-6 lg:py-12"
+            : "relative w-full bg-white py-8 sm:py-12 lg:py-16"
         }
       >
         <div className="mx-auto flex h-full w-full max-w-[1920px] flex-col justify-center px-4 sm:px-6 lg:px-16 xl:px-24">
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3 lg:gap-16">
-            
-            {/* Kiri: Info */}
+
             <div className="lg:col-span-1 lg:self-center">
-              <h2 id="timeline-title" className="text-3xl font-bold tracking-tight text-[#37497A] sm:text-4xl">
+              <h2
+                id="timeline-title"
+                className="text-3xl font-bold tracking-tight text-[#37497A] sm:text-4xl"
+              >
                 {title}
               </h2>
+
               <p className="mt-4 max-w-md text-base leading-relaxed text-slate-600">
                 {description}
               </p>
+
               <Link
                 href={ctaHref}
                 className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#37497A] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#2b3a63] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#37497A] focus-visible:ring-offset-2"
               >
                 {ctaLabel}
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+
+                <ArrowRight
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                />
               </Link>
             </div>
 
-            {/* Kanan: Carousel */}
             <div className="flex min-w-0 flex-col lg:col-span-2">
-              <div className="mb-4 flex justify-end gap-3 px-1">
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  disabled={!canPrev}
-                  aria-label="Tahapan sebelumnya"
-                  className={arrowClass}
-                >
-                  <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={!canNext}
-                  aria-label="Tahapan berikutnya"
-                  className={arrowClass}
-                >
-                  <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                </button>
+
+              <div className="hidden lg:block">
+
+                <div className="mb-4 flex justify-end gap-3 px-1">
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    disabled={!canPrev}
+                    aria-label="Tahapan sebelumnya"
+                    className={arrowClass}
+                  >
+                    <ChevronLeft
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                    />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    disabled={!canNext}
+                    aria-label="Tahapan berikutnya"
+                    className={arrowClass}
+                  >
+                    <ChevronRight
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                    />
+                  </button>
+                </div>
+
+                <div className="relative w-full overflow-hidden pl-1 pr-1">
+
+                  <ol
+                    ref={trackRef}
+                    tabIndex={0}
+                    aria-label="Tahapan penerimaan siswa baru"
+                    className={`relative flex w-full py-4 focus:outline-none ${hijackActive
+                        ? "overflow-visible"
+                        : "overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                      }`}
+                    style={{
+                      transform: hijackActive
+                        ? `translateX(${translateX}px)`
+                        : "none",
+
+                      transition: hijackActive
+                        ? "transform 0.1s linear"
+                        : "none",
+                    }}
+                  >
+
+                    <span
+                      className="pointer-events-none absolute left-0 h-px bg-slate-200"
+                      style={{
+                        top: LINE_TOP,
+                        width: trackScrollWidth
+                          ? `${trackScrollWidth}px`
+                          : "100%",
+                      }}
+                      aria-hidden="true"
+                    />
+
+                    <span
+                      className="pointer-events-none absolute left-0 h-px bg-[#37497A] transition-[width] duration-100"
+                      style={{
+                        top: LINE_TOP,
+                        width: `${progressWidth}px`,
+                      }}
+                      aria-hidden="true"
+                    />
+
+                    {items.map((item, idx) => (
+                      <DesktopNode
+                        key={item.id}
+                        item={item}
+                        index={idx}
+                        isFocused={idx === activeIndex}
+                      />
+                    ))}
+                  </ol>
+                </div>
               </div>
 
-              <div className="relative w-full overflow-hidden pl-1 pr-1">
-                <ol
-                  ref={trackRef}
-                  tabIndex={0}
-                  aria-label="Tahapan penerimaan siswa baru"
-                  // Mobile: overflow-x-auto + snap
-                  // Desktop: overflow-visible (karena digerakkan transform)
-                  className="relative flex w-full snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain py-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden focus:outline-none lg:gap-5 lg:overflow-visible lg:py-2"
-                  style={{
-                    transform: hijackActive ? `translateX(${translateX}px)` : "none",
-                    transition: hijackActive ? "transform 0.1s linear" : "none",
-                  }}
-                >
-                  {items.map((item) => (
-                    <TimelineCard key={item.id} item={item} />
-                  ))}
-                </ol>
-              </div>
+              <ol className="lg:hidden">
+                {items.map((item, idx) => (
+                  <MobileTimelineItem
+                    key={item.id}
+                    item={item}
+                    index={idx}
+                    isLast={idx === items.length - 1}
+                  />
+                ))}
+              </ol>
             </div>
           </div>
         </div>

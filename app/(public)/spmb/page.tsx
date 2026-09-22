@@ -3,6 +3,7 @@ import { Sambutan } from "./section/summary";
 import CountdownSection from "./section/countdown";
 import FaqSection from "./section/faq";
 import TimelineSection from "./section/timeline";
+import PreparationSection from "./section/preparation";
 
 export default function SpmbPage() {
     return (
@@ -12,12 +13,15 @@ export default function SpmbPage() {
                 backgroundImage="/images/ppdb.webp"
             />
             <Sambutan />
-            
-            <FaqSection
-                title="Persyaratan Pendaftar"
-                subtitle="Pertanyaan yang sering diajukan"
-            />
+
+
+            <PreparationSection />
             <TimelineSection />
+            <FaqSection
+                title="Frequently Asked Questions (FAQ)"
+                subtitle="Pertanyaan seputar proses penerimaan peserta didik"
+            />
+
             <CountdownSection />
         </main>
     );
