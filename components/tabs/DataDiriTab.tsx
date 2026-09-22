@@ -59,7 +59,7 @@ export default function DataDiriTab() {
           </div>
           <label className="border-2 border-gray-800 text-gray-800 font-semibold px-6 py-2 rounded-full cursor-pointer hover:bg-gray-100 transition-colors text-sm">
             Unggah Foto
-            <input name="fotoFormalUrl" type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+            <input name="fotoFormalUrl" type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" required />
           </label>
         </div>
 

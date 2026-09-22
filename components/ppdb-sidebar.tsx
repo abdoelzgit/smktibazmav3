@@ -31,15 +31,7 @@ const data = {
         <FolderInput />
       )
     }
-    ,{
-      title: "Pengumuman",
-      url: "/admin/jejak-karya",
-      icon: (
-        <BellRing />
-      )
-    }
-
-  ],
+  ]
  
  
 }
