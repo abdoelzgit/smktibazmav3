@@ -3,11 +3,9 @@ import {
   PenTool,
   Network,
   Database,
-  Boxes,
   Wifi,
   Terminal,
   ShieldCheck,
-  Smartphone,
   LucideIcon,
 } from "lucide-react";
 
@@ -45,33 +43,21 @@ const mapelJurusan: MataPelajaran[] = [
   },
   { 
     id: 5, 
-    title: "Pemrograman Berorientasi Objek", 
-    subtitle: "Mengembangkan aplikasi menggunakan konsep OOP dengan Java dan Python.",
-    icon: Boxes,
-  },
-  { 
-    id: 6, 
     title: "Teknologi Layanan Jaringan", 
     subtitle: "Mengimplementasikan layanan jaringan seperti DNS, DHCP, dan Web Server.",
     icon: Wifi,
   },
   { 
-    id: 7, 
+    id: 6, 
     title: "Sistem Operasi Jaringan", 
     subtitle: "Menginstalasi dan mengkonfigurasi sistem operasi server Linux dan Windows Server.",
     icon: Terminal,
   },
   { 
-    id: 8, 
+    id: 7, 
     title: "Keamanan Jaringan", 
     subtitle: "Menerapkan proteksi dan keamanan pada infrastruktur jaringan dari ancaman siber.",
     icon: ShieldCheck,
-  },
-  { 
-    id: 9, 
-    title: "Pemrograman Mobile", 
-    subtitle: "Membangun aplikasi mobile Android dan iOS dengan Flutter dan React Native.",
-    icon: Smartphone,
   },
 ];
 
