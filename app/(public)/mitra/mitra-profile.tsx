@@ -200,6 +200,7 @@ export default function MitraProfileFullScreen() {
   // Auto-slide setiap 6 detik jika seksi sedang terlihat dan kursor tidak sedang hover
   useEffect(() => {
     if (!isInView || isPaused) return;
+    if (!isInView || isPaused) return;
 
     const timer = setTimeout(() => {
       const nextIndex = (activeIndex + 1) % mitras.length;
