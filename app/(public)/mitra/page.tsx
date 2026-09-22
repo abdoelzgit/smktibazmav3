@@ -8,11 +8,11 @@ export default function MitraPage() {
     <main className="flex h-full flex-col items-center">
       <Hero
         title="Mitra Sekolah"
-        backgroundImage="/images/hero-network.webp"
+        backgroundImage="/images/mitra-hero.webp"
       />
-      
+
       <MitraContent />
-      
+
       {/* 1. Marquee Slider (Logo bergerak) dengan jarak proporsional */}
       <div className="w-full pt-2 pb-16 sm:pb-20 md:pb-24 bg-white">
         <ImageAutoSlider itemCount={8} />
@@ -23,4 +23,3 @@ export default function MitraPage() {
     </main>
   );
 }
-  

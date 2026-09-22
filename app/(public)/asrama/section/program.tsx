@@ -331,7 +331,7 @@ export default function ProgramAsramaFullScreen() {
                           "group relative flex flex-col justify-between p-6 rounded-2xl border transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] min-w-[280px] sm:min-w-[320px] snap-start text-left cursor-pointer select-none",
                           isActive
                             ? "bg-white text-[#132B6D] border-white shadow-2xl scale-[1.04]"
-                            : "bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-md hover:scale-[1.02]"
+                            : "bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-xs hover:scale-[1.02]"
                         )}
                       >
                         <div>
@@ -379,7 +379,7 @@ export default function ProgramAsramaFullScreen() {
                   type="button"
                   onClick={handlePrev}
                   aria-label="Program sebelumnya"
-                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-colors hover:bg-white hover:text-[#132B6D] cursor-pointer active:scale-95"
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-xs transition-colors hover:bg-white hover:text-[#132B6D] cursor-pointer active:scale-95"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
@@ -387,7 +387,7 @@ export default function ProgramAsramaFullScreen() {
                   type="button"
                   onClick={handleNext}
                   aria-label="Program berikutnya"
-                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-colors hover:bg-white hover:text-[#132B6D] cursor-pointer active:scale-95"
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-xs transition-colors hover:bg-white hover:text-[#132B6D] cursor-pointer active:scale-95"
                 >
                   <ArrowRight className="h-5 w-5" />
                 </button>

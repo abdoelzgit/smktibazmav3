@@ -309,14 +309,25 @@ export default function MitraProfileFullScreen() {
                         key={mitra.id}
                         role="button"
                         tabIndex={0}
-                        onClick={() => handleSelectMitra(index)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
+                        onClick={() => {
+                          if (isActive) {
+                            window.open(mitra.url, "_blank", "noopener,noreferrer");
+                          } else {
                             handleSelectMitra(index);
                           }
                         }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            if (isActive) {
+                              window.open(mitra.url, "_blank", "noopener,noreferrer");
+                            } else {
+                              handleSelectMitra(index);
+                            }
+                          }
+                        }}
                         aria-pressed={isActive}
+                        title={isActive ? `Buka website ${mitra.title}` : `Pilih ${mitra.title}`}
                         className={cn(
                           "group relative flex items-center justify-center p-4 sm:p-5 md:p-6 rounded-2xl border transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] min-w-[200px] sm:min-w-[240px] md:min-w-[280px] h-28 sm:h-32 md:h-36 snap-start cursor-pointer select-none",
                           isActive
@@ -324,7 +335,7 @@ export default function MitraProfileFullScreen() {
                             : "bg-white/10 border-white/20 hover:bg-white/20 backdrop-blur-md hover:scale-[1.02]"
                         )}
                       >
-                        {/* Arrow Icon ke Website Perusahaan (Putih Solid saat belum selected) */}
+                        {/* Arrow Icon ke Website Perusahaan tanpa background bulat */}
                         <a
                           href={mitra.url}
                           target="_blank"
@@ -332,12 +343,31 @@ export default function MitraProfileFullScreen() {
                           onClick={(e) => e.stopPropagation()}
                           title={`Kunjungi website ${mitra.title}`}
                           aria-label={`Buka website ${mitra.title} di tab baru`}
-                          className="absolute bottom-3 right-3 z-10 text-white transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                          className="absolute bottom-3 right-3 z-10 p-0.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                         >
-                          <ArrowUpRight className={cn("h-6 w-6 opacity-100 drop-shadow-sm", isActive ? "text-[#132B6D]" : "text-white")} />
+                          <ArrowUpRight
+                            className={cn(
+                              "h-5 w-5 transition-colors duration-300",
+                              isActive
+                                ? "text-[#132B6D]"
+                                : "text-white/80 group-hover:text-white"
+                            )}
+                          />
                         </a>
 
-                        <div className="relative w-full h-full flex items-center justify-center">
+                        {/* Logo Mitra yang mengarah ke website perusahaan */}
+                        <a
+                          href={mitra.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            if (!isActive) {
+                              e.preventDefault();
+                              handleSelectMitra(index);
+                            }
+                          }}
+                          className="relative w-full h-full flex items-center justify-center"
+                        >
                           <Image
                             src={logoError[mitra.id] ? FALLBACK_LOGO : mitra.logo}
                             alt={`Logo ${mitra.title}`}
@@ -350,7 +380,7 @@ export default function MitraProfileFullScreen() {
                               isActive ? "scale-105 opacity-100" : "opacity-80 group-hover:opacity-100 group-hover:scale-105"
                             )}
                           />
-                        </div>
+                        </a>
                       </div>
                     );
                   })}
