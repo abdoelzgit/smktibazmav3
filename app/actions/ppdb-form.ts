@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
-import { mkdir, writeFile } from 'fs/promises';
+import { mkdir, writeFile, unlink } from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { KeadaanOrangTua, StatusKeluarga, StatusSekolah } from '@prisma/client';
@@ -420,6 +420,19 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
   }
 }
 
+async function deleteFileSilently(fileUrl: string) {
+  try {
+    if (!fileUrl || typeof fileUrl !== 'string') return;
+    const cleanUrl = fileUrl.replace(/^\/+/, '');
+    if (!cleanUrl.startsWith('uploads/')) return;
+    
+    const absolutePath = path.join(process.cwd(), 'public', cleanUrl);
+    await unlink(absolutePath);
+  } catch (error) {
+    console.warn(`[deleteFileSilently] Tidak dapat menghapus berkas lama di ${fileUrl}:`, error);
+  }
+}
+
 async function saveUploadedFile(
   value: FormDataEntryValue | null,
   userId: string,
@@ -454,7 +467,14 @@ async function saveUploadedFile(
     : Buffer.from(await value.arrayBuffer());
   await writeFile(path.join(absoluteDirectory, fileName), contents);
 
-  return `/${relativeDirectory.replaceAll(path.sep, '/')}/${fileName}`;
+  const newUrl = `/${relativeDirectory.replaceAll(path.sep, '/')}/${fileName}`;
+
+  // Hapus file lama jika ada file baru yang diunggah
+  if (existingUrl && existingUrl !== newUrl) {
+    await deleteFileSilently(existingUrl);
+  }
+
+  return newUrl;
 }
 export async function submitPendaftaranAction(): Promise<FormResult> {
   try {

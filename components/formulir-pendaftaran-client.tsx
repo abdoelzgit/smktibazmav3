@@ -12,10 +12,16 @@ import { saveDataOrangTuaAction } from "@/app/actions/ppdb-form";
 import { saveDataSekolahAction } from "@/app/actions/ppdb-form";
 import { saveRekomendasiAction } from "@/app/actions/ppdb-form";
 import { uploadBerkasAction } from "@/app/actions/ppdb-form";
+import type { AllFormData } from "@/lib/validations/ppdb-form";
 
-export default function PendaftaranPpdb() {
+interface PendaftaranPpdbClientProps {
+  initialData: AllFormData | null;
+}
+
+export function PendaftaranPpdbClient({ initialData }: PendaftaranPpdbClientProps) {
   const [activeTab, setActiveTab] = useState<string>("Data Diri");
   const [mounted, setMounted] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -44,7 +50,7 @@ export default function PendaftaranPpdb() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "Data Diri":
-        return <DataDiriTab action  ={saveDataDiriAction} />;
+        return <DataDiriTab action={saveDataDiriAction} />;
       case "Data orang Tua":
         return <DataOrangTuaTab action={saveDataOrangTuaAction} />;
       case "Berkas":
@@ -69,7 +75,7 @@ export default function PendaftaranPpdb() {
   }
 
   return (
-    <FormProvider>
+    <FormProvider initialData={initialData}>
       <div className="flex-1 bg-white p-8 overflow-y-auto min-h-screen">
         {/* Navigation Tabs Header */}
         <div className="flex items-center gap-8 border-b pb-2 mb-6 text-sm font-semibold text-gray-500 ">

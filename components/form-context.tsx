@@ -102,12 +102,51 @@ const initialFormData: AllFormData = {
 
 const FormContext = createContext<FormContextType | null>(null);
 
-export function FormProvider({ children }: { children: ReactNode }) {
-  const [formData, setFormData] = useState<AllFormData>(initialFormData);
+interface FormProviderProps {
+  children: ReactNode;
+  initialData?: AllFormData | null;
+}
+
+export function FormProvider({ children, initialData }: FormProviderProps) {
+  const [formData, setFormData] = useState<AllFormData>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.formData) return parsed.formData;
+        }
+      } catch (e) {
+        console.warn('Failed to load form draft:', e);
+      }
+    }
+    return initialData || initialFormData;
+  });
   const [errors, setErrors] = useState<Partial<Record<TabName, Record<string, string>>>>({});
   const [touched, setTouched] = useState<Partial<Record<TabName, Record<string, boolean>>>>({});
-  const [activeTab, setActiveTab] = useState<TabName>('Data Diri');
-  const [isSubmitting, setIsSubmitting] = useState<Record<TabName, boolean>>({});
+  const [activeTab, setActiveTab] = useState<TabName>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.activeTab && TAB_ORDER.includes(parsed.activeTab)) {
+            return parsed.activeTab;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load active tab:', e);
+      }
+    }
+    return 'Data Diri';
+  });
+  const [isSubmitting, setIsSubmitting] = useState<Record<TabName, boolean>>({
+    'Data Diri': false,
+    'Data orang Tua': false,
+    'Berkas': false,
+    'Surat Rekomendasi': false,
+    'Data sekolah Asal': false,
+  });
   const [tabStatus, setTabStatus] = useState<Record<TabName, 'idle' | 'saving' | 'saved' | 'error'>>({
     'Data Diri': 'idle',
     'Data orang Tua': 'idle',
@@ -115,6 +154,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
     'Surat Rekomendasi': 'idle',
     'Data sekolah Asal': 'idle',
   });
+  const [hydrated, setHydrated] = useState(false);
 
   const loadFromStorage = useCallback(() => {
     try {
@@ -143,9 +183,24 @@ export function FormProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
+  // Hydrate initial data from server on first render
   useEffect(() => {
-    loadFromStorage();
-  }, [loadFromStorage]);
+    if (initialData && !hydrated) {
+      setFormData((prev) => ({
+        ...initialFormData,
+        ...prev,
+        ...initialData,
+      }));
+      setHydrated(true);
+    }
+  }, [initialData, hydrated]);
+
+  // Auto-save to localStorage on changes
+  useEffect(() => {
+    if (hydrated) {
+      saveToStorage(formData, activeTab);
+    }
+  }, [formData, activeTab, hydrated, saveToStorage]);
 
   const updateField = useCallback((tab: TabName, field: string, value: unknown) => {
     setFormData((prev) => {
@@ -191,7 +246,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
     
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
+      result.error.issues.forEach((err) => {
         if (err.path.length > 0) {
           fieldErrors[err.path[0] as string] = err.message;
         }
@@ -217,8 +272,8 @@ export function FormProvider({ children }: { children: ReactNode }) {
 
   const getFormDataForSubmit = useCallback((tab: TabName): FormData => {
     const fd = new FormData();
-    const schema = tabSchemas[tab];
-    const shape = schema.shape;
+    const schema = tabSchemas[tab] as any;
+    const shape = schema?.shape || {};
     
     Object.keys(shape).forEach((key) => {
       const value = formData[key as keyof AllFormData];

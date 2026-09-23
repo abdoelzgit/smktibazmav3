@@ -2,18 +2,31 @@
 
 import React, { useState } from "react";
 import { saveDataOrangTuaAction } from "@/app/actions/ppdb-form";
+import { useForm } from "@/components/form-context";
 
-export default function DataOrangTuaTab() {
+export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
+  const { formData, updateField, updateFields } = useForm();
   const [status, setStatus] = useState<string | null>(null);
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setStatus("Menyimpan...");
-    const result = await saveDataOrangTuaAction(formData);
-    setStatus(result.success ? "Data orang tua berhasil disimpan." : result.error ?? "Data orang tua gagal disimpan.");
+    const formElement = e.currentTarget;
+    const data = new FormData(formElement);
+
+    const result = await saveDataOrangTuaAction(data);
+    if (result.success) {
+      if (result.data && typeof result.data === "object") {
+        updateFields("Data orang Tua", result.data as Record<string, unknown>);
+      }
+      setStatus("Data orang tua berhasil disimpan.");
+    } else {
+      setStatus(result.error ?? "Data orang tua gagal disimpan.");
+    }
   };
 
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="mb-6">
         <span className="bg-[#1e3a8a] text-white px-5 py-2 rounded-lg font-semibold text-base shadow-sm inline-block">
           Data Orang Tua
@@ -23,28 +36,68 @@ export default function DataOrangTuaTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Nama Ayah</label>
-          <input name="namaAyah" type="text" placeholder="Masukkan nama ayah" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="namaAyah"
+            type="text"
+            value={formData.namaAyah ?? ""}
+            onChange={(e) => updateField("Data orang Tua", "namaAyah", e.target.value)}
+            placeholder="Masukkan nama ayah"
+            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Pekerjaan Ayah</label>
-          <input name="pekerjaanAyah" type="text" placeholder="Masukkan pekerjaan ayah" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="pekerjaanAyah"
+            type="text"
+            value={formData.pekerjaanAyah ?? ""}
+            onChange={(e) => updateField("Data orang Tua", "pekerjaanAyah", e.target.value)}
+            placeholder="Masukkan pekerjaan ayah"
+            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Nama Ibu</label>
-          <input name="namaIbu" type="text" placeholder="Masukkan nama ibu" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="namaIbu"
+            type="text"
+            value={formData.namaIbu ?? ""}
+            onChange={(e) => updateField("Data orang Tua", "namaIbu", e.target.value)}
+            placeholder="Masukkan nama ibu"
+            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Pekerjaan Ibu</label>
-          <input name="pekerjaanIbu" type="text" placeholder="Masukkan pekerjaan ibu" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="pekerjaanIbu"
+            type="text"
+            value={formData.pekerjaanIbu ?? ""}
+            onChange={(e) => updateField("Data orang Tua", "pekerjaanIbu", e.target.value)}
+            placeholder="Masukkan pekerjaan ibu"
+            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">No HP Orang Tua</label>
-          <input name="noHpOi" type="text" placeholder="+62..." className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="noHpOi"
+            type="text"
+            value={formData.noHpOi ?? ""}
+            onChange={(e) => updateField("Data orang Tua", "noHpOi", e.target.value)}
+            placeholder="+62..."
+            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
 
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Keadaan Orang Tua</label>
-          <select name="keadaanOrangTua" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+          <select
+            name="keadaanOrangTua"
+            value={formData.keadaanOrangTua ?? "LENGKAP"}
+            onChange={(e) => updateField("Data orang Tua", "keadaanOrangTua", e.target.value)}
+            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
             <option value="LENGKAP">Orang Tua Saya Lengkap</option>
             <option value="YATIM">Saya Yatim</option>
             <option value="PIATU">Saya Piatu</option>
@@ -54,12 +107,26 @@ export default function DataOrangTuaTab() {
 
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Penghasilan Ayah/Ibu</label>
-          <input name="penghasilanOrangTua" type="text" placeholder="Masukan Penghasilan Orang Tua" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="penghasilanOrangTua"
+            type="text"
+            value={formData.penghasilanOrangTua ?? ""}
+            onChange={(e) => updateField("Data orang Tua", "penghasilanOrangTua", e.target.value)}
+            placeholder="Masukan Penghasilan Orang Tua"
+            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
 
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Alamat Domisili Ayah</label>
-          <input name="alamatDomisiliAyah" type="text" placeholder="Alamat Domisili Ayah" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="alamatDomisiliAyah"
+            type="text"
+            value={formData.alamatDomisiliAyah ?? ""}
+            onChange={(e) => updateField("Data orang Tua", "alamatDomisiliAyah", e.target.value)}
+            placeholder="Alamat Domisili Ayah"
+            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
 
         <div className="md:col-span-2">
@@ -75,7 +142,12 @@ export default function DataOrangTuaTab() {
           <p className="text-xs text-gray-500 mb-2">
             3. Jika nantinya anak/tanggungan saya dinyatakan lolos seleksi maka saya memberi izin untuknya bertempat tinggal di asrama selama masa pendidikan berlangsung.
           </p>
-          <select name="pernyataanOrangTua" className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+          <select
+            name="pernyataanOrangTua"
+            value={String(Boolean(formData.pernyataanOrangTua))}
+            onChange={(e) => updateField("Data orang Tua", "pernyataanOrangTua", e.target.value === "true")}
+            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
             <option value="true">Ya</option>
             <option value="false">Tidak</option>
           </select>
@@ -84,7 +156,10 @@ export default function DataOrangTuaTab() {
 
       <div className="flex justify-end">
         {status && <p className="mr-4 self-center text-sm text-gray-600" role="status">{status}</p>}
-        <button type="submit" className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
           Simpan Data Orang Tua
         </button>
       </div>

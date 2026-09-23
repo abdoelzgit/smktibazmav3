@@ -95,3 +95,5 @@ export const tabSchemas = {
   'Berkas': berkasSchema,
   'Surat Rekomendasi': suratRekomendasiSchema,
 } as const;
+
+export type TabName = keyof typeof tabSchemas;

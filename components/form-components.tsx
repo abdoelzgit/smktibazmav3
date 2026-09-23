@@ -216,7 +216,7 @@ export function FormFileUpload({ label, name, accept, value, onChange, error, pr
         {(fileName || preview) && (
           <div className="mt-2 flex items-center justify-between">
             <p className="truncate text-xs text-green-700 flex-1">
-              File dipilih: {fileName || preview.split('/').pop()}
+              File dipilih: {fileName || preview?.split('/').pop()}
             </p>
             {onRemovePreview && (
               <button

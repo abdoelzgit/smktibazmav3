@@ -2,18 +2,31 @@
 
 import React, { useState } from "react";
 import { saveRekomendasiAction } from "@/app/actions/ppdb-form";
+import { useForm } from "@/components/form-context";
 
-export default function SuratRekomendasiTab() {
+export default function SuratRekomendasiTab({ action }: { action?: unknown } = {}) {
+  const { formData, updateField, updateFields } = useForm();
   const [status, setStatus] = useState<string | null>(null);
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setStatus("Menyimpan...");
-    const result = await saveRekomendasiAction(formData);
-    setStatus(result.success ? "Surat rekomendasi berhasil disimpan." : result.error ?? "Surat rekomendasi gagal disimpan.");
+    const formElement = e.currentTarget;
+    const data = new FormData(formElement);
+
+    const result = await saveRekomendasiAction(data);
+    if (result.success) {
+      if (result.data && typeof result.data === "object") {
+        updateFields("Surat Rekomendasi", result.data as Record<string, unknown>);
+      }
+      setStatus("Surat rekomendasi berhasil disimpan.");
+    } else {
+      setStatus(result.error ?? "Surat rekomendasi gagal disimpan.");
+    }
   };
 
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="mb-6">
         <span className="bg-[#1e3a8a] text-white px-5 py-2 rounded-lg font-semibold text-base shadow-sm inline-block">
           Surat Rekomendasi
@@ -29,6 +42,8 @@ export default function SuratRekomendasiTab() {
             name="namaPemberiRekomendasi"
             type="text"
             required
+            value={formData.namaPemberiRekomendasi ?? ""}
+            onChange={(e) => updateField("Surat Rekomendasi", "namaPemberiRekomendasi", e.target.value)}
             placeholder="Masukkan nama lengkap pemberi rekomendasi"
             className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -41,6 +56,8 @@ export default function SuratRekomendasiTab() {
           <input
             name="jabatanInstansi"
             type="text"
+            value={formData.jabatanInstansi ?? ""}
+            onChange={(e) => updateField("Surat Rekomendasi", "jabatanInstansi", e.target.value)}
             placeholder="Contoh: Kepala Sekolah / Tokoh Masyarakat"
             className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -53,6 +70,8 @@ export default function SuratRekomendasiTab() {
           <input
             name="noHpPemberiRekomendasi"
             type="text"
+            value={formData.noHpPemberiRekomendasi ?? ""}
+            onChange={(e) => updateField("Surat Rekomendasi", "noHpPemberiRekomendasi", e.target.value)}
             placeholder="+62..."
             className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -68,6 +87,19 @@ export default function SuratRekomendasiTab() {
             accept=".pdf,image/*"
             className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
           />
+          {formData.suratRekomendasiUrl && (
+            <div className="mt-2 text-xs text-green-700 flex items-center gap-1.5 font-medium">
+              <span>✓ Berkas Surat Rekomendasi sudah terunggah</span>
+              <a
+                href={formData.suratRekomendasiUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline hover:text-blue-800"
+              >
+                Lihat Berkas
+              </a>
+            </div>
+          )}
         </div>
 
         <div className="md:col-span-2">
@@ -77,6 +109,8 @@ export default function SuratRekomendasiTab() {
           <textarea
             name="catatanRekomendasi"
             rows={3}
+            value={formData.catatanRekomendasi ?? ""}
+            onChange={(e) => updateField("Surat Rekomendasi", "catatanRekomendasi", e.target.value)}
             placeholder="Tuliskan catatan tambahan jika ada..."
             className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -85,7 +119,10 @@ export default function SuratRekomendasiTab() {
 
       <div className="flex justify-end">
         {status && <p className="mr-4 self-center text-sm text-gray-600" role="status">{status}</p>}
-        <button type="submit" className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
           Simpan Surat Rekomendasi
         </button>
       </div>
