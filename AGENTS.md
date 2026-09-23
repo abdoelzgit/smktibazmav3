@@ -94,3 +94,14 @@ smktibazmav3/
 - **Clean Code**: Jaga komponen agar modular, reusable, dan terpisah antara logika presentation (UI) dan logika backend (Server Action).
 - **Integritas Aturan Auto-Generated**: Jangan pernah menghapus blok `<!-- BEGIN:nextjs-agent-rules --> ... <!-- END:nextjs-agent-rules -->` yang ada di bagian atas file `AGENTS.md`.
 
+<!-- antislop:start -->
+## antislop
+For UI, copy, people, mobile layout, or code comments work, load the antislop skill for the task:
+- Core filter, always on: `antislop`
+- Copy & text: `antislop-copywriting`
+- UI / visual: `antislop-ui`
+- People: `antislop-human`
+- Mobile / responsive: `antislop-layoutmobile`
+- Code comments: `antislop-code`
+Before starting, ask the user when antislop applies: during the work, or after it is done.
+<!-- antislop:end -->
