@@ -3,12 +3,12 @@
 import React from "react"
 
 const facilities = [
-  { title: "Ruang Musik", image: "/images/fasilitas/ruang-musik.jpg" },
-  { title: "Ruang BK", image: "/images/fasilitas/ruang-bk.jpg" },
-  { title: "Ruang Kelas A", image: "/images/fasilitas/i.webp" },
-  { title: "Ruang Kelas B", image: "/images/fasilitas/ruang-kelas-2.jpg" },
-  { title: "Ruang Kelas C", image: "/images/fasilitas/ruang-kelas-3.jpg" },
-  { title: "Ruang Kelas D", image: "/images/fasilitas/ruang-kelas-4.jpg" },
+  { title: "Ruang Musik", image: "/images/sekolah/fasilitas/bk.webp" },
+  { title: "Ruang BK", image: "/images/sekolah/fasilitas/musik.webp" },
+  { title: "Ruang Kelas A", image: "/images/sekolah/fasilitas/kelas.webp" },
+  { title: "Ruang Lab komputer", image: "/images/sekolah/fasilitas/labkom.webp" },
+  { title: "Ruang Rapat", image: "/images/sekolah/fasilitas/rapat.webp" },
+  { title: "Perpustakaan", image: "/images/sekolah/fasilitas/perpustakaan.webp" },
 ]
 
 interface FacilityItem {
