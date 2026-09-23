@@ -15,28 +15,27 @@ type FooterColumn = {
 };
 
 const footerColumns: FooterColumn[] = [
-
   {
-    title: "Tentang",
+    title: "Tentang Kami",
     links: [
-      { label: "Profil Sekolah", href: "/sekolah" },
-      { label: "Profil Jurusan", href: "/profil-jurusan" },
+      { label: "Tentang Sekolah", href: "/sekolah" },
+      { label: "Tentang Asrama", href: "/asrama" },
+      { label: "Mitra Kami", href: "/mitra" },
       { label: "Akreditasi", href: "/akreditasi" },
-      { label: "Asrama", href: "/asrama" },
     ],
   },
   {
     title: "Program",
     links: [
-      { label: "Ekstrakurikuler", href: "/ekstrakulikuler" },
-      { label: "Mitra", href: "/mitra" },
+      { label: "Profil Jurusan", href: "/profil-jurusan" },
+      { label: "Ekstrakulikuler", href: "/ekstrakulikuler" },
     ],
   },
   {
     title: "Informasi",
     links: [
-      { label: "Berita", href: "/berita" },
       { label: "Jejak Karya", href: "/jejak-karya" },
+      { label: "Berita", href: "/berita" },
     ],
   },
   {
@@ -87,7 +86,9 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="shrink-0 text-white/90" />
-                <span>infosmktibazma@gmail.com</span>
+                <a href="mailto:info@smktibazma.sch.id" className="hover:underline transition-colors">
+                  info@smktibazma.sch.id
+                </a>
               </li>
             </ul>
           </div>

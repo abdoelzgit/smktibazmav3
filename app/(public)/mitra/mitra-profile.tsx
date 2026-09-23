@@ -73,7 +73,6 @@ export default function MitraProfileFullScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
   const [logoError, setLogoError] = useState<Record<number, boolean>>({});
-  const [translateX, setTranslateX] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isInView, setIsInView] = useState(false);
@@ -138,13 +137,16 @@ export default function MitraProfileFullScreen() {
       const progress = Math.min(1, Math.max(0, -wrapperRect.top / scrollableHeight));
       const maxTranslate = Math.max(0, track.scrollWidth - track.clientWidth);
       const nextTranslate = -progress * maxTranslate;
-      setTranslateX(nextTranslate);
+      
+      // Direct DOM mutation instead of setState to avoid re-renders on every scroll tick
+      track.style.transform = `translateX(${nextTranslate}px)`;
 
       const computedIndex = Math.min(
         mitras.length - 1,
         Math.max(0, Math.round(progress * (mitras.length - 1)))
       );
 
+      // Only update React state when active index actually changes
       if (computedIndex !== activeIndex) {
         setActiveIndex(computedIndex);
       }
@@ -153,14 +155,19 @@ export default function MitraProfileFullScreen() {
 
   useEffect(() => {
     if (!hijackActive) {
-      setTranslateX(0);
+      if (trackRef.current) {
+        trackRef.current.style.transform = "translateX(0px)";
+      }
       return;
     }
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      if (rafId.current) cancelAnimationFrame(rafId.current);
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
+        rafId.current = null;
+      }
     };
   }, [hijackActive, handleScroll]);
 
@@ -175,7 +182,9 @@ export default function MitraProfileFullScreen() {
       const targetProgress = mitras.length > 1 ? index / (mitras.length - 1) : 0;
       const maxTranslate = Math.max(0, track.scrollWidth - track.clientWidth);
       const nextTranslate = -targetProgress * maxTranslate;
-      setTranslateX(nextTranslate);
+      
+      // Direct DOM mutation for smooth manual scroll
+      track.style.transform = `translateX(${nextTranslate}px)`;
 
       const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
       const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY;
@@ -199,7 +208,6 @@ export default function MitraProfileFullScreen() {
 
   // Auto-slide setiap 6 detik jika seksi sedang terlihat dan kursor tidak sedang hover
   useEffect(() => {
-    if (!isInView || isPaused) return;
     if (!isInView || isPaused) return;
 
     const timer = setTimeout(() => {
@@ -298,7 +306,6 @@ export default function MitraProfileFullScreen() {
                     !hijackActive && "overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
                   )}
                   style={{
-                    transform: hijackActive ? `translateX(${translateX}px)` : "none",
                     transition: hijackActive ? "transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)" : undefined,
                   }}
                 >

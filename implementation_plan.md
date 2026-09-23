@@ -1,100 +1,52 @@
-# Implementation Plan: CRUD Jejak Karya Siswa
+# Implementation Plan - Performance & Memory Leak Cleanup
 
-Implementasi sistem pengurusan konten (CRUD) untuk **Jejak Karya** (Project/Portofolio Siswa) di SMK TI BAZMA. Workflow UI admin mengikuti standar dan layout yang ada pada **CRUD Berita** (`app/admin/berita`), disesuaikan untuk bidang-bidang khusus portofolio (kategori Website, Design, Video, IoT, tantangan, pendekatan, hasil, tim/penulis, tautan demo, serta galeri karya) dan dilengkapi **Preview Mode** khas tampilan publik Jejak Karya.
+Comprehensive optimization to eliminate cumulative memory leaks, un-throttled scroll listeners, layout thrashing, and orphaned GSAP instances during client-side route navigation in Next.js.
 
----
-
-## User Review Required
-
-> [!IMPORTANT]
-> **Data Migration Note**:
-> 1. Data dummy awal pada `lib/jejak-karya-data.ts` telah dimigrasikan ke database PostgreSQL via Prisma / Seed agar data bersifat dinamis dan konsisten.
-> 2. Skema Prisma baru `JejakKarya` telah ditambahkan dan disinkronkan menggunakan Server Actions.
+## Problem Summary
+As users navigate between pages (e.g., Home → Sekolah → Mitra → Asrama), the web app becomes progressively sluggish. This is caused by:
+1. **Un-throttled Scroll Listeners & Layout Thrashing** in `Navbar`: Executing `document.querySelectorAll` and `getBoundingClientRect()` on every scroll frame (60-120 FPS).
+2. **High-Frequency React State Updates** in `MitraProfile`: Invoking `useState` (`setTranslateX`) 60-120 times per second during scroll, forcing entire component tree re-renders on every scroll tick.
+3. **Continuous ResizeObserver Thrashing** in `SmoothScroll`: Un-debounced `ResizeObserver` on `document.body` invoking `ScrollTrigger.refresh()` layout measurements.
+4. **Incomplete GSAP & Listener Cleanup**: Orphaned animation frames and listeners lingering in memory after route navigation.
 
 ---
 
 ## Proposed Changes
 
-### 1. Database & Prisma Schema
-
-#### [MODIFY] [schema.prisma](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/prisma/schema.prisma)
-- Menambahkan model `JejakKarya` dengan struktur field:
-  - `id`: String (cuid)
-  - `title`: String
-  - `slug`: String (@unique)
-  - `category`: String (`Website` | `Design` | `Video` | `IoT`)
-  - `year`: String (default `"2026"`)
-  - `author`: String (e.g. `"Tim Siswa RPL"`)
-  - `description`: String (ringkasan singkat)
-  - `challenge`: String? (tantangan proyek)
-  - `approach`: String? (pendekatan solusi)
-  - `outcome`: String? (hasil & dampak)
-  - `whatWeDid`: String? (detail peran/pengerjaan)
-  - `tags`: String? (JSON string array label/teknologi)
-  - `coverImage`: String? (gambar utama 16:9)
-  - `galleryImages`: String? (JSON string array gambar galeri)
-  - `demoUrl`: String? (link live demo/karya)
-  - `published`: Boolean (default `false`)
-  - `publishedAt`: DateTime?
-  - `createdAt` & `updatedAt`: DateTime
+### 1. Navbar Component
+#### [MODIFY] [`components/navbar.tsx`](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/components/navbar.tsx)
+- Cache `[data-nav-theme]` elements and update cache only on route change (`pathname`) or window `resize`.
+- Throttle `onScroll` handler using `requestAnimationFrame` to avoid layout reflows on every scroll tick.
+- Add proper `cancelAnimationFrame` and `removeEventListener` cleanup on unmount or route change.
 
 ---
 
-### 2. Server Actions & Backend Logic
-
-#### [NEW] [jejak-karya.ts](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/actions/jejak-karya.ts)
-- Membuat Server Actions untuk mutasi data type-safe:
-  - `createJejakKaryaAction(input: CreateJejakKaryaInput)`: Membuat portofolio baru + generate slug unik.
-  - `updateJejakKaryaAction(id: string, input: CreateJejakKaryaInput)`: Memperbarui portofolio + manajemen hapus file gambar lama dari disk jika diganti.
-  - `deleteJejakKaryaAction(id: string)`: Menghapus data dari DB beserta file gambar terkait dari storage `public/`.
-  - `getJejakKaryaByIdAction(id: string)`: Mengambil data tunggal untuk form edit admin.
-
-#### [NEW] [jejak-karya-list.ts](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/actions/jejak-karya-list.ts)
-- Membuat Server Actions untuk query & fetching:
-  - `getJejakKaryaListAction()`: Mengambil seluruh daftar karya untuk halaman admin (filter status draft/published, search).
-  - `getPublishedJejakKaryaAction(options)`: Query karya terpublikasi untuk halaman publik dengan filter kategori (`Semua`, `Website`, `Design`, `Video`, `IoT`).
-  - `getJejakKaryaBySlugAction(slug: string)`: Fetch detail karya publik berdasarkan slug.
+### 2. Mitra Profile Component
+#### [MODIFY] [`app/(public)/mitra/mitra-profile.tsx`](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/(public)/mitra/mitra-profile.tsx)
+- Replace high-frequency React `useState` (`setTranslateX`) during scroll with Direct DOM Mutation (`trackRef.current.style.transform`).
+- Throttle `setActiveIndex` updates so React re-renders only occur when the active slide index actually changes.
+- Ensure all RAF loops and scroll event listeners are cleanly terminated on component unmount.
 
 ---
 
-### 3. Admin Management UI (`app/admin/jejak-karya`)
-
-#### [MODIFY] [page.tsx](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/admin/jejak-karya/page.tsx)
-- Mengimplementasikan halaman daftar karya dengan UI grid 3-kolom bergaya Dribbble/portfolio shot (sama seperti `app/admin/berita/page.tsx`):
-  - Card pertama khusus "Tambah Jejak Karya Baru" (Upload shortcut).
-  - Tabs filter kategori: `Semua`, `Dipublikasikan`, `Draft`, `Website`, `Design`, `Video`, `IoT`.
-  - Fitur pencarian real-time & tombol Hapus dengan dialog konfirmasi.
-
-#### [NEW] [new/page.tsx](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/admin/jejak-karya/new/page.tsx)
-- Menyiapkan halaman pembuat Jejak Karya baru:
-  - Header bar sticky dengan tombol **Simpan Draft**, **Terbitkan**, **Toggle Pratinjau (Preview)**, dan **Settings Panel**.
-  - **Edit Mode**: Input Judul, Deskripsi Ringkas, Unggah Cover Image (16:9), Input Tantangan (Challenge), Pendekatan (Approach), Hasil (Outcome), Tautan Live Demo, dan Unggah Galeri Gambar.
-  - **Sidebar Right Panel**: Pengaturan Kategori (`Website`, `Design`, `Video`, `IoT`), Tahun Karya, Penulis/Tim Siswa, dan Tag/Teknologi.
-  - **Preview Mode (Khas Jejak Karya)**: Menampilkan bentuk Pratinjau interaktif persis seperti tampilan Publik Jejak Karya (Kartu karya 16:9, badge kategori, struktur detail karya, dan tautan demo).
-
-#### [NEW] [[id]/edit/page.tsx](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/admin/jejak-karya/[id]/edit/page.tsx)
-- Halaman edit karya berdasarkan `id` yang pre-fill data lama dan memanggil `updateJejakKaryaAction`.
+### 3. Smooth Scroll Component
+#### [MODIFY] [`components/smooth-scroll.tsx`](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/components/smooth-scroll.tsx)
+- Debounce `ResizeObserver` on `document.body` to prevent rapid consecutive `ScrollTrigger.refresh()` calls during DOM mutations.
+- Ensure route changes (`pathname`) trigger a clean `lenis.resize()` and `ScrollTrigger.refresh(true)` after DOM settle.
 
 ---
 
-### 4. Public Page Integration
-
-#### [MODIFY] [jejak-karya-client.tsx](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/%28public%29/jejak-karya/jejak-karya-client.tsx)
-- Mengintegrasikan data dari Server Action `getPublishedJejakKaryaAction` ke dalam komponen scroll horizontal karya siswa.
-
-#### [NEW/MODIFY] [[slug]/page.tsx](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/%28public%29/jejak-karya/[slug]/page.tsx)
-- Menampilkan halaman detail publik secara dinamis dari database berdasarkan `slug` karya.
+### 4. Animation Cleanup Audit
+#### [MODIFY] [`app/(public)/hero-carousel.tsx`](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/(public)/hero-carousel.tsx)
+#### [MODIFY] [`app/(public)/sekolah/section/timeline.tsx`](file:///c:/Users/Hp/OneDrive/Documents/bdeul/code/smktibazmav3/app/(public)/sekolah/section/timeline.tsx)
+- Ensure all GSAP timelines and timers (`setTimeout`, `setInterval`) are strictly scoped inside `gsap.context()` or `useEffect` with explicit cleanup (`ctx.revert()`, `clearTimeout`).
 
 ---
 
 ## Verification Plan
 
-### Automated / Build Tests
-- `npx prisma db push` atau `npx prisma generate` untuk memastikan skema Prisma valid.
-- `npm run build` untuk memverifikasi type-safety TypeScript dan Server Actions tanpa lint/build error.
-
 ### Manual Verification
-1. Buka `/admin/jejak-karya` di browser dan uji pembuatan karya baru (Draft & Publish).
-2. Uji alur **Pratinjau (Preview Mode)** pada form pembuatan karya, pastikan tampilan preview 100% mirip dengan desain publik Jejak Karya.
-3. Uji pengeditan karya dan penghapusan karya di admin dashboard.
-4. Buka halaman publik `/jejak-karya` dan `/jejak-karya/[slug]` untuk memverifikasi animasi horizontal scroll & detail karya berjalan lancar.
+1. **Navigation Stress Test**: Open DevTools Performance / Memory tab. Navigate sequentially across all pages (`/` → `/sekolah` → `/mitra` → `/asrama` → `/spmb` → `/`...) 10+ times.
+2. **Memory Heap Inspection**: Verify JS Heap size remains stable and does not grow continuously.
+3. **Scroll Performance**: Verify smooth 60 FPS scrolling on `/sekolah` and `/mitra` without main-thread jank or Layout Thrashing.
+4. **Build & Type Check**: Ensure `npm run build` or Next.js dev server runs with zero errors.

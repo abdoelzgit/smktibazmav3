@@ -12,6 +12,7 @@ export default function StaffSection({ className }: { className?: string }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const panelRefs = useRef<Array<HTMLDivElement | null>>([]);
   const gridRefs = useRef<Array<HTMLDivElement | null>>([]); // kotak scrollable per kategori
+  const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -38,7 +39,11 @@ export default function StaffSection({ className }: { className?: string }) {
 
         panelRefs.current.forEach((panel, i) => {
           if (!panel) return;
-          gsap.set(panel, { opacity: i === 0 ? 1 : 0, force3D: true });
+          gsap.set(panel, {
+            opacity: i === 0 ? 1 : 0,
+            pointerEvents: i === 0 ? "auto" : "none",
+            force3D: true,
+          });
         });
 
         // Tunggu layout settle sebelum hitung overflow
@@ -93,12 +98,24 @@ export default function StaffSection({ className }: { className?: string }) {
 
             masterTl.to(
               currentPanel,
-              { opacity: 0, duration: fadeDuration, ease: "power1.inOut", force3D: true },
+              {
+                opacity: 0,
+                pointerEvents: "none",
+                duration: fadeDuration,
+                ease: "power1.inOut",
+                force3D: true,
+              },
               animStartTime
             );
             masterTl.to(
               nextPanel,
-              { opacity: 1, duration: fadeDuration, ease: "power1.inOut", force3D: true },
+              {
+                opacity: 1,
+                pointerEvents: "auto",
+                duration: fadeDuration,
+                ease: "power1.inOut",
+                force3D: true,
+              },
               animStartTime
             );
 
@@ -121,15 +138,22 @@ export default function StaffSection({ className }: { className?: string }) {
           }
           currentTime += lastHoldTime;
 
-          const totalScrollDistance = currentTime * 400;
+          const totalScrollDistance = Math.max(
+            window.innerHeight * 1.2,
+            currentTime * 120
+          );
 
-          ScrollTrigger.create({
+          if (scrollTriggerRef.current) {
+            scrollTriggerRef.current.kill();
+          }
+
+          scrollTriggerRef.current = ScrollTrigger.create({
             trigger: section,
             pin: true,
             pinSpacing: true,
             start: "top top",
             end: `+=${totalScrollDistance}`,
-            scrub: true,
+            scrub: 0.5,
             anticipatePin: 1,
             invalidateOnRefresh: true,
             animation: masterTl,
@@ -150,7 +174,11 @@ export default function StaffSection({ className }: { className?: string }) {
       });
     }, sectionRef);
 
-    return () => ctx.revert();
+    return () => {
+      scrollTriggerRef.current?.kill();
+      scrollTriggerRef.current = null;
+      ctx.revert();
+    };
   }, []);
 
   return (
@@ -195,7 +223,7 @@ export default function StaffSection({ className }: { className?: string }) {
               }}
               className={cn(
                 "w-full lg:w-[60%] xl:w-[62%] lg:grow lg:h-full px-0 lg:pr-4",
-                "flex lg:grid lg:grid-cols-2 flex-row lg:flex-row overflow-x-auto lg:overflow-y-auto gap-4 lg:gap-x-6 lg:gap-y-12 snap-x snap-mandatory lg:snap-none py-2",
+                "flex lg:grid lg:grid-cols-2 flex-row lg:flex-row overflow-x-auto lg:overflow-hidden gap-4 lg:gap-x-6 lg:gap-y-12 snap-x snap-mandatory lg:snap-none py-2",
                 "no-scrollbar"
               )}
             >

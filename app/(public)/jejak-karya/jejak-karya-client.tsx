@@ -171,23 +171,15 @@ function HorizontalProjectsSection({
       }
     };
 
-    updateScrollRange();
-    window.dispatchEvent(new Event("resize"));
-
-    const timer1 = setTimeout(() => {
+    requestAnimationFrame(() => {
       updateScrollRange();
-      window.dispatchEvent(new Event("resize"));
-    }, 150);
-
-    const timer2 = setTimeout(() => {
-      updateScrollRange();
-      window.dispatchEvent(new Event("resize"));
-    }, 500);
+      requestAnimationFrame(() => {
+        updateScrollRange();
+      });
+    });
 
     window.addEventListener("resize", updateScrollRange);
     return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
       window.removeEventListener("resize", updateScrollRange);
     };
   }, [projects, isLoading]);

@@ -188,6 +188,7 @@ export function PortalOverlay() {
         );
 
       await tl1;
+      tl1.kill();
       await new Promise((r) => setTimeout(r, 100));
 
       // =========================================================================
@@ -249,6 +250,7 @@ export function PortalOverlay() {
         );
 
       await tl2;
+      tl2.kill();
 
       // Selesai transisi: sembunyikan container
       gsap.set([stripesContainer, card], { display: "none" });

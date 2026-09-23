@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import Image from "next/image";
+import { Mail, Phone } from "lucide-react";
 import { usePortalTransition } from "@/components/portal-transition";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -55,6 +57,7 @@ const HOVER_EASE = "back.out";
 const DOT_GAP = 14;
 
 export function Navbar() {
+  const pathname = usePathname();
   const { navigateTo } = usePortalTransition();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -99,38 +102,78 @@ export function Navbar() {
   const isDrawerOpenRef = useRef(false);
 
   // ── High-performance adaptive nav color ────────────────────────────────────
-  // Strategi: pada setiap scroll event, cari elemen [data-nav-theme] yang
-  // saat ini berada paling dekat di bawah navbar (top edge ≤ THRESHOLD dari
-  // atas viewport). Pendekatan ini lebih reliable dari IntersectionObserver
-  // untuk kasus section pendek atau halaman yang sudah discroll saat load.
+  // Strategi: cache [data-nav-theme] elements, update cache hanya saat route
+  // change atau window resize. Throttle scroll listener menggunakan RAF untuk
+  // menghindari layout thrashing dari querySelectorAll + getBoundingClientRect
+  // di setiap scroll frame (60-120 FPS).
+  const sectionsCache = useRef<HTMLElement[]>([]);
+
+  useEffect(() => {
+    // Update cache saat mount atau pathname berubah
+    sectionsCache.current = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-nav-theme]"),
+    );
+    
+    // Paksa update tema saat navigasi
+    const onScroll = () => {
+      const nextIsScrolled = window.scrollY > 50;
+      if (nextIsScrolled !== isScrolledRef.current) {
+        isScrolledRef.current = nextIsScrolled;
+        setIsScrolled(nextIsScrolled);
+      }
+
+      const sections = sectionsCache.current;
+      if (sections.length === 0) {
+        if (!isInvertedRef.current) {
+          isInvertedRef.current = true;
+          setIsInverted(true);
+        }
+        return;
+      }
+
+      let activeSection: HTMLElement | null = null;
+      for (const section of sections) {
+        const top = section.getBoundingClientRect().top;
+        if (top <= 80) activeSection = section;
+        else break;
+      }
+      if (!activeSection) activeSection = sections[0];
+      
+      const nextIsDark = activeSection.getAttribute("data-nav-theme") === "dark";
+      if (nextIsDark !== isInvertedRef.current) {
+        isInvertedRef.current = nextIsDark;
+        setIsInverted(nextIsDark);
+      }
+    };
+    
+    onScroll();
+  }, [pathname]);
+
   useEffect(() => {
     const NAVBAR_HEIGHT = 80; // px — batas deteksi tema
 
     const getActiveTheme = (): boolean => {
-      const sections = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-nav-theme]"),
-      );
+      const sections = sectionsCache.current;
       if (sections.length === 0) return true; // default dark
 
-      // Cari section yang top-nya paling mendekati NAVBAR_HEIGHT dari atas
-      // (yaitu section yang baru saja "masuk" ke bawah navbar)
       let activeSection: HTMLElement | null = null;
       for (const section of sections) {
         const top = section.getBoundingClientRect().top;
         if (top <= NAVBAR_HEIGHT) {
           activeSection = section;
         } else {
-          break; // sorted top-to-bottom, stop di first section below threshold
+          break;
         }
       }
 
       if (!activeSection) {
-        // Belum ada section yang melewati threshold → pakai tema section pertama
         activeSection = sections[0];
       }
 
       return activeSection.getAttribute("data-nav-theme") === "dark";
     };
+
+    let scrollPending = false;
 
     const onScroll = () => {
       // Cek scroll threshold untuk background navbar
@@ -148,12 +191,27 @@ export function Navbar() {
       }
     };
 
-    // Jalankan sekali saat mount untuk menentukan tema awal
+    const rafScroll = () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        onScroll();
+        scrollPending = false;
+      });
+    };
+
+    const handleScroll = () => {
+      if (!scrollPending) {
+        scrollPending = true;
+        rafScroll();
+      }
+    };
+
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", handleScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, []);
 
@@ -507,58 +565,51 @@ export function Navbar() {
               ))}
             </ul>
             <div className="mt-auto space-y-6 pt-8 border-t border-border/50">
-              {/* Business Enquiry */}
-              <div className="space-y-2">
-                <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Business Enquiry
+              {/* Slogan SMK */}
+              <div className="space-y-3">
+                <p className="text-2xl lg:text-3xl font-light text-foreground/60 tracking-wider">
+                  &ldquo;ENERGI MASA <br /> DEPAN INDONESIA&rdquo;
                 </p>
-                <ul className="space-y-1">
-                  <li className="flex gap-3 text-sm text-foreground">
-                    <span className="font-mono text-muted-foreground">E.</span>
-                    <a
-                      href="mailto:info@smktibazma.sch.id"
-                      className="transition-colors hover:text-primary"
-                    >
-                      info@smktibazma.sch.id
-                    </a>
-                  </li>
-                  <li className="flex gap-3 text-sm text-foreground">
-                    <span className="font-mono text-muted-foreground">P.</span>
-                    <a
-                      href="tel:+628111111111"
-                      className="transition-colors hover:text-primary"
-                    >
-                      (0251) 1234567
-                    </a>
-                  </li>
-                </ul>
               </div>
 
-              {/* Social */}
+              {/* Kontak */}
               <div className="space-y-2">
                 <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Social
+                  Kontak
                 </p>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-1">
-                  {[
-                    { label: "Linkedin", href: "#" },
-                    { label: "Facebook", href: "#" },
-                    { label: "Dribbble", href: "#" },
-                    { label: "Instagram", href: "#" },
-                  ].map((s) => (
-                    <a
-                      key={s.label}
-                      href={s.href}
-                      className="text-sm text-foreground transition-colors hover:text-primary"
-                    >
-                      {s.label}
-                    </a>
-                  ))}
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                  <a
+                    href="mailto:info@smktibazma.sch.id"
+                    className="text-sm text-foreground transition-colors hover:text-primary"
+                  >
+                    Email
+                  </a>
+                  <a
+                    href="tel:+6282121831439"
+                    className="text-sm text-foreground transition-colors hover:text-primary"
+                  >
+                    Phone
+                  </a>
+                  <a
+                    href="https://instagram.com/smktibazma"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-foreground transition-colors hover:text-primary"
+                  >
+                    Instagram
+                  </a>
+                  <a
+                    href="https://youtube.com/@smktibazma"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-foreground transition-colors hover:text-primary"
+                  >
+                    YouTube
+                  </a>
                 </div>
               </div>
             </div>
           </aside>
-          
         </div>
       </div>
     </>
