@@ -1,5 +1,5 @@
 "use client"
-
+import Image from "next/image"
 import React from "react"
 
 const facilities = [
@@ -24,10 +24,12 @@ function FacilityCard({ item }: FacilityCardProps) {
   return (
     <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-100">
       {/* Gambar: Zoom in halus saat hover */}
-      <img
+      <Image
         src={item.image}
         alt={item.title}
         loading="lazy"
+        width={400}
+        height={300}
         className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110"
       />
 
