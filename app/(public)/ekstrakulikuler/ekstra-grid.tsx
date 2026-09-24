@@ -1,46 +1,47 @@
 "use client";
 
-import { ExpandableGallery, GalleryItem } from "@/components/ui/gallery-animation";
+import { EkstraShowcase } from "./ekstra-showcase";
 
-const ekstraData: GalleryItem[] = [
+const ekstraData = [
   {
     title: "MCRobo (Robotika)",
-    description: "Wadah riset teknologi, perakitan mikrokontroler, IoT, dan pemrograman robotika kreatif.",
+    description:
+      "MCRobo menjadi wadah bagi santri untuk mengembangkan kemampuan di bidang robotika dan teknologi. Kegiatan mencakup perakitan mikrokontroler, pemrograman, Internet of Things (IoT), serta pembuatan berbagai proyek teknologi secara kreatif dan kolaboratif.",
     image: "/images/ekstrakulikuler/robotik.webp",
   },
   {
     title: "Pramuka",
-    description: "Membentuk karakter disiplin, kemandirian, kepemimpinan, dan kepedulian sosial santri.",
+    description:
+      "Pramuka menjadi kegiatan untuk membentuk karakter santri melalui latihan kedisiplinan, kemandirian, kepemimpinan, dan kerja sama. Berbagai kegiatan dilakukan untuk melatih keberanian, tanggung jawab, serta kepedulian terhadap lingkungan dan sesama.",
     image: "/images/ekstrakulikuler/pramuka.webp",
   },
   {
-    title: "Hadroh",
-    description: "Menyalurkan bakat seni musik perkusi rebana dan syiar nilai-nilai Islam yang indah.",
-    image: "/images/ekstrakulikuler/hadroh.webp",
-  },
-  {
-    title: "Band",
-    description: "Mengasah musikalitas, harmonisasi instrumen musik modern, dan kreativitas bermusik.",
-    image: "/images/ekstrakulikuler/band.webp",
-  },
-  {
     title: "Silat",
-    description: "Melestarikan seni bela diri tradisional, melatih ketangkasan fisik, mental, dan pertahanan diri.",
+    description:
+      "Silat menjadi wadah untuk mempelajari seni bela diri sekaligus melatih ketangkasan dan kedisiplinan. Selain kemampuan fisik, kegiatan ini juga membentuk keberanian, pengendalian diri, mental yang kuat, serta sikap menghargai orang lain.",
     image: "/images/ekstrakulikuler/silat.webp",
   },
   {
     title: "Futsal",
-    description: "Mengembangkan kebugaran fisik, sportivitas, dan kekompakan tim melalui olahraga futsal.",
-    image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
+    description:
+      "Futsal menjadi kegiatan olahraga yang mendorong santri untuk menjaga kebugaran sekaligus belajar bekerja sama dalam tim. Latihan dan pertandingan membantu mengembangkan kemampuan bermain, sportivitas, komunikasi, serta semangat untuk saling mendukung.",
+    image:
+      "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
+  },
+  {
+    title: "Hadroh",
+    description:
+      "Hadroh menjadi wadah bagi santri yang memiliki minat dalam seni musik Islami. Melalui permainan rebana dan latihan bersama, santri belajar mengembangkan musikalitas, kekompakan, serta menyalurkan kreativitas dalam kegiatan yang bernuansa dakwah dan syiar Islam.",
+    image: "/images/ekstrakulikuler/hadroh.webp",
+  },
+  {
+    title: "Band",
+    description:
+      "Band menjadi ruang bagi santri untuk mengembangkan kemampuan bermusik melalui berbagai instrumen musik modern. Latihan dilakukan secara bersama untuk membangun musikalitas, harmonisasi, kreativitas, dan kemampuan bekerja sebagai sebuah tim.",
+    image: "/images/ekstrakulikuler/band.webp",
   },
 ];
 
 export function EkstraGrid() {
-  return (
-    <section className="w-full max-w-7xl mx-auto pt-4 pb-20 sm:pb-28 px-4 sm:px-6 lg:px-8">
-      <div className="w-full">
-        <ExpandableGallery images={ekstraData} clickable={false} className="w-full" />
-      </div>
-    </section>
-  );
+  return <EkstraShowcase items={ekstraData} />;
 }
