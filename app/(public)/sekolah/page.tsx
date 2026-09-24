@@ -9,7 +9,7 @@ import Staff from "./section/staff";
 export default function SekolahPage() {
   return (
     <main className="flex min-h-full flex-col items-center">
-      <Hero title="Profil Sekolah" backgroundImage="/images/hero-network.jpg" />
+      <Hero title="Profil Sekolah" backgroundImage="/images/sekolah.webp" />
       <Summary />
       <Core />
       <TimelineCarousel />
@@ -18,4 +18,4 @@ export default function SekolahPage() {
       <Staff />
     </main>
   );
-}
+}

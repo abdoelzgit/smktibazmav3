@@ -118,6 +118,15 @@
   --sidebar-ring: #132B6D;
 }
 
+/* Sembunyikan scrollbar tapi tetap bisa discroll */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE & Edge lama */
+  scrollbar-width: none;     /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Edge baru */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

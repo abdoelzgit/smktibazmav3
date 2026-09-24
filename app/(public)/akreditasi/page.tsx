@@ -6,7 +6,7 @@ export default function AkreditasiPage() {
     <main className="flex h-full flex-col items-center">
       <Hero
         title="Akreditasi Sekolah"
-        backgroundImage="/images/hero-network.jpg"
+        backgroundImage="/images/akreditasi.webp  "
       />
       <AkreditasiContent />
       <CertificateCard />

@@ -7,7 +7,7 @@ export default function EkstrakulikulerPage() {
     <main className="flex h-full flex-col items-center">
       <Hero
         title="Ekstrakulikuler"
-        backgroundImage="/images/hero-network.jpg"
+        backgroundImage="/images/ekstrakulikuler.webp"
       />
 
       <EkstraContent />

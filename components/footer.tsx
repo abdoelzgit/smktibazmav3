@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import { MapPin, Phone, Mail } from "lucide-react";
+import { PortalLink } from "@/components/portal-transition";
 
 type FooterLink = {
   label: string;
@@ -16,28 +16,26 @@ type FooterColumn = {
 
 const footerColumns: FooterColumn[] = [
   {
-    title: "Beranda",
-    links: [
-      { label: "Sambutan", href: "/#sambutan" },
-      { label: "Jurusan", href: "/#jurusan" },
-      { label: "Prestasi", href: "/#prestasi" },
-      { label: "Galeri", href: "/#galeri" },
-      { label: "Mitra", href: "/#mitra" },
-    ],
-  },
-  {
     title: "Tentang Kami",
     links: [
-      { label: "Profil Sekolah", href: "/#sekolah" },
-      { label: "Akreditasi", href: "/#akreditasi" },
-      { label: "Kontak", href: "/#kontak" },
+      { label: "Tentang Sekolah", href: "/sekolah" },
+      { label: "Tentang Asrama", href: "/asrama" },
+      { label: "Mitra Kami", href: "/mitra" },
+      { label: "Akreditasi", href: "/akreditasi" },
     ],
   },
   {
-    title: "Berita",
+    title: "Program",
     links: [
-      { label: "Terbaru", href: "/#berita" },
-      { label: "Terpopuler", href: "/#berita" },
+      { label: "Profil Jurusan", href: "/profil-jurusan" },
+      { label: "Ekstrakulikuler", href: "/ekstrakulikuler" },
+    ],
+  },
+  {
+    title: "Informasi",
+    links: [
+      { label: "Jejak Karya", href: "/jejak-karya" },
+      { label: "Berita", href: "/berita" },
     ],
   },
   {
@@ -50,7 +48,7 @@ const footerColumns: FooterColumn[] = [
   },
   {
     title: "SPMB",
-    href: "/#spmb",
+    href: "/spmb",
   },
 ];
 
@@ -62,7 +60,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_auto] lg:gap-16">
           {/* Left Side: Logo, Tagline & Contact */}
           <div className="max-w-md">
-            <Link href="/" className="inline-block">
+            <PortalLink href="/" label="SMK TI BAZMA" className="inline-block cursor-pointer">
               <Image
                 src="/images/logo-secondary.png"
                 width={240}
@@ -71,7 +69,7 @@ export default function Footer() {
                 priority
                 className="h-14 w-auto object-contain"
               />
-            </Link>
+            </PortalLink>
 
             <h2 className="mt-8 text-2xl font-bold tracking-wider text-white sm:text-3xl">
               ENERGI MASA DEPAN INDONESIA
@@ -88,7 +86,9 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="shrink-0 text-white/90" />
-                <span>infosmktibazma@gmail.com</span>
+                <a href="mailto:info@smktibazma.sch.id" className="hover:underline transition-colors">
+                  info@smktibazma.sch.id
+                </a>
               </li>
             </ul>
           </div>
@@ -98,12 +98,13 @@ export default function Footer() {
             {footerColumns.map((column) => (
               <div key={column.title}>
                 {column.href ? (
-                  <Link
+                  <PortalLink
                     href={column.href}
-                    className="font-sans text-base font-bold text-white hover:text-white/80 transition-colors"
+                    label={column.title}
+                    className="font-sans text-base font-bold text-white hover:text-white/80 transition-colors cursor-pointer"
                   >
                     {column.title}
-                  </Link>
+                  </PortalLink>
                 ) : (
                   <h3 className="font-sans text-base font-bold text-white">
                     {column.title}
@@ -114,14 +115,24 @@ export default function Footer() {
                   <ul className="mt-4 space-y-3">
                     {column.links.map((link) => (
                       <li key={link.label}>
-                        <Link
-                          href={link.href}
-                          target={link.external ? "_blank" : undefined}
-                          rel={link.external ? "noopener noreferrer" : undefined}
-                          className="font-sans text-sm font-normal text-white/80 hover:text-white transition-colors duration-200"
-                        >
-                          {link.label}
-                        </Link>
+                        {link.external ? (
+                          <a
+                            href={link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-sans text-sm font-normal text-white/80 hover:text-white transition-colors duration-200"
+                          >
+                            {link.label}
+                          </a>
+                        ) : (
+                          <PortalLink
+                            href={link.href}
+                            label={link.label}
+                            className="font-sans text-sm font-normal text-white/80 hover:text-white transition-colors duration-200 cursor-pointer"
+                          >
+                            {link.label}
+                          </PortalLink>
+                        )}
                       </li>
                     ))}
                   </ul>

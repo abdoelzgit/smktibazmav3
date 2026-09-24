@@ -17,7 +17,7 @@ const fadeUp: Variants = {
 };
 
 export default function LeaderQuote({ className }: LeaderQuoteProps) {
-  const name = "Ahmad Dahlan";
+  const name = "Ahmad Dahlan S.Ag";
   const role = "Kepala Sekolah SMK TI BAZMA";
   const quote =
     "SMK TI BAZMA adalah Islamic Boarding School berbasis teknologi yang memadukan pendidikan IT, tahfidzul Qur'an, dan pembentukan karakter.";
@@ -27,25 +27,25 @@ export default function LeaderQuote({ className }: LeaderQuoteProps) {
   return (
     <section
       data-nav-theme="dark"
-    className={cn(
-    "relative z-10 w-full overflow-hidden text-white",
-    "py-16 sm:py-20 md:py-28 lg:py-36",
-    "bg-[url('/images/kepsekbg-mobile.webp')] md:bg-[url('/images/kepsekbg.webp')]",
-    "bg-cover bg-[position:top_center] bg-no-repeat bg-[#132B6D]",
-    className
-  )}
+      className={cn(
+        "relative z-10 w-full overflow-hidden text-white",
+        "py-16 sm:py-20 md:py-28 lg:py-36",
+        "bg-[url('/images/kepsekbg-mobile.webp')] md:bg-[url('/images/kepsekbg.webp')]",
+        " lg:bg-cover bg-[position:top_center] bg-no-repeat bg-[#132B6D]",
+        className,
+      )}
     >
       {/* Overlay gradient di atas background-image, bukan di atas <img> lagi */}
       <div
         className="pointer-events-none absolute inset-0 z-0"
         style={{
           background:
-            "radial-gradient(circle at 50% 40%, rgba(19, 43, 109, 0.3) 0%, rgba(19, 43, 109, 0.75) 75%, #132B6D 100%)",
+            "radial-gradient(circle at 50% 30%, rgba(19, 43, 109, 0.3) 0%, rgba(19, 43, 109, 0.75) 65%, #132B6D 100%)",
         }}
       />
 
       {/* Konten — tinggi section otomatis ngikutin ini + padding, TIDAK pakai min-h fix */}
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl min-h-[130vh] flex-col justify-between gap-10 px-6 sm:px-10 md:px-14 lg:px-20">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl min-h-[130vh] flex-col justify-between gap-10 px-6 sm:px-10 md:px-14 lg:20px ">
         <motion.div
           variants={fadeUp}
           initial="hidden"

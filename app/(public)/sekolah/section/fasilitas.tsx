@@ -3,12 +3,12 @@
 import React from "react"
 
 const facilities = [
-  { title: "Ruang Musik", image: "/images/fasilitas/ruang-musik.jpg" },
-  { title: "Ruang BK", image: "/images/fasilitas/ruang-bk.jpg" },
-  { title: "Ruang Kelas A", image: "/images/fasilitas/i.webp" },
-  { title: "Ruang Kelas B", image: "/images/fasilitas/ruang-kelas-2.jpg" },
-  { title: "Ruang Kelas C", image: "/images/fasilitas/ruang-kelas-3.jpg" },
-  { title: "Ruang Kelas D", image: "/images/fasilitas/ruang-kelas-4.jpg" },
+  { title: "Ruang BK", image: "/images/sekolah/fasilitas/bk.webp" },
+  { title: "Ruang Musik", image: "/images/sekolah/fasilitas/musik.webp" },
+  { title: "Ruang Kelas A", image: "/images/sekolah/fasilitas/kelas.webp" },
+  { title: "Ruang Lab komputer", image: "/images/sekolah/fasilitas/labkom.webp" },
+  { title: "Ruang Rapat", image: "/images/sekolah/fasilitas/rapat.webp" },
+  { title: "Perpustakaan", image: "/images/sekolah/fasilitas/perpustakaan.webp" },
 ]
 
 interface FacilityItem {
@@ -46,7 +46,7 @@ function FacilityCard({ item }: FacilityCardProps) {
 
 export default function Fasilitas() {
   return (
-    <section className="sticky top-0 z-0 min-h-screen w-full bg-white px-4 py-16 sm:px-6 lg:px-8 sm:py-20">
+    <section data-nav-theme="light" className="sticky top-0 z-0 min-h-screen w-full bg-white px-4 py-16 sm:px-6 lg:px-8 sm:py-20">
       <div className="mx-auto max-w-6xl w-full">
         <div className="mb-10 grid grid-cols-1 gap-6 md:mb-12 md:grid-cols-12 md:gap-10 sm:mb-12">
           <div className="md:col-span-3">

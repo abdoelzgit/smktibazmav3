@@ -24,6 +24,7 @@ model Berita {
   id          String    @id @default(cuid())
   title       String
   slug        String    @unique
+  category    String    @default("Akademik")
   excerpt     String?
   content     String
   coverImage  String?
@@ -33,6 +34,30 @@ model Berita {
   updatedAt   DateTime  @updatedAt
 
   @@map("berita")
+}
+
+model JejakKarya {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  category      String
+  year          String    @default("2026")
+  author        String
+  description   String
+  challenge     String?
+  approach      String?
+  outcome       String?
+  whatWeDid     String?
+  tags          String?   // JSON string array
+  coverImage    String?
+  galleryImages String?   // JSON string array
+  demoUrl       String?
+  published     Boolean   @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("jejak_karya")
 }
 
 model Pendaftaran {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { STAFF_CATEGORIES } from "./data";
@@ -8,113 +8,178 @@ import { StaffCard } from "./staff-card";
 import { cn } from "@/lib/utils";
 
 export default function StaffSection({ className }: { className?: string }) {
-  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
-  const [fadeState, setFadeState] = useState<"visible" | "fading">("visible");
-
   const sectionRef = useRef<HTMLElement | null>(null);
-  const trackContainerRef = useRef<HTMLDivElement | null>(null);
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const categoryGroupRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const activeIndexRef = useRef(0);
-  const isTransitioningRef = useRef(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const panelRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const gridRefs = useRef<Array<HTMLDivElement | null>>([]); // kotak scrollable per kategori
+  const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
 
-  // Register ScrollTrigger once on client side
   useEffect(() => {
     if (typeof window !== "undefined") {
       gsap.registerPlugin(ScrollTrigger);
     }
   }, []);
 
-  // Handler pergantian kategori dengan animasi fade halus
-  const changeCategory = (newIndex: number) => {
-    if (newIndex === activeIndexRef.current || isTransitioningRef.current) return;
-
-    isTransitioningRef.current = true;
-    setFadeState("fading");
-
-    setTimeout(() => {
-      setActiveCategoryIndex(newIndex);
-      activeIndexRef.current = newIndex;
-      setFadeState("visible");
-      isTransitioningRef.current = false;
-    }, 150);
-  };
-
   useEffect(() => {
     const section = sectionRef.current;
-    const track = trackRef.current;
-    const trackContainer = trackContainerRef.current;
+    const wrapper = wrapperRef.current;
+    if (!section || !wrapper) return;
 
-    if (!section || !track || !trackContainer) return;
-
-    // Cek preferensi reduced-motion
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
     const ctx = gsap.context(() => {
-      // Gunakan matchMedia untuk memisahkan behavior Desktop vs Mobile
       const mm = gsap.matchMedia();
 
-      // Desktop: Animasi Horizontal Scroll dengan Pinning
       mm.add("(min-width: 1024px)", () => {
         if (prefersReducedMotion) return;
 
-        const getScrollDistance = () => {
-          return Math.max(0, track.scrollWidth - trackContainer.clientWidth);
-        };
+        const totalCategories = STAFF_CATEGORIES.length;
 
-        const updateCategoryOnScroll = (self: ScrollTrigger) => {
-          const scrollDistance = getScrollDistance();
-          if (scrollDistance <= 0) return;
+        panelRefs.current.forEach((panel, i) => {
+          if (!panel) return;
+          gsap.set(panel, {
+            opacity: i === 0 ? 1 : 0,
+            pointerEvents: i === 0 ? "auto" : "none",
+            force3D: true,
+          });
+        });
 
-          const currentX = self.progress * scrollDistance;
-          const containerWidth = trackContainer.clientWidth;
-          // Threshold pergantian kategori saat kategori masuk ke area pandang aktif
-          const viewTriggerX = currentX + containerWidth * 0.25;
+        // Tunggu layout settle sebelum hitung overflow
+        gsap.delayedCall(0.1, () => {
+          // Reset semua grid ke posisi scroll paling atas
+          gridRefs.current.forEach((grid) => {
+            if (!grid) return;
+            gsap.set(grid, { scrollTop: 0 });
+          });
 
-          let targetIdx = 0;
-          for (let i = 0; i < categoryGroupRefs.current.length; i++) {
-            const groupEl = categoryGroupRefs.current[i];
-            if (groupEl && viewTriggerX >= groupEl.offsetLeft) {
-              targetIdx = i;
+          // Hitung overflow setelah layout stabilize
+          const overflowAmounts = gridRefs.current.map((grid) => {
+            if (!grid) return 0;
+            return Math.max(0, grid.scrollHeight - grid.clientHeight);
+          });
+
+          const masterTl = gsap.timeline({ paused: true });
+
+          let currentTime = 0;
+          const fadeDuration = 1.2;
+          const baseHoldDuration = 1.5;
+          const scrollPxPerSecond = 250;
+
+          const getHoldTime = (index: number) => {
+            const membersCount = STAFF_CATEGORIES[index].members.length;
+            const base = membersCount > 4 ? baseHoldDuration * 1.6 : baseHoldDuration;
+            const extraForScroll = overflowAmounts[index] / scrollPxPerSecond;
+            return base + extraForScroll;
+          };
+
+          for (let i = 0; i < totalCategories - 1; i++) {
+            const holdStart = currentTime;
+            const holdTime = getHoldTime(i);
+
+            if (overflowAmounts[i] > 0 && gridRefs.current[i]) {
+              masterTl.to(
+                gridRefs.current[i],
+                {
+                  scrollTop: overflowAmounts[i],
+                  duration: holdTime,
+                  ease: "none",
+                },
+                holdStart
+              );
             }
+            currentTime += holdTime;
+
+            const animStartTime = currentTime;
+            const currentPanel = panelRefs.current[i];
+            const nextPanel = panelRefs.current[i + 1];
+            if (!currentPanel || !nextPanel) continue;
+
+            masterTl.to(
+              currentPanel,
+              {
+                opacity: 0,
+                pointerEvents: "none",
+                duration: fadeDuration,
+                ease: "power1.inOut",
+                force3D: true,
+              },
+              animStartTime
+            );
+            masterTl.to(
+              nextPanel,
+              {
+                opacity: 1,
+                pointerEvents: "auto",
+                duration: fadeDuration,
+                ease: "power1.inOut",
+                force3D: true,
+              },
+              animStartTime
+            );
+
+            currentTime += fadeDuration;
           }
 
-          if (targetIdx !== activeIndexRef.current) {
-            changeCategory(targetIdx);
+          const lastIndex = totalCategories - 1;
+          const lastHoldStart = currentTime;
+          const lastHoldTime = getHoldTime(lastIndex);
+          if (overflowAmounts[lastIndex] > 0 && gridRefs.current[lastIndex]) {
+            masterTl.to(
+              gridRefs.current[lastIndex],
+              {
+                scrollTop: overflowAmounts[lastIndex],
+                duration: lastHoldTime,
+                ease: "none",
+              },
+              lastHoldStart
+            );
           }
-        };
+          currentTime += lastHoldTime;
 
-        gsap.to(track, {
-          x: () => -getScrollDistance(),
-          ease: "none",
-          scrollTrigger: {
+          const totalScrollDistance = Math.max(
+            window.innerHeight * 1.2,
+            currentTime * 120
+          );
+
+          if (scrollTriggerRef.current) {
+            scrollTriggerRef.current.kill();
+          }
+
+          scrollTriggerRef.current = ScrollTrigger.create({
             trigger: section,
             pin: true,
+            pinSpacing: true,
             start: "top top",
-            end: () => `+=${getScrollDistance()}`,
-            scrub: 1,
-            invalidateOnRefresh: true,
+            end: `+=${totalScrollDistance}`,
+            scrub: 0.5,
             anticipatePin: 1,
-            onUpdate: updateCategoryOnScroll,
-          },
+            invalidateOnRefresh: true,
+            animation: masterTl,
+          });
         });
       });
 
-      // Mobile / Tablet: Tanpa Pinning (Native Horizontal Touch Swipe)
       mm.add("(max-width: 1023px)", () => {
-        // Pada mobile, posisi track direset ke normal flow
-        gsap.set(track, { clearProps: "transform" });
+        gsap.set(wrapper, { clearProps: "all" });
+        panelRefs.current.forEach((panel) => {
+          if (!panel) return;
+          gsap.set(panel, { clearProps: "all" });
+        });
+        gridRefs.current.forEach((grid) => {
+          if (!grid) return;
+          gsap.set(grid, { clearProps: "all" });
+        });
       });
     }, sectionRef);
 
     return () => {
+      scrollTriggerRef.current?.kill();
+      scrollTriggerRef.current = null;
       ctx.revert();
     };
   }, []);
-
-  const activeCategory = STAFF_CATEGORIES[activeCategoryIndex];
 
   return (
     <section
@@ -123,74 +188,53 @@ export default function StaffSection({ className }: { className?: string }) {
       data-nav-theme="light"
       className={cn(
         "relative w-full bg-white text-slate-900",
-        // Desktop: Satu layar penuh untuk pinning yang presisi
-        "lg:h-screen lg:min-h-screen lg:overflow-hidden lg:flex lg:items-center",
-        // Mobile: Padding vertikal normal
-        "py-16 sm:py-20 lg:py-0",
+        "py-16 sm:py-20 lg:py-0 lg:h-screen",
         className
       )}
     >
-      <div className="mx-auto flex h-full w-full max-w-[1920px] flex-col justify-center px-6 sm:px-10 md:px-14 lg:flex-row lg:items-center lg:gap-16 xl:gap-24 lg:px-16 xl:px-24">
-        {/* Kolom Kiri: Informasi Kategori (~42% pada desktop) */}
-        <div className="w-full lg:w-[42%] lg:max-w-[42%] lg:shrink-0 flex flex-col justify-center">
-          {/* Container teks berdimensi stabil untuk mencegah layout shift saat pergantian teks */}
-          <div className="min-h-[140px] sm:min-h-[160px] lg:min-h-[220px] flex flex-col justify-center">
-            <div
-              className={cn(
-                "transition-opacity duration-200 ease-in-out",
-                fadeState === "visible" ? "opacity-100" : "opacity-0"
-              )}
-            >
-              {/* Judul Kategori: Berukuran besar, warna biru tua (#132B6D) */}
+      <div ref={wrapperRef} className="relative w-full h-full">
+        {STAFF_CATEGORIES.map((category, catIndex) => (
+          <div
+            key={category.id}
+            ref={(el) => {
+              panelRefs.current[catIndex] = el;
+            }}
+            className={cn(
+              "w-full flex flex-col lg:flex-row lg:items-stretch lg:gap-16 xl:gap-24",
+              "lg:absolute lg:inset-0 lg:h-full lg:py-16 xl:py-20",
+              "mx-auto max-w-[1920px] px-6 sm:px-10 md:px-14 lg:px-16 xl:px-24",
+              "will-change-[opacity]"
+            )}
+          >
+            {/* Kolom Kiri: Title — diam di tengah, tidak ikut scroll */}
+            <div className="w-full lg:w-[40%] xl:w-[38%] lg:shrink-0 flex flex-col justify-center mb-8 lg:mb-0 lg:h-full">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#132B6D] font-heading leading-tight">
-                {activeCategory.title}
+                {category.title}
               </h2>
-
-              {/* Deskripsi Kategori: Tepat di bawah judul, abu-abu dengan font ringan */}
               <p className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-slate-500 font-normal leading-relaxed max-w-xl">
-                {activeCategory.description}
+                {category.description}
               </p>
             </div>
-          </div>
-        </div>
 
-        {/* Kolom Kanan: Area Horizontal Staff (~58% pada desktop) */}
-        <div
-          ref={trackContainerRef}
-          className={cn(
-            "mt-10 lg:mt-0 w-full lg:w-[58%] lg:max-w-[58%] lg:grow",
-            // Desktop: overflow hidden agar track digerakkan oleh GSAP x
-            "lg:overflow-hidden",
-            // Mobile: overflow-x auto untuk touch swipe horizontal natural
-            "overflow-x-auto overflow-y-hidden scrollbar-none snap-x snap-mandatory"
-          )}
-        >
-          {/* Track Horizontal: Satu alur berkesinambungan berisi seluruh kategori */}
-          <div
-            ref={trackRef}
-            className="flex flex-row items-start w-max will-change-transform py-4"
-          >
-            {STAFF_CATEGORIES.map((category, catIndex) => (
-              <div
-                key={category.id}
-                ref={(el) => {
-                  categoryGroupRefs.current[catIndex] = el;
-                }}
-                className={cn(
-                  "flex flex-row items-start gap-6 sm:gap-8",
-                  // Jarak antar-kategori dalam satu track yang menyatu
-                  catIndex < STAFF_CATEGORIES.length - 1 ? "mr-12 sm:mr-16 lg:mr-24" : "mr-6 sm:mr-10 lg:mr-16"
-                )}
-              >
-                {category.members.map((member) => (
-                  <div key={member.id} className="snap-start">
-                    <StaffCard member={member} />
-                  </div>
-                ))}
-              </div>
-            ))}
+            {/* Kolom Kanan: Grid (desktop 2-col) atau Carousel (mobile horizontal) */}
+            <div
+              ref={(el) => {
+                gridRefs.current[catIndex] = el;
+              }}
+              className={cn(
+                "w-full lg:w-[60%] xl:w-[62%] lg:grow lg:h-full px-0 lg:pr-4",
+                "flex lg:grid lg:grid-cols-2 flex-row lg:flex-row overflow-x-auto lg:overflow-hidden gap-4 lg:gap-x-6 lg:gap-y-12 snap-x snap-mandatory lg:snap-none py-2",
+                "no-scrollbar"
+              )}
+            >
+            {category.members.map((member, index) => (
+  <div key={`${member.id}-${index}`} className="shrink-0 lg:shrink flex lg:contents snap-center">
+    <StaffCard member={member} />
+  </div>
+))}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </section>
   );

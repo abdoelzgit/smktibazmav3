@@ -1,7 +1,7 @@
 import Image from "next/image"
-import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { PortalLink } from "@/components/portal-transition"
 
 type ProgramHeroProps = {
   /** Gambar latar (foto yang relevan dengan jurusan) */
@@ -75,8 +75,9 @@ export function ProgramHero({
             <p className="font-sans text-sm leading-relaxed text-white/85 md:text-base">
               {description}
             </p>
-            <Link
+            <PortalLink
               href={ctaHref}
+              label={label || "Profil Jurusan"}
               className="group mt-5 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-medium text-white backdrop-blur-sm transition-colors duration-300 hover:bg-white hover:text-[#132B6D] md:ml-auto"
             >
               {ctaLabel}
@@ -85,7 +86,7 @@ export function ProgramHero({
                 aria-hidden="true"
                 className="transition-transform duration-300 group-hover:translate-x-0.5"
               />
-            </Link>
+            </PortalLink>
           </div>
         </div>
       </div>

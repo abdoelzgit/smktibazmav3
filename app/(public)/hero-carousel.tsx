@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { PortalLink } from "@/components/portal-transition";
 
 /**
  * ---------------------------------------------------------------------------
@@ -33,7 +34,7 @@ const SLIDES: Slide[] = [
       "Kami percaya, masa depan bangsa ada di tangan generasi muda yang cerdas dan berakhlak. SMK TI BAZMA hadir untuk melahirkan talenta teknologi yang siap jadi motor penggerak Indonesia.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/foto.webp",
+    image: "/images/caro4.webp",
   },
   {
     id: "melayani-sepenuh-hati",
@@ -43,7 +44,7 @@ const SLIDES: Slide[] = [
       'Terakreditasi A (unggul), SMK TI BAZMA berkomitmen melahirkan lulusan profesional, berintegritas, dan berakhlak islami..',
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/info-cover.webp",
+    image: "/images/caro1.webp",
   },
   {
     id: "kilang-dan-petrokimia",
@@ -53,7 +54,7 @@ const SLIDES: Slide[] = [
       "SMK TI BAZMA mendorong siswa untuk berinovasi melalui berbagai karya seperti pembuatan project website, desain poster, majalah digital, dan beragam karya kreatif lainnya.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/foto.webp",
+    image: "/images/caro3.webp",
   },
   {
     id: "maritim-logistik-terintegrasi",
@@ -63,7 +64,7 @@ const SLIDES: Slide[] = [
       "Dapatkan kemudahan dalam mencari informasi terkait pendaftaran siswa baru, informasi akademik, dan kegiatan sekolah lainnya melalui asisten AI yang selalu siap membantu.",
     ctaLabel: "Selengkapnya",
     ctaHref: "#",
-    image: "/images/info-cover.webp",
+    image: "/images/caro2.webp",
   },
 ];
 
@@ -305,7 +306,7 @@ export default function HeroCarousel({
   return (
     <section
       data-nav-theme="dark"
-      className="relative flex min-h-screen min-h-[100svh] w-full flex-col overflow-hidden bg-[#0a0e27] text-white"
+      className="relative flex min-h-screen min-h-[100svh] w-full flex-col overflow-hidden bg-primary text-white"
       aria-roledescription="carousel"
       aria-label="Sorotan utama"
     >
@@ -327,8 +328,8 @@ export default function HeroCarousel({
           />
         ))}
 
-        {/* <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e27] via-[#0a0e27]/75" /> */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0e27] via-[#0a0e27]/90 to-transparent" />
+        {/* Overlay gradient: dari bawah ke atas pada mobile, dari kiri ke kanan pada desktop */}
+        <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/85 to-transparent md:bg-gradient-to-r md:from-primary md:via-primary/90 md:to-transparent" />
 
 
         {/*
@@ -339,18 +340,18 @@ export default function HeroCarousel({
             bagian bawah area hero, meniru pola hero Pertamina asli.
           - `gap-10` memberi jarak antara blok teks dan baris nav tab.
         */}
-        <div className="absolute inset-0 z-10 mx-auto flex w-full max-w-[1920px] flex-col justify-end gap-10 px-6 pb-10 sm:px-10 sm:pb-10 lg:px-16 lg:pb-10 xl:px-24 xl:pb-10">
-          <div ref={contentRef} className="flex max-w-2xl flex-col gap-4">
+        <div className="absolute inset-0 z-10 mx-auto flex w-full max-w-[1920px] flex-col justify-end gap-6 sm:gap-8 md:gap-10 px-5 sm:px-8 md:px-10 lg:px-16 xl:px-24 pb-7 sm:pb-8 md:pb-10 lg:pb-10 xl:pb-10">
+          <div ref={contentRef} className="flex max-w-2xl flex-col gap-3.5 sm:gap-4">
             <h1
               data-reveal
-              className="font-heading text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-5xl"
+              className="font-heading text-3xl font-bold leading-[1.1] sm:text-4xl md:text-5xl lg:text-5xl text-balance"
             >
               {activeSlide.title}
             </h1>
 
             <p
               data-reveal
-              className="max-w-xl font-sans text-sm leading-relaxed text-white/85 sm:text-sm"
+              className="max-w-xl font-sans text-xs leading-relaxed text-white/85 sm:text-sm line-clamp-3 sm:line-clamp-none"
             >
               {activeSlide.description}
             </p>
@@ -364,10 +365,10 @@ export default function HeroCarousel({
                 focus-ring, disabled state) yang konsisten dengan
                 komponen shadcn lain nantinya.
               */}
-              {/* ✅ Gunakan Link langsung dengan styling Button — bukan Button>a */}
-              <Link
+              <PortalLink
                 href={activeSlide.ctaHref}
-                className="group inline-flex h-auto w-fit items-center gap-2 rounded-full border border-white/70 bg-transparent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-[#0a0e27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e27]"
+                label={activeSlide.tabLabel || activeSlide.title || "SMK TI BAZMA"}
+                className="group inline-flex h-auto w-fit items-center gap-2 rounded-full border border-white/70 bg-transparent px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-white transition-colors hover:bg-white hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary cursor-pointer"
               >
                 {activeSlide.ctaLabel}
                 <svg
@@ -386,35 +387,31 @@ export default function HeroCarousel({
                     strokeLinejoin="round"
                   />
                 </svg>
-              </Link>
+              </PortalLink>
             </div>
           </div>
 
-          <nav className="relative z-10" aria-label="Navigasi carousel">
-            <ul className="flex">
+          <nav className="relative z-10 w-full" aria-label="Navigasi carousel">
+            {/* Header label ringkas khusus mobile */}
+            <div className="text-[11px] font-semibold tracking-wider text-white/90 mb-2 px-0.5 md:hidden">
+              <span className="truncate block uppercase font-medium text-white/80">{activeSlide.tabLabel}</span>
+            </div>
+
+            <ul className="flex gap-1.5 sm:gap-2 md:gap-0">
               {slides.map((slide, i) => {
                 const isActive = i === activeIndex;
                 return (
                   <li key={slide.id} className="flex-1">
-                    {/*
-                      Tombol tab pakai shadcn Button (variant="ghost")
-                      supaya focus-ring & disabled state konsisten dengan
-                      komponen shadcn lain. Base style Button (flex
-                      center, rounded-md, dst) di-override lewat
-                      className karena bentuknya di sini custom: kolom
-                      penuh, rata kiri, dengan progress bar underline
-                      shadcn belum punya varian untuk pola ini.
-                    */}
                     <Button
                       type="button"
                       variant="ghost"
                       onClick={() => goToSlide(i)}
                       aria-current={isActive ? "true" : undefined}
-                      className="group h-auto w-full flex-col items-start justify-start gap-0 whitespace-normal rounded-none px-4 text-left hover:bg-transparent"
+                      className="group h-auto w-full flex-col items-start justify-start gap-0 whitespace-normal rounded-none px-0.5 sm:px-1 md:px-4 py-1.5 md:py-0 text-left hover:bg-transparent cursor-pointer"
                     >
                       <span
                         className={cn(
-                          "block text-[11px] font-semibold tracking-wide transition-colors duration-300 sm:text-xs",
+                          "hidden md:block text-[11px] font-semibold tracking-wide transition-colors duration-300 sm:text-xs",
                           isActive
                             ? "text-white"
                             : "text-white/40 group-hover:text-white/70"
@@ -423,7 +420,7 @@ export default function HeroCarousel({
                         {slide.tabLabel}
                       </span>
 
-                      <span className="mt-3 block h-[1px] w-full bg-white/10">
+                      <span className="mt-0 md:mt-3 block h-[3px] md:h-[1px] w-full rounded-full overflow-hidden bg-white/25 md:bg-white/10">
                         <span
                           ref={(el) => {
                             progressRefs.current[i] = el;

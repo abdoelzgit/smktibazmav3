@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
+import { PortalLink } from "@/components/portal-transition";
 
 export function CertificateCard() {
   return (
@@ -9,7 +9,7 @@ export function CertificateCard() {
       <div
         className="relative rounded-3xl overflow-hidden p-8 md:p-12 h-[473px] flex items-center bg-cover bg-center"
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 58, 138, 0.85)), url('/images/students-bg.jpg')`,
+          backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 58, 138, 0.85)), url('/images/akreditasi/akreditasi-certificate.webp')`,
         }}
       >
         <div className="relative z-10 max-w-xl">
@@ -21,13 +21,14 @@ export function CertificateCard() {
             BAN-S/M dapat dilihat langsung atau diunduh dalam format PDF untuk
             keperluan verifikasi.
           </p>
-          <Link
-            href="/sertifikat-akreditasi"
-            className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-blue-900 transition-all duration-300"
+          <PortalLink
+            href="/images/akreditasi/akreditasi-document.pdf"
+            label="Akreditasi"
+            className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-blue-900 transition-all duration-300 cursor-pointer"
           >
             Selengkapnya
             <ArrowUpRight className="w-4 h-4" />
-          </Link>
+          </PortalLink>
         </div>
       </div>
     </section>

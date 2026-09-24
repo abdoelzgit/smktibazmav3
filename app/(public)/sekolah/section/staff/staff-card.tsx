@@ -7,7 +7,7 @@ interface StaffCardProps {
 
 export function StaffCard({ member }: StaffCardProps) {
   return (
-    <div className="flex flex-col w-[240px] sm:w-[260px] md:w-[280px] shrink-0 select-none">
+    <div className="flex flex-col w-full max-w-[320px] select-none">
       {/* Container Foto Portrait */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-slate-100">
         {member.image ? (
@@ -15,7 +15,7 @@ export function StaffCard({ member }: StaffCardProps) {
             src={member.image}
             alt={member.name}
             fill
-            sizes="(max-width: 768px) 240px, 280px"
+            sizes="(max-width: 768px) 100vw, 400px"
             className="object-cover object-center"
             priority={false}
           />
@@ -23,7 +23,7 @@ export function StaffCard({ member }: StaffCardProps) {
           /* Neutral professional portrait placeholder silhouette */
           <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-b from-slate-100 via-slate-200 to-slate-300 text-slate-400">
             <svg
-              className="h-28 w-28 text-slate-300 drop-shadow-sm"
+              className="h-24 w-24 sm:h-28 sm:w-28 text-slate-300 drop-shadow-sm"
               viewBox="0 0 24 24"
               fill="currentColor"
               aria-hidden="true"
@@ -45,11 +45,11 @@ export function StaffCard({ member }: StaffCardProps) {
       </div>
 
       {/* Informasi Nama & Jabatan tepat di bawah foto */}
-      <div className="mt-4 flex flex-col">
-        <h4 className="line-clamp-1 text-base sm:text-lg font-bold text-[#132B6D] tracking-tight">
+      <div className="mt-4 sm:mt-5 flex flex-col">
+        <h4 className="line-clamp-1 text-lg sm:text-xl font-bold text-[#132B6D] tracking-tight">
           {member.name}
         </h4>
-        <p className="mt-1 line-clamp-2 text-xs sm:text-sm font-normal text-slate-500 leading-snug">
+        <p className="mt-1.5 sm:mt-2 line-clamp-2 text-sm sm:text-base font-normal text-slate-500 leading-snug">
           {member.role}
         </p>
       </div>

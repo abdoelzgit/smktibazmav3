@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { TextReveal } from "@/components/ui/text-reveal";
 import { ArrowRight } from "lucide-react";
-import LogoMarquee, { type Logo } from "@/components/marquee";
+import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
 import { AnimatedCounter } from "@/components/animated-counter";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -25,30 +25,8 @@ export type InfoSekilasProps = {
   title?: string;
   subtitle?: string;
   stats?: Stat[];
-  partnerLogos?: Logo[];
+  partnerLogos?: string[];
 };
-
-const defaultPartnerLogos: Logo[] = [
-  { src: "/images/logo.png", alt: "SMK TI BAZMA", width: 150, height: 48 },
-  {
-    src: "/images/logo-secondary.png",
-    alt: "SMK TI BAZMA Secondary",
-    width: 150,
-    height: 48,
-  },
-  {
-    src: "/images/logo.png",
-    alt: "BAZMA Learning Ecosystem",
-    width: 150,
-    height: 48,
-  },
-  {
-    src: "/images/logo-secondary.png",
-    alt: "BAZMA Boarding School",
-    width: 150,
-    height: 48,
-  },
-];
 
 // ─── Section: Sambutan Kepala Sekolah ──────────────────────────────────────
 export function Sambutan({
@@ -120,7 +98,7 @@ export function InfoSekilas({
     { value: "30", label: "Jumlah Seluruh Tendik" },
     { value: "6", label: "Jumlah Angkatan" },
   ],
-  partnerLogos = defaultPartnerLogos,
+  partnerLogos,
 }: InfoSekilasProps) {
   return (
     <section className="relative w-full">
@@ -141,7 +119,7 @@ export function InfoSekilas({
             </h3>
             <p className="py-4 mt-1 text-sm text-white/70">{subtitle}</p>
 
-            <div className="mt-10 grid grid-cols-3 gap-6">
+            <div className=" grid grid-cols-3 gap-6">
               {stats.map((stat, index) => (
                 <div key={`${stat.label}-${index}`}>
                   <p className="text-3xl font-semibold text-white sm:text-4xl">
@@ -159,9 +137,9 @@ export function InfoSekilas({
         </div>
       </div>
 
-      {/* Container 2: logo marquee, terpisah dari kartu gambar */}
-      <div className="mt-10 px-24 overflow-hidden py-5">
-        <LogoMarquee logos={partnerLogos} className="max-w-none py-1" />
+      {/* Container 2: ImageAutoSlider mitra */}
+      <div className="mt-6 w-full">
+        <ImageAutoSlider logos={partnerLogos} />
       </div>
     </section>
   );

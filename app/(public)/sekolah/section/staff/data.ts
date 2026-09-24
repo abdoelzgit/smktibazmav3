@@ -9,64 +9,19 @@ export const STAFF_CATEGORIES: StaffCategory[] = [
     members: [
       {
         id: "waka-1",
-        name: "[Nama Wakil Kepala Sekolah]",
+        name: "M. Dzikri Fauzan, S.Kom",
         role: "Waka. Bidang Kurikulum & Akademik",
         isPlaceholder: true,
       },
       {
         id: "waka-2",
-        name: "[Nama Wakil Kepala Sekolah]",
-        role: "Waka. Bidang Kesiswaan & Asrama",
-        isPlaceholder: true,
-      },
-      {
-        id: "waka-3",
-        name: "[Nama Wakil Kepala Sekolah]",
-        role: "Waka. Hubungan Industri & Sarpras",
+        name: "Mirza Bakti Sukaryana, S.Pd.",
+        role: "Kepala Program Studi",
         isPlaceholder: true,
       },
     ],
   },
-  {
-    id: "kepala-program-keahlian",
-    title: "Kepala Program Keahlian",
-    description:
-      "Memimpin dan mengembangkan kurikulum keahlian teknologi informasi agar selaras dengan kebutuhan industri terkini.",
-    members: [
-      {
-        id: "kaprog-1",
-        name: "[Nama Kepala Program]",
-        role: "Kepala Program Keahlian SIJA",
-        isPlaceholder: true,
-      },
-      {
-        id: "kaprog-2",
-        name: "[Nama Koordinator Prakerin]",
-        role: "Koordinator Hubungan Industri & Magang",
-        isPlaceholder: true,
-      },
-    ],
-  },
-  {
-    id: "kepala-laboratorium",
-    title: "Kepala Laboratorium",
-    description:
-      "Mengelola fasilitas laboratorium dan sarana praktik teknologi guna mendukung kegiatan belajar mengajar yang optimal.",
-    members: [
-      {
-        id: "kalab-1",
-        name: "[Nama Kepala Lab]",
-        role: "Kepala Lab Sistem Komputer & Jaringan",
-        isPlaceholder: true,
-      },
-      {
-        id: "kalab-2",
-        name: "[Nama Kepala Lab]",
-        role: "Kepala Lab Rekayasa Perangkat Lunak",
-        isPlaceholder: true,
-      },
-    ],
-  },
+
   {
     id: "jajaran-guru",
     title: "Jajaran Guru",
@@ -75,20 +30,27 @@ export const STAFF_CATEGORIES: StaffCategory[] = [
     members: [
       {
         id: "guru-1",
-        name: "[Nama Guru Produktif]",
-        role: "Guru Produktif Cloud & Networking",
+        name: "M. Fadhlurrahman Muzakki, S.Pd.",
+        role: "Guru Mata Pelajaran Produktif",
         isPlaceholder: true,
       },
       {
         id: "guru-2",
-        name: "[Nama Guru Produktif]",
-        role: "Guru Produktif Web & Mobile App",
+        name: "Ristina Eka S, S.Kom.",
+        role: "Guru Mata Pelajaran Produktif",
         isPlaceholder: true,
       },
       {
         id: "guru-3",
-        name: "[Nama Guru Agama]",
-        role: "Guru Pendidikan Agama Islam & Tahfidz",
+        name: "Parni Handayani, S.Tr.T., Gr.",
+        role: "Guru Mata Pelajaran Produktif",
+        isPlaceholder: true,
+      },
+
+      {
+        id: "guru-4",
+        name: "",
+        role: "Guru Pendidikan Agama Islam",
         isPlaceholder: true,
       },
       {

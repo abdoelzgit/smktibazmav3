@@ -7,7 +7,7 @@ export default function JurusanPage() {
     <main className="flex h-full flex-col items-center">
       <Hero
         title="Profil Jurusan"
-        backgroundImage="/images/hero-network.jpg"
+        backgroundImage="/images/profil-jurusan.webp"
       />
 
       <JurusanContent />

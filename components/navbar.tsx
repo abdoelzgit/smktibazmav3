@@ -1,9 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import Image from "next/image";
+import { Mail, Phone } from "lucide-react";
+import { usePortalTransition } from "@/components/portal-transition";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type SubLink = { label: string; href: string };
@@ -41,9 +44,9 @@ const navLinks: NavLink[] = [
       { label: "Ekstrakulikuler", href: "/ekstrakulikuler" },
     ],
   },
-  { label: "Jejak Karya", href: "#karya" },
-  { label: "Berita", href: "#berita" },
-  { label: "SPMB", href: "#spmb" },
+  { label: "Jejak Karya", href: "/jejak-karya" },
+  { label: "Berita", href: "/berita" },
+  { label: "SPMB", href: "/spmb" },
 ];
 
 // ─── Drawer constants (mirror MultiLevelDrawerMenu) ────────────────────────
@@ -54,9 +57,12 @@ const HOVER_EASE = "back.out";
 const DOT_GAP = 14;
 
 export function Navbar() {
+  const pathname = usePathname();
+  const { navigateTo } = usePortalTransition();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isInverted, setIsInverted] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [activeDrawerLink, setActiveDrawerLink] = useState<NavLink | null>(
     null,
   );
@@ -65,6 +71,24 @@ export function Navbar() {
   const rafRef = useRef<number | null>(null);
   const isScrolledRef = useRef(false);
   const isInvertedRef = useRef(true);
+
+  useEffect(() => {
+    // Listen to portal transition events
+    const startHandler = () => {
+      setIsTransitioning(true);
+      setIsMenuOpen(false); // close mobile menu on navigation
+      if (isDrawerOpenRef.current) closeDrawer();
+    };
+    const endHandler = () => setIsTransitioning(false);
+
+    window.addEventListener("portal-transition-start", startHandler);
+    window.addEventListener("portal-transition-end", endHandler);
+
+    return () => {
+      window.removeEventListener("portal-transition-start", startHandler);
+      window.removeEventListener("portal-transition-end", endHandler);
+    };
+  }, []);
 
   // ── Drawer refs ────────────────────────────────────────────────────────
   const drawerRootRef = useRef<HTMLDivElement>(null);
@@ -78,38 +102,78 @@ export function Navbar() {
   const isDrawerOpenRef = useRef(false);
 
   // ── High-performance adaptive nav color ────────────────────────────────────
-  // Strategi: pada setiap scroll event, cari elemen [data-nav-theme] yang
-  // saat ini berada paling dekat di bawah navbar (top edge ≤ THRESHOLD dari
-  // atas viewport). Pendekatan ini lebih reliable dari IntersectionObserver
-  // untuk kasus section pendek atau halaman yang sudah discroll saat load.
+  // Strategi: cache [data-nav-theme] elements, update cache hanya saat route
+  // change atau window resize. Throttle scroll listener menggunakan RAF untuk
+  // menghindari layout thrashing dari querySelectorAll + getBoundingClientRect
+  // di setiap scroll frame (60-120 FPS).
+  const sectionsCache = useRef<HTMLElement[]>([]);
+
+  useEffect(() => {
+    // Update cache saat mount atau pathname berubah
+    sectionsCache.current = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-nav-theme]"),
+    );
+    
+    // Paksa update tema saat navigasi
+    const onScroll = () => {
+      const nextIsScrolled = window.scrollY > 50;
+      if (nextIsScrolled !== isScrolledRef.current) {
+        isScrolledRef.current = nextIsScrolled;
+        setIsScrolled(nextIsScrolled);
+      }
+
+      const sections = sectionsCache.current;
+      if (sections.length === 0) {
+        if (!isInvertedRef.current) {
+          isInvertedRef.current = true;
+          setIsInverted(true);
+        }
+        return;
+      }
+
+      let activeSection: HTMLElement | null = null;
+      for (const section of sections) {
+        const top = section.getBoundingClientRect().top;
+        if (top <= 80) activeSection = section;
+        else break;
+      }
+      if (!activeSection) activeSection = sections[0];
+      
+      const nextIsDark = activeSection.getAttribute("data-nav-theme") === "dark";
+      if (nextIsDark !== isInvertedRef.current) {
+        isInvertedRef.current = nextIsDark;
+        setIsInverted(nextIsDark);
+      }
+    };
+    
+    onScroll();
+  }, [pathname]);
+
   useEffect(() => {
     const NAVBAR_HEIGHT = 80; // px — batas deteksi tema
 
     const getActiveTheme = (): boolean => {
-      const sections = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-nav-theme]"),
-      );
+      const sections = sectionsCache.current;
       if (sections.length === 0) return true; // default dark
 
-      // Cari section yang top-nya paling mendekati NAVBAR_HEIGHT dari atas
-      // (yaitu section yang baru saja "masuk" ke bawah navbar)
       let activeSection: HTMLElement | null = null;
       for (const section of sections) {
         const top = section.getBoundingClientRect().top;
         if (top <= NAVBAR_HEIGHT) {
           activeSection = section;
         } else {
-          break; // sorted top-to-bottom, stop di first section below threshold
+          break;
         }
       }
 
       if (!activeSection) {
-        // Belum ada section yang melewati threshold → pakai tema section pertama
         activeSection = sections[0];
       }
 
       return activeSection.getAttribute("data-nav-theme") === "dark";
     };
+
+    let scrollPending = false;
 
     const onScroll = () => {
       // Cek scroll threshold untuk background navbar
@@ -127,12 +191,27 @@ export function Navbar() {
       }
     };
 
-    // Jalankan sekali saat mount untuk menentukan tema awal
+    const rafScroll = () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        onScroll();
+        scrollPending = false;
+      });
+    };
+
+    const handleScroll = () => {
+      if (!scrollPending) {
+        scrollPending = true;
+        rafScroll();
+      }
+    };
+
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", handleScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, []);
 
@@ -246,7 +325,7 @@ export function Navbar() {
     if (link.children?.length) {
       openDrawer(link);
     } else {
-      scrollToSection(link.href);
+      navigateTo(link.href, link.label);
     }
   };
 
@@ -287,9 +366,9 @@ export function Navbar() {
     });
   };
 
-  const handleDrawerLinkClick = (href: string) => {
+  const handleDrawerLinkClick = (href: string, label: string) => {
     closeDrawer();
-    scrollToSection(href);
+    navigateTo(href, label);
   };
 
   const drawerItems: Array<NavLink | SubLink> =
@@ -309,16 +388,16 @@ export function Navbar() {
 
   const navText = showInverted
     ? "text-white/85 hover:text-white"
-    : "text-[#0a0e27]/80 hover:text-[#0a0e27]";
-  const iconLineColor = showInverted ? "bg-white" : "bg-[#0a0e27]";
-  const navUnderline = showInverted ? "bg-white" : "bg-[#0a0e27]";
+    : "text-black/85 hover:text-black";
+  const iconLineColor = showInverted ? "bg-white" : "bg-black";
+  const navUnderline = showInverted ? "bg-white" : "bg-black";
   const logoSrc = showInverted
     ? "/images/logo-secondary.png"
     : "/images/logo.png";
   const headerSurface = isScrolled
     ? showInverted
-      ? "bg-[#0a0e27]/80 backdrop-blur-md "
-      : "bg-background/90 backdrop-blur-md "
+      ? "bg-primary/80 backdrop-blur-md"
+      : "bg-background/90 backdrop-blur-md"
     : "";
 
   return (
@@ -328,7 +407,9 @@ export function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerSurface}`}
+        className={`fixed top-0 left-0 right-0 transition-all duration-500 ${headerSurface} ${
+          isTransitioning ? "z-[40] pointer-events-none" : "z-50"
+        }`}
       >
         <nav className="mx-auto flex w-full max-w-[1920px] items-center justify-between px-6 py-4 sm:px-10 md:py-6 lg:px-16 xl:px-24">
           {/* Logo */}
@@ -421,13 +502,13 @@ export function Navbar() {
             ref={drawerScrimRef}
             onClick={closeDrawer}
             aria-label="Tutup menu"
-            className="absolute inset-0 bg-[#0a0e27]/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-primary/60 backdrop-blur-sm"
             style={{ opacity: 0 }}
           />
 
           <aside
             ref={drawerPanelRef}
-            className="fixed inset-0 flex w-full flex-col overflow-hidden bg-background px-6 py-7 shadow-2xl shadow-[#0a0e27]/25 sm:absolute sm:inset-y-5 sm:right-5 sm:left-auto sm:w-full sm:max-w-md sm:rounded-xl sm:border sm:border-border/70 sm:px-8 sm:py-8 md:inset-y-6 md:right-6 md:px-10 md:py-10"
+            className="fixed inset-0 flex w-full flex-col overflow-hidden bg-background px-6 py-7 shadow-2xl shadow-primary/25 sm:absolute sm:inset-y-5 sm:right-5 sm:left-auto sm:w-full sm:max-w-md sm:rounded-xl sm:border sm:border-border/70 sm:px-8 sm:py-8 md:inset-y-6 md:right-6 md:px-10 md:py-10"
             style={{ clipPath: CLIP_HIDDEN }}
           >
             <div className="mb-10 flex items-center justify-between">
@@ -464,13 +545,13 @@ export function Navbar() {
                       if (hasChildren(item)) {
                         openDrawer(item);
                       } else {
-                        handleDrawerLinkClick(item.href);
+                        handleDrawerLinkClick(item.href, item.label);
                       }
                     }}
                     className="group relative flex w-full items-center justify-between py-3 text-left"
                   >
                     <span
-                      className={`font-sans text-2xl font-semibold tracking-tight text-foreground transition-colors duration-300 hover:text-blue-800 md:text-3xl `}
+                      className={`font-sans text-2xl font-semibold tracking-tight text-foreground transition-colors duration-300 hover:text-primary md:text-3xl`}
                     >
                       {item.label}
                     </span>
@@ -483,6 +564,51 @@ export function Navbar() {
                 </li>
               ))}
             </ul>
+            <div className="mt-auto space-y-6 pt-8 border-t border-border/50">
+              {/* Slogan SMK */}
+              <div className="space-y-3">
+                <p className="text-2xl lg:text-3xl font-light text-foreground/60 tracking-wider">
+                  &ldquo;ENERGI MASA <br /> DEPAN INDONESIA&rdquo;
+                </p>
+              </div>
+
+              {/* Kontak */}
+              <div className="space-y-2">
+                <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Kontak
+                </p>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                  <a
+                    href="mailto:info@smktibazma.sch.id"
+                    className="text-sm text-foreground transition-colors hover:text-primary"
+                  >
+                    Email
+                  </a>
+                  <a
+                    href="tel:+6282121831439"
+                    className="text-sm text-foreground transition-colors hover:text-primary"
+                  >
+                    Phone
+                  </a>
+                  <a
+                    href="https://instagram.com/smktibazma"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-foreground transition-colors hover:text-primary"
+                  >
+                    Instagram
+                  </a>
+                  <a
+                    href="https://youtube.com/@smktibazma"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-foreground transition-colors hover:text-primary"
+                  >
+                    YouTube
+                  </a>
+                </div>
+              </div>
+            </div>
           </aside>
         </div>
       </div>

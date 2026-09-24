@@ -20,50 +20,51 @@ const TIMELINE_SLIDES: TimelineSlide[] = [
   {
     id: "2014",
     year: "2014",
+
     description:
-      "Titik awal perjalanan BAZMA di bidang pendidikan, membuka jalan bagi program-program pemberdayaan yang menjadi cikal bakal berdirinya sekolah.",
-    image: "/images/timeline/foto.webp",
+      "Awal Perjalanan — bermula dari niat tulus seorang dermawan yang mewakafkan tanah senilai 3 miliar rupiah untuk bidang pendidikan. Tanah tersebut diamanahkan kepada BAZMA, yang kemudian tergerak hatinya untuk mewujudkan impian besar: mendirikan sekolah berorientasi pendidikan dan teknologi bagi generasi penerus bangsa.",
+    image: "/images/timeline/2014.webp",
   },
   {
     id: "2019",
     year: "2019",
     description:
-      "Bermula dari niat tulus seorang dermawan yang mewakafkan tanah senilai 3 miliar rupiah untuk bidang pendidikan. Tanah tersebut diamanahkan kepada BAZMA, yang kemudian tergerak hatinya untuk mewujudkan impian besar: mendirikan sekolah berorientasi pendidikan dan teknologi bagi generasi penerus bangsa.",
+      "Langkah Awal Pembangunan — tahun 2020 menjadi tonggak awal perjalanan ini. Dimulai dengan perapihan lahan dan kelengkapan administrasi perizinan pembangunan, menjadi fondasi penting bagi berdirinya SMK TI Bazma.",
     image: "/images/timeline/2019.webp",
   },
   {
     id: "2020",
     year: "2020",
     description:
-      "Pembangunan gedung sekolah dimulai, lengkap dengan penyusunan kurikulum berbasis teknologi informasi untuk menyiapkan generasi yang siap bersaing di era digital.",
+      "Angkatan Pertama dan Tantangan Pandemi — pada tahun 2021, pendaftaran siswa angkatan pertama resmi dibuka. Tiga bulan pertama proses belajar mengajar dilakukan secara daring karena pandemi COVID-19. Selama enam bulan berikutnya, kegiatan belajar dilakukan dengan penuh semangat menumpang sementara di Al Kausar, Cibinong.",
     image: "/images/timeline/2020.webp",
   },
   {
     id: "2021",
     year: "2021",
     description:
-      "SMK TI BAZMA resmi membuka pendaftaran siswa baru angkatan pertama, menandai dimulainya kegiatan belajar mengajar di kampus yang baru.",
+      "Asrama Pertama dan Semangat Baru — di tahun 2022, gedung asrama SMK TI Bazma selesai dibangun. Kegiatan pembelajaran pun dipindahkan ke asrama baru, dengan biaya operasional yang sepenuhnya diakomodir dari dana zakat dan sedekah. Langkah ini menegaskan semangat berbagi dan kepedulian sosial yang menjadi dasar berdirinya sekolah ini.",
     image: "/images/timeline/2021.webp",
   },
   {
     id: "2022",
     year: "2022",
     description:
-      "Berbagai fasilitas penunjang pembelajaran ditambahkan, mulai dari laboratorium komputer hingga ruang praktik, untuk mendukung kompetensi siswa secara menyeluruh.",
+      "Awal Pembangunan Gedung Sekolah — melihat semangat belajar yang terus tumbuh, pada tahun 2023 dimulailah pembangunan gedung sekolah utama. Pembangunan ini dilakukan agar kegiatan belajar mengajar menjadi lebih optimal, sejalan dengan latar belakang dan fokus sekolah di bidang teknologi informasi.",
     image: "/images/timeline/2022.webp",
   },
   {
     id: "2024",
     year: "2024",
     description:
-      "SMK TI BAZMA meraih akreditasi A (unggul), sebagai bukti komitmen sekolah dalam melahirkan lulusan yang profesional, berintegritas, dan berakhlak islami.",
+      "Berpindah ke Gedung Sekolah Baru — tahun 2024 menjadi momen bersejarah. Seluruh kegiatan KBM resmi dipindahkan ke gedung sekolah baru, yang lebih representatif dan mendukung pembelajaran berbasis teknologi.",
     image: "/images/timeline/2024.webp",
   },
   {
     id: "kini",
     year: "Kini",
     description:
-      "Terus bertumbuh dengan menghadirkan inovasi baru di bidang teknologi dan pendidikan, termasuk asisten AI untuk membantu siswa dan calon siswa mendapatkan informasi seputar sekolah.",
+      "SMK TI Bazma, Sekolah IT Berasrama 4 Tahun — hingga saat ini, SMK TI Bazma hadir sebagai sekolah kejuruan berasrama dengan program 4 tahun, fokus pada bidang teknologi informasi (IT). Kami terus berkomitmen mencetak generasi muda yang unggul dalam karakter, tangguh dalam kompetensi, dan siap berkontribusi untuk kemajuan bangsa.",
     image: "/images/timeline/kini.webp",
   },
 ];
@@ -257,7 +258,7 @@ export default function TimelineCarousel({
   return (
     <section
       data-nav-theme="dark"
-      className="relative flex min-h-[520px] w-full flex-col overflow-hidden bg-[#132B6D] text-white sm:min-h-[600px]"
+      className="relative flex min-h-[70vh] w-full flex-col overflow-hidden bg-[#132B6D] text-white sm:min-h-[85vh] lg:min-h-[90vh]"
       aria-roledescription="carousel"
       aria-label="Perjalanan sejarah"
     >
@@ -306,12 +307,12 @@ export default function TimelineCarousel({
               {activeSlide.year}
             </h2>
 
-            <p
-              data-reveal
-              className="max-w-xl font-sans text-sm leading-relaxed text-white/85 sm:text-base"
-            >
-              {activeSlide.description}
-            </p>
+           <p
+  data-reveal
+  className="max-w-xl font-sans text-base leading-relaxed text-white/85 sm:text-lg lg:text-xl"
+>
+  {activeSlide.description}
+</p>
           </div>
 
           <nav className="relative z-10" aria-label="Navigasi timeline">

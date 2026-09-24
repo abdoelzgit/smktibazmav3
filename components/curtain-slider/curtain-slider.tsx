@@ -367,6 +367,16 @@ export default function CurtainSlider({
     resumeTimerRef.current = setTimeout(startAuto, AUTO_RESUME_DELAY * 1000);
   }, [auto, stopAuto, startAuto]);
 
+  // Cleanup all timers and animations on unmount
+  useEffect(() => {
+    return () => {
+      stopAuto();
+      clearTimeout(resumeTimerRef.current);
+      if (inFlightRef.current) inFlightRef.current.tl.kill();
+      if (progressFillRef.current) gsap.killTweensOf(progressFillRef.current);
+    };
+  }, [stopAuto]);
+
   // direction: 1 = next, -1 = prev
   const goTo = useCallback((newIndex: number, direction: 1 | -1) => {
     const refs = refsRef.current;

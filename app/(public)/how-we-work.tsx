@@ -62,13 +62,13 @@ const stepRanges: Array<{
   opacity: number[]
   y: number[]
 }> = [
-  { range: [0.0, 0.08, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.12, 0.20, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.24, 0.32, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.36, 0.44, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.48, 0.56, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-  { range: [0.60, 0.68, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-]
+    { range: [0.0, 0.08, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+    { range: [0.12, 0.20, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+    { range: [0.24, 0.32, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+    { range: [0.36, 0.44, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+    { range: [0.48, 0.56, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+    { range: [0.60, 0.68, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  ]
 
 // ── StepCard: komponen terpisah ───────────────────────────────────────────────
 type StepCardProps = {
@@ -86,7 +86,7 @@ function StepCard({ step, rangeIndex, scrollYProgress }: StepCardProps) {
   return (
     <motion.div
       style={{ opacity, y }}
-      className="relative flex flex-col justify-between py-2 sm:py-3"
+      className="relative flex flex-col justify-between py-1.5 sm:py-2.5 md:py-3"
     >
       <div>
         <span
@@ -95,16 +95,16 @@ function StepCard({ step, rangeIndex, scrollYProgress }: StepCardProps) {
         >
           {step.stepNumber}
         </span>
-        <h3 className="mt-1 sm:mt-2 text-base sm:text-lg lg:text-xl font-medium text-white text-pretty">
+        <h3 className="mt-0.5 sm:mt-2 text-sm sm:text-lg lg:text-xl font-medium text-white text-pretty">
           {step.title}
         </h3>
-        <p className="mt-1.5 text-sm text-justify leading-relaxed text-neutral-400 sm:text-sm">
+        <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm leading-relaxed text-neutral-300 sm:text-neutral-400">
           {step.description}
         </p>
       </div>
 
       {/* Garis bawah dekoratif */}
-      <div className="relative mt-4 w-full border-t border-neutral-800" aria-hidden="true">
+      <div className="relative mt-2.5 sm:mt-4 w-full border-t border-neutral-800" aria-hidden="true">
         <span className="absolute -top-[7px] -left-1 text-xs text-neutral-600 font-mono select-none">
           +
         </span>
@@ -125,11 +125,6 @@ export default function HowWeWork() {
     offset: ["start start", "end end"],
   })
 
-  // ⬇️ Exit animation (frameOpacity/frameY/frameScale) DIHAPUS.
-  // Section ini sudah "sticky", jadi dia akan lepas secara natural
-  // begitu container h-[300vh] habis discroll — tidak perlu fade manual
-  // yang menyebabkan dead-zone/kedipan di akhir scroll.
-
   return (
     <section
       data-nav-theme="dark"
@@ -138,18 +133,18 @@ export default function HowWeWork() {
       aria-label="Proses kerja kami"
     >
       {/* Sticky viewport frame */}
-      <div className="sticky top-0 flex h-screen w-full flex-col justify-between px-6 pt-16 pb-8 sm:px-6 md:px-10 lg:px-16 xl:px-24 md:pt-20 md:pb-10 overflow-hidden">
-        <div className="flex flex-col justify-between h-full  mx-auto w-full">
+      <div className="sticky top-0 flex h-screen w-full flex-col justify-between px-5 sm:px-8 md:px-10 lg:px-16 xl:px-24 pt-16 sm:pt-20 pb-6 sm:pb-8 md:pb-10 overflow-hidden">
+        <div className="flex flex-col justify-between h-full mx-auto w-full">
           {/* Header */}
-          <div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-white mb-2 sm:mb-4">
+          <div className="pt-4 sm:pt-8 md:pt-14 lg:pt-18">
+            <h2 className="text-2xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-white mb-2 sm:mb-4">
               Mengapa memilih SMK TI BAZMA?
             </h2>
           </div>
 
           {/* Step Cards Grid */}
           <div
-            className="my-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 sm:gap-y-6 lg:gap-x-12"
+            className="my-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 sm:gap-x-8 lg:gap-x-12 gap-y-2.5 sm:gap-y-5 lg:gap-y-6"
             role="list"
           >
             {stepsData.map((step, index) => (

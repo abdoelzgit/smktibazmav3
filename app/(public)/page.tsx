@@ -28,13 +28,13 @@ export default function Home() {
         <div id="program" className="sticky top-6 z-10">
           <div id="jurusan">
             <ProgramHero
-              imageSrc="/images/foto.webp"
+              imageSrc="/images/sija.webp"
               imageAlt="Rak jaringan fiber optik"
               label="Profil Jurusan"
               title="Sistem Informasi, Jaringan & Aplikasi (SIJA)"
               description="SIJA adalah perpaduan antara Teknik Komputer & Jaringan (TKJ) dan Rekayasa Perangkat Lunak (RPL). Sekolah kami dilengkapi dengan teknologi terbaru dalam bidang cloud computing untuk mempersiapkan siswa menghadapi tantangan masa depan."
               ctaLabel="Lebih lengkap"
-              ctaHref="/jurusan/sija"
+              ctaHref="/profil-jurusan"
             />
           </div>
         </div>
