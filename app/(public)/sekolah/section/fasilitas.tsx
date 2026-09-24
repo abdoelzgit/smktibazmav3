@@ -3,8 +3,8 @@
 import React from "react"
 
 const facilities = [
-  { title: "Ruang Musik", image: "/images/sekolah/fasilitas/bk.webp" },
-  { title: "Ruang BK", image: "/images/sekolah/fasilitas/musik.webp" },
+  { title: "Ruang BK", image: "/images/sekolah/fasilitas/bk.webp" },
+  { title: "Ruang Musik", image: "/images/sekolah/fasilitas/musik.webp" },
   { title: "Ruang Kelas A", image: "/images/sekolah/fasilitas/kelas.webp" },
   { title: "Ruang Lab komputer", image: "/images/sekolah/fasilitas/labkom.webp" },
   { title: "Ruang Rapat", image: "/images/sekolah/fasilitas/rapat.webp" },
