@@ -5,7 +5,7 @@ import { jwtVerify } from 'jose';
 import { mkdir, writeFile, unlink } from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { KeadaanOrangTua, StatusKeluarga, StatusSekolah } from '@prisma/client';
+import { KeadaanOrangTua, StatusKeluarga, StatusSekolah, StatusPendaftaran } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/app/actions/auth';
 import { revalidatePath } from 'next/cache';
@@ -29,6 +29,41 @@ function asString(value: FormDataEntryValue | null | undefined): string {
 function asBoolean(value: FormDataEntryValue | null | undefined): boolean {
   const raw = asString(value).toLowerCase();
   return raw === 'true' || raw === '1' || raw === 'yes' || raw === 'on';
+}
+
+async function checkAndAutoVerifyPendaftaran(pendaftaranId: string) {
+  const p = await prisma.pendaftaran.findUnique({
+    where: { id: pendaftaranId },
+    include: {
+      biodata: true,
+      orangTua: true,
+      sekolahAsal: true,
+      rekomendasi: true,
+      berkas: true,
+    },
+  });
+
+  if (!p) return;
+
+  const isAllTabsComplete = Boolean(
+    p.biodata && p.orangTua && p.sekolahAsal && p.rekomendasi && p.berkas
+  );
+
+  if (isAllTabsComplete) {
+    if (p.status !== StatusPendaftaran.VERIFIED && p.status !== StatusPendaftaran.ACCEPTED) {
+      await prisma.pendaftaran.update({
+        where: { id: pendaftaranId },
+        data: { status: StatusPendaftaran.VERIFIED },
+      });
+    }
+  } else {
+    if (p.status === StatusPendaftaran.VERIFIED) {
+      await prisma.pendaftaran.update({
+        where: { id: pendaftaranId },
+        data: { status: StatusPendaftaran.SUBMITTED },
+      });
+    }
+  }
 }
 
 async function getUserFromToken(): Promise<{ userId: string; email: string } | null> {
@@ -193,6 +228,7 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
       },
     });
 
+    await checkAndAutoVerifyPendaftaran(pendaftaran.id);
     revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
     return { success: true, data: biodata };
   } catch (error) {
@@ -247,6 +283,7 @@ export async function saveDataOrangTuaAction(formData: FormData): Promise<FormRe
       },
     });
 
+    await checkAndAutoVerifyPendaftaran(pendaftaran.id);
     revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
     return { success: true, data: orangTua };
   } catch (error) {
@@ -289,6 +326,7 @@ export async function saveDataSekolahAction(formData: FormData): Promise<FormRes
       },
     });
 
+    await checkAndAutoVerifyPendaftaran(pendaftaran.id);
     revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
     return { success: true, data: sekolah };
   } catch (error) {
@@ -345,6 +383,7 @@ export async function saveRekomendasiAction(formData: FormData): Promise<FormRes
       },
     });
 
+    await checkAndAutoVerifyPendaftaran(pendaftaran.id);
     revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
     return { success: true, data: rekomendasi };
   } catch (error) {
@@ -409,6 +448,7 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
       },
     });
 
+    await checkAndAutoVerifyPendaftaran(pendaftaran.id);
     revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
     return { success: true, data: berkas };
   } catch (error) {
@@ -512,6 +552,7 @@ export async function submitPendaftaranAction(): Promise<FormResult> {
       },
     });
 
+    await checkAndAutoVerifyPendaftaran(pendaftaran.id);
     revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
     return { success: true, data: updated };
   } catch (error) {

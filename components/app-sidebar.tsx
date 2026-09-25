@@ -15,7 +15,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { TerminalSquareIcon, BotIcon, BookOpenIcon, Newspaper, Settings2Icon, AppWindow,LifeBuoyIcon, SendIcon, FrameIcon, PieChartIcon, MapIcon, TerminalIcon } from "lucide-react"
+import {DatabaseSearch,TerminalSquareIcon, BotIcon, BookOpenIcon, Newspaper, Settings2Icon, AppWindow,LifeBuoyIcon, SendIcon, FrameIcon, PieChartIcon, MapIcon, TerminalIcon } from "lucide-react"
 
 const data = {
   user: {
@@ -37,6 +37,12 @@ const data = {
       url: "/admin/jejak-karya",
       icon: (
         <AppWindow/>
+      )
+    },{
+      title: "Data PPDB",
+      url: "/admin/data-ppdb",
+      icon: (
+        <DatabaseSearch />
       )
     }
 

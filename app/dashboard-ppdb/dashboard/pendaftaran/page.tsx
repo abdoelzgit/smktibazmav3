@@ -14,7 +14,7 @@ async function getInitialFormData() {
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(secretKey));
     const userId = typeof payload.userId === 'string' ? payload.userId : '';
-    
+
     if (!userId) return null;
 
     const pendaftaran = await prisma.pendaftaran.findUnique({
@@ -82,7 +82,7 @@ import { AllFormData } from '@/lib/validations/ppdb-form';
 
 export default async function FormulirPendaftaran() {
   const initialData = await getInitialFormData();
-  
+
   return (
     <main className="flex">
       <PendaftaranPpdbClient initialData={initialData as unknown as AllFormData | null} />

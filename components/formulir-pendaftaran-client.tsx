@@ -83,11 +83,10 @@ export function PendaftaranPpdbClient({ initialData }: PendaftaranPpdbClientProp
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-2 transition-all relative ${
-                activeTab === tab
+              className={`pb-2 transition-all relative ${activeTab === tab
                   ? "text-blue-900 font-bold border-b-2 border-blue-900"
                   : "hover:text-gray-800"
-              }`}
+                }`}
             >
               {tab}
             </button>
