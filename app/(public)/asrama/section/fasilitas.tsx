@@ -3,12 +3,12 @@
 import React from "react"
 
 const facilities = [
-  { title: "Kamar Tidur Siswa", image: "/images/asrama/kamar-tidur.jpg" },
-  { title: "Ruang Makan", image: "/images/asrama/ruang-makan.jpg" },
-  { title: "Musholla Asrama", image: "/images/asrama/musholla.jpg" },
-  { title: "Ruang Belajar Malam", image: "/images/asrama/ruang-belajar.jpg" },
-  { title: "Lapangan Olahraga", image: "/images/asrama/lapangan.jpg" },
-  { title: "Ruang Cuci & Jemur", image: "/images/asrama/ruang-cuci.jpg" },
+  { title: "Kamar Tidur Siswa", image: "/images/asrama/fasilitas/kamarsiswa.webp" },
+  { title: "Gym", image: "/images/asrama/fasilitas/gym.webp" },
+  { title: "Barbershop", image: "/images/asrama/fasilitas/barbershop.webp" },
+  { title: "Ruang Sehat", image: "/images/asrama/fasilitas/kamarsehat.webp" },
+  { title: "Jemuran Baju", image: "/images/asrama/fasilitas/jemuran.webp" },
+  { title: "Setrika", image: "/images/asrama/fasilitas/setrika.webp" },
 ]
 
 interface FacilityItem {
