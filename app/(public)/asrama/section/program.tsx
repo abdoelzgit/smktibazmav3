@@ -15,73 +15,60 @@ interface Program {
 const SCROLL_DISTANCE_PER_CARD = 300;
 const programs: Program[] = [
   {
-    id: 1,
-    title: "Sholat Jenazah",
-    description:
-      "Mengasah kepedulian dan pengamalan fardhu kifayah melalui salat jenazah masyarakat.",
-    image: "/images/program-asrama/sholat-jenazah.jpg",
-  },
-  {
     id: 2,
     title: "Tasmih",
     description:
       "Menumbuhkan kedisiplinan dan keistiqamahan dalam menjaga hafalan Al-Qur'an.",
-    image: "/images/foto.webp",
+    image: "/images/asrama/program/tasmi.webp",
   },
   {
     id: 3,
     title: "Qori",
     description:
       "Membina siswa agar fasih melantunkan ayat suci Al-Qur'an dengan indah.",
-    image: "/images/program-asrama/qori.jpg",
+    image: "/images/asrama/program/qari.webp",
   },
   {
     id: 4,
     title: "Tahfidz",
     description:
       "Menghafal Al-Qur'an secara bertahap dengan target yang terukur.",
-    image: "/images/program-asrama/tahfidz.jpg",
+    image: "/images/asrama/program/tahfidz.webp",
   },
   {
     id: 5,
     title: "Tahsin",
     description:
       "Melatih bacaan sesuai kaidah tajwid agar tilawah lebih baik.",
-    image: "/images/program-asrama/tahsin.jpg",
+    image: "/images/asrama/program/tahsin.webp",
   },
   {
     id: 6,
     title: "Kitab",
     description:
       "Mendalami ilmu agama melalui tafsir, ibadah, akhlak, dan tajwid.",
-    image: "/images/program-asrama/kitab.jpg",
+    image: "/images/asrama/program/kitab.webp",
   },
   {
     id: 7,
     title: "Hadroh",
     description: "Menyalurkan kecintaan pada Islam lewat seni rebana.",
-    image: "/images/program-asrama/hadroh.jpg",
+    image: "/images/asrama/program/hadrah.webp",
   },
   {
     id: 8,
     title: "Pelatihan Adzan, Imam, Khotib",
     description: "Melatih siswa menjadi pemimpin ibadah dan dakwah.",
-    image: "/images/program-asrama/pelatihan-adzan.jpg",
+    image: "/images/asrama/program/imam.webp",
   },
   {
     id: 9,
     title: "Muhadoroh",
     description:
       "Melatih keberanian dan kemampuan berbicara di depan umum.",
-    image: "/images/program-asrama/muhadoroh.jpg",
+    image: "/images/asrama/program/muhadarah.webp",
   },
-  {
-    id: 10,
-    title: "Puasa Senin & Kamis",
-    description:
-      "Melatih kedisiplinan dan ketakwaan melalui ibadah sunnah Rasulullah SAW.",
-    image: "/images/program-asrama/puasa-sunnah.jpg",
-  },
+ 
 ];
 
 const FALLBACK_IMAGE = "/images/info-cover.webp";

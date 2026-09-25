@@ -1,78 +1,47 @@
-import { ArrowUpRight } from "lucide-react";
-import { PortalLink } from "@/components/portal-transition";
+"use client";
 
-interface EkstraItem {
-  title: string;
-  slug: string;
-  image: string;
-}
+import { EkstraShowcase } from "./ekstra-showcase";
 
-const ekstraData: EkstraItem[] = [
+const ekstraData = [
+  {
+    title: "MCRobo (Robotika)",
+    description:
+      "MCRobo menjadi wadah bagi santri untuk mengembangkan kemampuan di bidang robotika dan teknologi. Kegiatan mencakup perakitan mikrokontroler, pemrograman, Internet of Things (IoT), serta pembuatan berbagai proyek teknologi secara kreatif dan kolaboratif.",
+    image: "/images/ekstrakulikuler/robotik.webp",
+  },
+  {
+    title: "Pramuka",
+    description:
+      "Pramuka menjadi kegiatan untuk membentuk karakter santri melalui latihan kedisiplinan, kemandirian, kepemimpinan, dan kerja sama. Berbagai kegiatan dilakukan untuk melatih keberanian, tanggung jawab, serta kepedulian terhadap lingkungan dan sesama.",
+    image: "/images/ekstrakulikuler/pramuka.webp",
+  },
+  {
+    title: "Silat",
+    description:
+      "Silat menjadi wadah untuk mempelajari seni bela diri sekaligus melatih ketangkasan dan kedisiplinan. Selain kemampuan fisik, kegiatan ini juga membentuk keberanian, pengendalian diri, mental yang kuat, serta sikap menghargai orang lain.",
+    image: "/images/ekstrakulikuler/silat.webp",
+  },
   {
     title: "Futsal",
-    slug: "futsal",
-    image: "/images/ekstra/futsal.jpg",
+    description:
+      "Futsal menjadi kegiatan olahraga yang mendorong santri untuk menjaga kebugaran sekaligus belajar bekerja sama dalam tim. Latihan dan pertandingan membantu mengembangkan kemampuan bermain, sportivitas, komunikasi, serta semangat untuk saling mendukung.",
+    image:
+      "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
   },
   {
-    title: "MCRobo",
-    slug: "mcrobo",
-    image: "/images/ekstra/mcrobo.jpg",
+    title: "Hadroh",
+    description:
+      "Hadroh menjadi wadah bagi santri yang memiliki minat dalam seni musik Islami. Melalui permainan rebana dan latihan bersama, santri belajar mengembangkan musikalitas, kekompakan, serta menyalurkan kreativitas dalam kegiatan yang bernuansa dakwah dan syiar Islam.",
+    image: "/images/ekstrakulikuler/hadroh.webp",
   },
   {
-    title: "Pramuka",
-    slug: "pramuka",
-    image: "/images/ekstra/pramuka.jpg",
-  },
-  {
-    title: "Pramuka",
-    slug: "pramuka-2",
-    image: "/images/ekstra/pramuka.jpg",
-  },
-  {
-    title: "Pramuka",
-    slug: "pramuka-3",
-    image: "/images/ekstra/pramuka.jpg",
-  },
-  {
-    title: "Pramuka",
-    slug: "pramuka-4",
-    image: "/images/ekstra/pramuka.jpg",
+    title: "Band",
+    description:
+      "Band menjadi ruang bagi santri untuk mengembangkan kemampuan bermusik melalui berbagai instrumen musik modern. Latihan dilakukan secara bersama untuk membangun musikalitas, harmonisasi, kreativitas, dan kemampuan bekerja sebagai sebuah tim.",
+    image: "/images/ekstrakulikuler/band.webp",
   },
 ];
 
 export function EkstraGrid() {
-  return (
-    <section className="w-full max-w-[1111px] mx-auto pt-8 sm:pt-12 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {ekstraData.map((item) => (
-          <PortalLink
-            key={item.slug}
-            href={`/ekstrakulikuler/${item.slug}`}
-            label={item.title}
-            className="group relative rounded-2xl overflow-hidden aspect-[4/3] block cursor-pointer"
-          >
-            {/* Background Image */}
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-              style={{ backgroundImage: `url('${item.image}')` }}
-            />
-            {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/40" />
-
-            {/* Content */}
-            <div className="relative z-10 flex flex-col justify-between h-full p-6">
-              <h3 className="text-white text-xl sm:text-2xl font-bold">
-                {item.title}
-              </h3>
-              <div className="flex justify-end">
-                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm group-hover:bg-white group-hover:text-blue-900 text-white transition-all duration-300">
-                  <ArrowUpRight className="w-4 h-4" />
-                </div>
-              </div>
-            </div>
-          </PortalLink>
-        ))}
-      </div>
-    </section>
-  );
+  return <EkstraShowcase items={ekstraData} />;
 }
