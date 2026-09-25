@@ -21,8 +21,8 @@ export default function SpmbPage() {
                 title="Frequently Asked Questions (FAQ)"
                 subtitle="Pertanyaan seputar proses penerimaan peserta didik"
             />
-
             <CountdownSection />
+
         </main>
     );
 }

@@ -321,7 +321,7 @@ export default function TimelineSection({
   title = "Timeline SPMB 2026",
   description = "Pantau setiap tahapan penerimaan siswa baru, dari sosialisasi sampai daftar ulang, supaya tidak ada jadwal penting yang terlewat.",
   ctaLabel = "Daftar Sekarang",
-  ctaHref = "/pendaftaran",
+  ctaHref = "/login",
   items = MOCK_TIMELINE,
 }: TimelineSectionProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
