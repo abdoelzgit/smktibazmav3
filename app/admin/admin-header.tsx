@@ -96,7 +96,7 @@ export function AdminHeader() {
                 <React.Fragment key={item.href + idx}>
                   <BreadcrumbItem>
                     {isLast ? (
-                      <BreadcrumbPage className="font-semibold text-foreground">
+                      <BreadcrumbPage className="font-semibold text-foreground truncate max-w-[160px] sm:max-w-none">
                         {item.label}
                       </BreadcrumbPage>
                     ) : (

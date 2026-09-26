@@ -15,7 +15,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {DatabaseSearch,TerminalSquareIcon, BotIcon, BookOpenIcon, Newspaper, Settings2Icon, AppWindow,LifeBuoyIcon, SendIcon, FrameIcon, PieChartIcon, MapIcon, TerminalIcon } from "lucide-react"
+import {Home, DatabaseSearch, Newspaper, AppWindow } from "lucide-react"
 
 const data = {
   user: {
@@ -24,6 +24,14 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
+    {
+      title: "Dashboard",
+      url: "/admin",
+      icon: (
+        <Home/>
+      ),
+      isActive: true,
+    },
     {
       title: "Berita",
       url: "/admin/berita",

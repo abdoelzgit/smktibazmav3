@@ -104,22 +104,22 @@ export default function DashboardContent() {
       )}
 
       {/* Header Section */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
+      <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-            Manajemen Data PPDB (Database Direct)
+            Manajemen Data PPDB (Database)
           </h1>
           <p className="mt-1 text-xs text-slate-500">
             Terhubung langsung dengan database PostgreSQL Prisma. Peserta otomatis terverifikasi setelah melengkapi semua informasi.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={loadDataFromDb}
             disabled={loading || isPending}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50"
+            className="flex-1 sm:flex-none inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50 active:bg-slate-100"
             title="Refresh data dari database"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading || isPending ? "animate-spin" : ""}`} />
@@ -129,7 +129,7 @@ export default function DashboardContent() {
           <button
             type="button"
             onClick={handleExportAll}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-blue-900 px-3.5 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-blue-950"
+            className="flex-1 sm:flex-none inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-blue-900 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-blue-950 active:bg-blue-900"
           >
             <Download className="h-4 w-4 text-white" />
             <span>Export CSV</span>
@@ -138,7 +138,7 @@ export default function DashboardContent() {
       </div>
 
       {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           label="Total Pendaftar"
           value={loading ? "..." : totalPeserta}
