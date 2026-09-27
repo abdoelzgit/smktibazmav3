@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -171,10 +172,12 @@ export const ExpandableGallery: React.FC<ExpandableGalleryProps> = ({
               onClick={() => handleCardInteraction(index)}
             >
               {/* Gambar Latar Belakang */}
-              <img
+              <Image
                 src={src}
                 alt={title}
-                className="w-full h-full object-cover transition-transform duration-1200 ease-out group-hover:scale-103"
+                fill
+                sizes="(max-width: 768px) 100vw, 500px"
+                className="object-cover transition-transform duration-1200 ease-out group-hover:scale-103"
               />
 
               {/* Top Vignette Fade */}
@@ -258,16 +261,22 @@ export const ExpandableGallery: React.FC<ExpandableGalleryProps> = ({
               className="relative max-w-5xl max-h-[85vh] w-full flex flex-col items-center"
               onClick={(e) => e.stopPropagation()}
             >
-              <motion.img
+              <motion.div
                 key={selectedIndex}
-                src={getImageSrc(images[selectedIndex])}
-                alt={getImageTitle(images[selectedIndex], selectedIndex)}
-                className="max-h-[70vh] w-auto max-w-full object-contain rounded-xl shadow-2xl"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              />
+                className="relative max-h-[70vh] h-[70vh] w-full max-w-4xl overflow-hidden rounded-xl shadow-2xl"
+              >
+                <Image
+                  src={getImageSrc(images[selectedIndex])}
+                  alt={getImageTitle(images[selectedIndex], selectedIndex)}
+                  fill
+                  sizes="(max-width: 1280px) 100vw, 1200px"
+                  className="object-contain"
+                />
+              </motion.div>
               {typeof images[selectedIndex] !== "string" && (
                 <div className="mt-4 text-center text-white max-w-xl px-4">
                   <h3 className="text-xl sm:text-2xl font-bold">

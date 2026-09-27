@@ -1,14 +1,15 @@
 "use client"
 
 import React from "react"
+import Image from "next/image"
 
 const facilities = [
-  { title: "Kamar Tidur Siswa", image: "/images/asrama/kamar-tidur.jpg" },
-  { title: "Ruang Makan", image: "/images/asrama/ruang-makan.jpg" },
-  { title: "Musholla Asrama", image: "/images/asrama/musholla.jpg" },
-  { title: "Ruang Belajar Malam", image: "/images/asrama/ruang-belajar.jpg" },
-  { title: "Lapangan Olahraga", image: "/images/asrama/lapangan.jpg" },
-  { title: "Ruang Cuci & Jemur", image: "/images/asrama/ruang-cuci.jpg" },
+  { title: "Kamar Tidur Siswa", image: "/images/asrama/fasilitas/kamarsiswa.webp" },
+  { title: "Gym", image: "/images/asrama/fasilitas/gym.webp" },
+  { title: "Barbershop", image: "/images/asrama/fasilitas/barbershop.webp" },
+  { title: "Ruang Sehat", image: "/images/asrama/fasilitas/kamarsehat.webp" },
+  { title: "Jemuran Baju", image: "/images/asrama/fasilitas/jemuran.webp" },
+  { title: "Setrika", image: "/images/asrama/fasilitas/setrika.webp" },
 ]
 
 interface FacilityItem {
@@ -22,12 +23,15 @@ interface FacilityCardProps {
 
 function FacilityCard({ item }: FacilityCardProps) {
   return (
-    <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-100">
+    <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-100 transform-gpu">
       {/* Gambar: Zoom in halus saat hover */}
-      <img
+      <Image
         src={item.image}
         alt={item.title}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         loading="lazy"
+        decoding="async"
         className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110"
       />
 

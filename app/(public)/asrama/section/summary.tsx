@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import Image from "next/image"
 import { motion } from "framer-motion"
 
 export default function SummaryAsrama() {
@@ -37,14 +38,13 @@ export default function SummaryAsrama() {
         </motion.div>
 
         {/* Bagian Gambar dengan Rounded Corner */}
-        <div
-
-          className="relative w-full overflow-hidden rounded-2xl shadow-lg aspect-[16/9] sm:aspect-[21/9]"
-        >
-          <img
+        <div className="relative w-full overflow-hidden rounded-2xl shadow-lg aspect-[16/9] sm:aspect-[21/9]">
+          <Image
             src="/images/info-asrama.webp"
             alt="Siswa-siswi SMK TI Bazma"
-            className="w-full h-full object-cover"
+            fill
+            sizes="100vw"
+            className="object-cover"
           />
         </div>
 

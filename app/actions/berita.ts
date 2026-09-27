@@ -1,10 +1,8 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { deleteUploadedFile } from "@/lib/image-utils";
-
-const prisma = new PrismaClient();
 
 export type ActionResult<T = unknown> = {
   success: boolean;

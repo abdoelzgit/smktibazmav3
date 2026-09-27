@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { getBeritaListAction } from "@/app/actions/berita-list";
 import { deleteBeritaAction } from "@/app/actions/berita";
@@ -202,10 +203,12 @@ export default function BeritaAdminPage() {
                 {/* Image Cover */}
                 <div className="relative aspect-video w-full overflow-hidden bg-muted">
                   {item.coverImage ? (
-                    <img
+                    <Image
                       src={item.coverImage}
                       alt={item.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-muted/60 text-muted-foreground">
