@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import { Globe, Palette, Video, Zap } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -256,10 +257,12 @@ function HorizontalProjectsSection({
                 <div key={project.slug} className="flex items-center shrink-0">
                   <div className="w-[50vw] shrink-0 px-6 sm:px-10 lg:px-12 group space-y-4">
                     <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-300 shadow-md border border-black/5">
-                      <img
+                      <Image
                         src={project.heroImage}
                         alt={project.title}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                       />
                     </div>
 

@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import Image from "next/image"
 
 const facilities = [
   { title: "Kamar Tidur Siswa", image: "/images/asrama/fasilitas/kamarsiswa.webp" },
@@ -22,12 +23,15 @@ interface FacilityCardProps {
 
 function FacilityCard({ item }: FacilityCardProps) {
   return (
-    <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-100">
+    <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-100 transform-gpu">
       {/* Gambar: Zoom in halus saat hover */}
-      <img
+      <Image
         src={item.image}
         alt={item.title}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         loading="lazy"
+        decoding="async"
         className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110"
       />
 

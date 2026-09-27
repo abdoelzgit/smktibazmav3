@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { TextReveal } from "@/components/ui/text-reveal";
 import { ArrowRight } from "lucide-react";
@@ -105,11 +106,13 @@ export function InfoSekilas({
             {/* Container 1: kartu gambar + statistik */}
             <div className="mx-auto w-full max-w-[1920px] px-6 sm:px-10 lg:px-16 xl:px-24">
                 <div className="relative overflow-hidden rounded-3xl">
-                    <img
+                    <Image
                         src={image}
                         alt=""
                         aria-hidden="true"
-                        className="absolute inset-0 h-full w-full object-cover"
+                        fill
+                        sizes="100vw"
+                        className="object-cover"
                     />
                     <div className="absolute inset-0 bg-[#132B6D]/80" />
 

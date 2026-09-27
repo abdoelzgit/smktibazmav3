@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { JejakKaryaItem } from "@/lib/jejak-karya-data";
@@ -143,11 +144,14 @@ export function JejakKaryaDetailClient({ project }: DetailProps) {
           <section className="flex-1 w-full min-w-0 space-y-6">
 
             {/* Hero Image */}
-            <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-md">
-              <img
+            <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-md aspect-video w-full">
+              <Image
                 src={project.heroImage}
                 alt={project.title}
-                className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                fill
+                priority
+                sizes="(max-width: 1280px) 100vw, 1200px"
+                className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
               />
               <div className="absolute bottom-5 left-5 right-5 md:right-auto md:max-w-sm rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-xl">
                 <div className="flex items-center justify-between gap-4">
@@ -178,11 +182,13 @@ export function JejakKaryaDetailClient({ project }: DetailProps) {
 
             {/* Gallery — stack kebawah */}
             {project.galleryImages && project.galleryImages.map((imgUrl, idx) => (
-              <div key={idx} className="group overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-md">
-                <img
+              <div key={idx} className="group relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-md aspect-video w-full">
+                <Image
                   src={imgUrl}
                   alt={`${project.title} preview ${idx + 1}`}
-                  className="w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                  fill
+                  sizes="(max-width: 1280px) 100vw, 1200px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                 />
               </div>
             ))}
