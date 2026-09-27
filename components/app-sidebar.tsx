@@ -3,8 +3,6 @@
 import * as React from "react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -15,14 +13,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {Home, DatabaseSearch, Newspaper, AppWindow } from "lucide-react"
+import { Home, DatabaseSearch, Newspaper, AppWindow } from "lucide-react"
+
+const defaultUser = {
+  name: "Admin SMK TI BAZMA",
+  email: "admin@smktibazma.sch.id",
+  avatar: "",
+}
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -53,18 +52,30 @@ const data = {
         <DatabaseSearch />
       )
     }
-
   ],
- 
- 
 }
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+  user?: {
+    name?: string
+    email?: string
+    avatar?: string
+  }
+}
+
+export function AppSidebar({ user, ...props }: AppSidebarProps) {
+  const activeUser = {
+    name: user?.name || defaultUser.name,
+    email: user?.email || defaultUser.email,
+    avatar: user?.avatar || defaultUser.avatar,
+  }
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<a href="#" />}>
+            <SidebarMenuButton size="lg" render={<a href="/admin" />}>
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
                 <img src="/images/logo.avif" alt="Logo SMK TI BAZMA" className="size-8 object-contain" />
               </div>
@@ -80,8 +91,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={activeUser} />
       </SidebarFooter>
     </Sidebar>
   )
 }
+

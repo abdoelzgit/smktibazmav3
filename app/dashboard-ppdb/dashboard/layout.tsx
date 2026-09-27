@@ -27,23 +27,36 @@ async function getPpdbUser() {
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(secretKey));
     const userId = typeof payload.userId === 'string' ? payload.userId : '';
-    
+
     let avatar = '';
+    let name = typeof payload.name === 'string' ? payload.name : 'Pengguna PPDB';
+    let email = typeof payload.email === 'string' ? payload.email : '';
+
     if (userId) {
-      const pendaftaran = await prisma.pendaftaran.findUnique({
-        where: { userId },
-        include: { biodata: { select: { fotoFormalUrl: true } } },
+      const dbUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true },
       });
+      if (dbUser) {
+        if (dbUser.name) name = dbUser.name;
+        if (dbUser.email) email = dbUser.email;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pendaftaran = await (prisma as any).pendaftaran.findUnique({
+        where: { userId },
+        include: { biodata: { select: { fotoFormalUrl: true, namaLengkap: true } } },
+      });
+
+      if (pendaftaran?.biodata?.namaLengkap) {
+        name = pendaftaran.biodata.namaLengkap;
+      }
       if (pendaftaran?.biodata?.fotoFormalUrl) {
         avatar = pendaftaran.biodata.fotoFormalUrl;
       }
     }
 
-    return {
-      name: typeof payload.name === 'string' ? payload.name : 'Pengguna PPDB',
-      email: typeof payload.email === 'string' ? payload.email : '',
-      avatar,
-    };
+    return { name, email, avatar };
   } catch {
     return { name: 'Pengguna PPDB', email: '', avatar: '' };
   }

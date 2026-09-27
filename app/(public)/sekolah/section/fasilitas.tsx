@@ -1,5 +1,4 @@
 "use client"
-import Image from "next/image"
 import React from "react"
 import Image from "next/image"
 
@@ -31,9 +30,7 @@ function FacilityCard({ item }: FacilityCardProps) {
         fill
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         loading="lazy"
-        width={400}
-        height={300}
-        className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110"
+        className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110"
       />
 
       {/* Overlay: Dari transparan ke gelap pekat untuk fokus pada teks */}

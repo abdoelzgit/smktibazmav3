@@ -39,6 +39,18 @@ export default function DataTable({ data, onDownload, onDelete }: DataTableProps
     });
   }, [data, query, statusFilter]);
 
+  const isValidImageUrl = (url?: string | null): boolean => {
+    if (!url || typeof url !== "string") return false;
+    const trimmed = url.trim();
+    if (!trimmed || trimmed.toLowerCase() === "blob") return false;
+    return (
+      trimmed.startsWith("/") ||
+      trimmed.startsWith("http://") ||
+      trimmed.startsWith("https://") ||
+      trimmed.startsWith("blob:")
+    );
+  };
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -130,11 +142,12 @@ export default function DataTable({ data, onDownload, onDelete }: DataTableProps
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full overflow-hidden bg-blue-100 ring-2 ring-blue-50">
-                  {p.fotoFormalUrl ? (
+                  {isValidImageUrl(p.fotoFormalUrl) ? (
                     <Image
-                      src={p.fotoFormalUrl}
+                      src={p.fotoFormalUrl!}
                       alt={`${p.nama} Foto Formal`}
                       fill
+                      unoptimized={p.fotoFormalUrl!.startsWith("blob:")}
                       className="object-cover"
                       sizes="44px"
                     />
@@ -244,11 +257,12 @@ export default function DataTable({ data, onDownload, onDelete }: DataTableProps
                 <td className="px-4 py-3.5 sm:px-6">
                   <div className="flex items-center gap-3">
                     <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full overflow-hidden bg-blue-100">
-                      {p.fotoFormalUrl ? (
+                      {isValidImageUrl(p.fotoFormalUrl) ? (
                         <Image
-                          src={p.fotoFormalUrl}
+                          src={p.fotoFormalUrl!}
                           alt={`${p.nama} Foto Formal`}
                           fill
+                          unoptimized={p.fotoFormalUrl!.startsWith("blob:")}
                           className="object-cover"
                           sizes="40px"
                         />

@@ -15,7 +15,7 @@ declare module 'next-auth' {
 
 const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'secret';
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   secret: JWT_SECRET,
   providers: [
     GoogleProvider({
@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
               email: user.email.toLowerCase(),
               name: user.name || user.email.split('@')[0],
               password: null as any,
-              role: 'USER',
+              role: 'USER' as any,
             },
           });
         }
@@ -56,7 +56,7 @@ export const authOptions: NextAuthOptions = {
           userId: existingUser.id,
           email: existingUser.email,
           name: existingUser.name,
-          role: existingUser.role,
+          role: (existingUser as any).role || 'USER',
         })
           .setProtectedHeader({ alg: 'HS256' })
           .setIssuedAt()
@@ -91,7 +91,7 @@ export const authOptions: NextAuthOptions = {
 
         if (dbUser) {
           token.userId = dbUser.id;
-          token.role = dbUser.role;
+          token.role = (dbUser as any).role || 'USER';
         }
       }
 

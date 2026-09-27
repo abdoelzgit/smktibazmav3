@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { House, FolderInput, BellRing, TerminalIcon } from "lucide-react"
+import { House, FolderInput } from "lucide-react"
 
 const data = {
   navMain: [
@@ -32,22 +32,27 @@ const data = {
       )
     }
   ]
- 
- 
 }
+
 type PpdbSidebarUser = {
-  name: string;
-  email: string;
-  avatar: string;
+  name?: string;
+  email?: string;
+  avatar?: string;
 };
 
-export function PpdbSidebar({ user, ...props }: React.ComponentProps<typeof Sidebar> & { user: PpdbSidebarUser }) {
+export function PpdbSidebar({ user, ...props }: React.ComponentProps<typeof Sidebar> & { user?: PpdbSidebarUser }) {
+  const activeUser = {
+    name: user?.name || "Pengguna PPDB",
+    email: user?.email || "",
+    avatar: user?.avatar || "",
+  }
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<a href="#" />}>
+            <SidebarMenuButton size="lg" render={<a href="/dashboard-ppdb/dashboard" />}>
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
                 <img src="/images/logo.avif" alt="Logo SMK TI BAZMA" className="size-8 object-contain" />
               </div>
@@ -63,8 +68,9 @@ export function PpdbSidebar({ user, ...props }: React.ComponentProps<typeof Side
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={activeUser} />
       </SidebarFooter>
     </Sidebar>
   )
 }
+

@@ -10,6 +10,7 @@ import {
   deletePendaftaranAction,
 } from "@/app/actions/ppdb-admin";
 
+
 export default function DashboardContent() {
   const [pesertaList, setPesertaList] = useState<Peserta[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
