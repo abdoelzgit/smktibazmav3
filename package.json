@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack",
-    "start": "next start",
+  "build": "next build",
+  "start": "NODE_ENV=production next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
