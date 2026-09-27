@@ -18,6 +18,7 @@ import {
   AvatarImage,
   AvatarFallback,
 } from "@/components/ui/avatar";
+import Link from "next/link";
 /**
  * ------------------------------------------------------------------
  * Tipe data
@@ -25,7 +26,7 @@ import {
  */
 export interface Siswa {
   nama: string;
-  usia?: string;
+  noHp?: string;
   domisili?: string;
   tanggalDaftar?: string;
   sekolahAsal?: string;
@@ -61,9 +62,10 @@ const STEPS: Step[] = [
 
 const PROGRESS_CARDS: ProgressItem[] = [
   { title: "Biodata Diri", verified: true },
+  { title: "Data Orang Tua", verified: true },
   { title: "Unggah Berkas", verified: false },
-  { title: "Tes Seleksi", verified: false },
-  { title: "Biodata Diri", verified: true },
+  { title: "Surat Rekomendasi", verified: false },
+  { title: "Asal Sekolah", verified: true },
 ];
 
 /**
@@ -80,14 +82,14 @@ function BiodataSiswa({ siswa }: { siswa: Siswa }) {
     .toUpperCase();
 
   return (
-    <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+    <section className="w-full rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
       <h2 className="text-lg font-semibold text-slate-900">Biodata Siswa</h2>
 
       <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-center">
         {/* Foto */}
         <Avatar
-          size="lg"
-          className="h-16 w-16 bg-slate-200 text-lg font-semibold text-slate-500"
+          size="xl"
+          className="h-30 w-30 bg-slate-200 text-lg font-semibold text-slate-500"
         >
           {siswa.foto ? (
             <AvatarImage
@@ -104,7 +106,7 @@ function BiodataSiswa({ siswa }: { siswa: Siswa }) {
         {/* Detail */}
         <div className="grid flex-1 grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">
           <Field label="Nama lengkap" value={siswa.nama} strong />
-          <Field label="Usia" value={siswa.usia} />
+          <Field label="No. HP" value={siswa.noHp} />
           <Field label="Domisili" value={siswa.domisili} />
           <Field label="Tanggal Pendaftaran" value={siswa.tanggalDaftar} />
           <Field label="Sekolah Asal" value={siswa.sekolahAsal} />
@@ -146,17 +148,25 @@ function Field({
  * ------------------------------------------------------------------
  */
 function ProgressPendaftaran({ items }: { items: ProgressItem[] }) {
+  const tabByTitle: Record<string, string> = {
+    "Biodata Diri": "Data Diri",
+    "Data Orang Tua": "Data orang Tua",
+    "Unggah Berkas": "Berkas",
+    "Surat Rekomendasi": "Surat Rekomendasi",
+    "Asal Sekolah": "Data sekolah Asal",
+  };
+
   return (
     <section>
       <h2 className="mb-4 text-lg font-semibold text-slate-900">
         Progress Pendaftaran
       </h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {items.map((item, i) => (
-          <button
+          <Link
             key={`${item.title}-${i}`}
-            type="button"
-            className="group flex flex-col items-start gap-4 rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-100 transition hover:ring-slate-300"
+            href={`/dashboard-ppdb/dashboard/pendaftaran?tab=${encodeURIComponent(tabByTitle[item.title] ?? "Data Diri")}`}
+              className="group flex min-h-12 flex-col items-start justify-between gap-4 rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:ring-slate-300"
           >
             <div className="flex w-full items-center justify-between">
               <span className="text-sm font-semibold text-slate-900">
@@ -176,7 +186,7 @@ function ProgressPendaftaran({ items }: { items: ProgressItem[] }) {
                 Belum diverifikasi
               </span>
             )}
-          </button>
+          </Link>
         ))}
       </div>
     </section>
@@ -278,7 +288,7 @@ export interface DashboardContentProps {
 
 const DEFAULT_SISWA: Siswa = {
   nama: "muhammad taqy abdurahman khirom",
-  usia: "-",
+  noHp: "-",
   domisili: "-",
   tanggalDaftar: "18 Agustus 2026",
   sekolahAsal: "-",
@@ -292,7 +302,7 @@ export default function DashboardContent({
   currentStep = 1,
 }: DashboardContentProps) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-w-0 w-full flex-1 flex-col gap-6">
       <BiodataSiswa siswa={siswa} />
       <ProgressPendaftaran items={progressItems} />
       <AlurPendaftaran steps={STEPS} currentStep={currentStep} />
