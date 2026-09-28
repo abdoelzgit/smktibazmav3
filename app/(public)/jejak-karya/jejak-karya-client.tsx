@@ -79,7 +79,7 @@ export function JejakKaryaClient() {
 
   return (
     <div className="min-h-screen bg-[#e5e5e5] text-slate-900 font-sans selection:bg-slate-900 selection:text-white">
-      <Hero title="JEJAK KARYA" backgroundImage="/images/hero-berita.jpg" />
+      <Hero title="" backgroundImage="/images/hero-berita.jpg" />
 
       <div className="relative z-20 max-w-6xl mx-auto px-4 -mt-24 md:-mt-28" data-nav-theme="light">
         <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl border border-slate-100">
