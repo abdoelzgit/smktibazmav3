@@ -4,7 +4,7 @@ import { EkstraShowcase } from "./ekstra-showcase";
 
 const ekstraData = [
   {
-    title: "MCRobo (Robotika)",
+    title: "MCRobo",
     description:
       "MCRobo menjadi wadah bagi santri untuk mengembangkan kemampuan di bidang robotika dan teknologi. Kegiatan mencakup perakitan mikrokontroler, pemrograman, Internet of Things (IoT), serta pembuatan berbagai proyek teknologi secara kreatif dan kolaboratif.",
     image: "/images/ekstrakulikuler/robotik.webp",

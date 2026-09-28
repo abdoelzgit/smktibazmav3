@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { Hero } from "@/components/hero";
 import { EkstraContent } from "./ekstra-content";
 import { EkstraGrid } from "./ekstra-grid";
+
+export const metadata: Metadata = {
+  title: "Ekstrakulikuler",
+  description: "Kegiatan ekstrakurikuler dan pengembangan bakat siswa di SMK TI BAZMA.",
+};
 
 export default function EkstrakulikulerPage() {
   return (

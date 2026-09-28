@@ -57,16 +57,10 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
       setIsHidden(document.hidden);
     };
 
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibilityChange
-    );
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibilityChange
-      );
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
@@ -76,14 +70,13 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
     (nextIndex: number) => {
       if (!total) return;
 
-      const normalized =
-        ((nextIndex % total) + total) % total;
+      const normalized = ((nextIndex % total) + total) % total;
 
       if (normalized === activeIndexRef.current) return;
 
       setActiveIndex(normalized);
     },
-    [total]
+    [total],
   );
 
   const goNext = useCallback(() => {
@@ -98,7 +91,7 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
     const currentImage = imageRefs.current[activeIndex];
 
     const otherImages = imageRefs.current.filter(
-      (_, index) => index !== activeIndex
+      (_, index) => index !== activeIndex,
     );
 
     const timeline = gsap.timeline();
@@ -111,7 +104,7 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
         duration: prefersReducedMotion ? 0 : 0.6,
         ease: "power2.inOut",
       },
-      0
+      0,
     );
 
     // Active image
@@ -137,7 +130,7 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
               duration: 0.9,
               ease: "power2.out",
             },
-            0
+            0,
           )
           .to(
             currentImage,
@@ -146,17 +139,14 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
               duration: AUTOPLAY_DURATION + 1,
               ease: "none",
             },
-            0
+            0,
           );
       }
     }
 
     // Text reveal
     if (contentRef.current) {
-      const children =
-        contentRef.current.querySelectorAll(
-          "[data-reveal]"
-        );
+      const children = contentRef.current.querySelectorAll("[data-reveal]");
 
       gsap.killTweensOf(children);
 
@@ -179,7 +169,7 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
             ease: "power3.out",
             stagger: 0.08,
           },
-          0.18
+          0.18,
         );
       }
     }
@@ -191,19 +181,14 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
 
   // ── Progress bar helpers ─────────────────────────────────────────────────
 
-  const setBarInstant = useCallback(
-    (index: number, filled: boolean) => {
-      const element = progressRefs.current[index];
+  const setBarInstant = useCallback((index: number, filled: boolean) => {
+    const element = progressRefs.current[index];
 
-      if (!element) return;
+    if (!element) return;
 
-      element.style.transition = "none";
-      element.style.transform = filled
-        ? "scaleX(1)"
-        : "scaleX(0)";
-    },
-    []
-  );
+    element.style.transition = "none";
+    element.style.transform = filled ? "scaleX(1)" : "scaleX(0)";
+  }, []);
 
   const startBarCountdown = useCallback(
     (index: number, milliseconds: number) => {
@@ -216,12 +201,11 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
 
       void element.offsetWidth;
 
-      element.style.transition =
-        `transform ${milliseconds}ms linear`;
+      element.style.transition = `transform ${milliseconds}ms linear`;
 
       element.style.transform = "scaleX(1)";
     },
-    []
+    [],
   );
 
   const freezeBar = useCallback((index: number) => {
@@ -229,15 +213,11 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
 
     if (!element) return;
 
-    const computed =
-      window.getComputedStyle(element).transform;
+    const computed = window.getComputedStyle(element).transform;
 
     element.style.transition = "none";
 
-    element.style.transform =
-      computed === "none"
-        ? "scaleX(0)"
-        : computed;
+    element.style.transform = computed === "none" ? "scaleX(0)" : computed;
   }, []);
 
   // ── Autoplay ──────────────────────────────────────────────────────────────
@@ -250,8 +230,7 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
       timeoutRef.current = null;
     }
 
-    const isNewSlide =
-      prevActiveIndexRef.current !== activeIndex;
+    const isNewSlide = prevActiveIndexRef.current !== activeIndex;
 
     prevActiveIndexRef.current = activeIndex;
 
@@ -261,19 +240,14 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
         setBarInstant(index, false);
       });
 
-      remainingMsRef.current =
-        AUTOPLAY_DURATION * 1000;
+      remainingMsRef.current = AUTOPLAY_DURATION * 1000;
     }
 
     // Page hidden
     if (isHidden) {
-      const elapsed =
-        Date.now() - slideStartedAtRef.current;
+      const elapsed = Date.now() - slideStartedAtRef.current;
 
-      remainingMsRef.current = Math.max(
-        0,
-        remainingMsRef.current - elapsed
-      );
+      remainingMsRef.current = Math.max(0, remainingMsRef.current - elapsed);
 
       freezeBar(activeIndex);
 
@@ -281,16 +255,12 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
     }
 
     if (remainingMsRef.current <= 0) {
-      remainingMsRef.current =
-        AUTOPLAY_DURATION * 1000;
+      remainingMsRef.current = AUTOPLAY_DURATION * 1000;
     }
 
     slideStartedAtRef.current = Date.now();
 
-    startBarCountdown(
-      activeIndex,
-      remainingMsRef.current
-    );
+    startBarCountdown(activeIndex, remainingMsRef.current);
 
     timeoutRef.current = setTimeout(() => {
       goNext();
@@ -322,14 +292,14 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
       className="
         relative
         flex
-        min-h-[70vh]
+        min-h-screen
         w-full
         flex-col
         overflow-hidden
         bg-[#132B6D]
         text-white
-        sm:min-h-[82vh]
-        lg:min-h-[88vh]
+        py-10
+      
       "
       aria-label="Kegiatan Ekstrakurikuler"
       aria-roledescription="carousel"
@@ -481,19 +451,13 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
 
         {/* ── Bottom Navigation ────────────────────────────────────────── */}
 
-        <nav
-          className="relative z-10"
-          aria-label="Navigasi ekstrakurikuler"
-        >
+        <nav className="relative z-10" aria-label="Navigasi ekstrakurikuler">
           <ul className="flex">
             {items.map((item, index) => {
               const isActive = index === activeIndex;
 
               return (
-                <li
-                  key={`${item.title}-${index}`}
-                  className="flex-1"
-                >
+                <li key={`${item.title}-${index}`} className="flex-1">
                   <button
                     type="button"
                     onClick={() => goToSlide(index)}
@@ -532,7 +496,7 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
                 `,
                         isActive
                           ? "text-white"
-                          : "text-white/45 group-hover:text-white/75"
+                          : "text-white/45 group-hover:text-white/75",
                       )}
                     >
                       {item.title}

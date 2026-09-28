@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { Hero } from "@/components/hero";
 import { MitraContent } from "./mitra-content";
 import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
 import ProfileMitraFullScreen from "./mitra-profile";
+
+export const metadata: Metadata = {
+  title: "Mitra Sekolah",
+  description: "Kerja sama dan kemitraan industri SMK TI BAZMA.",
+};
 
 export default function MitraPage() {
   return (

@@ -86,10 +86,10 @@ export function BeritaSearchFilter({
       {/* ── Header Title Section ─────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight font-heading">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-primary tracking-tight font-heading">
             Berita & Artikel Terkini
           </h1>
-          <p className="text-xs md:text-sm text-muted-foreground mt-1">
+          <p className="text-xs md:text-sm text-muted-primary mt-1">
             Kabar terbaru, kegiatan, prestasi, dan pengumuman sekolah SMK TI BAZMA.
           </p>
         </div>
@@ -114,10 +114,10 @@ export function BeritaSearchFilter({
                   onClick={() => handleCategorySelect(tab)}
                   disabled={isPending}
                   className={cn(
-                    "px-4 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 select-none cursor-pointer",
+                    "px-4 py-1.5  text-xs font-medium transition-all shrink-0 select-none cursor-pointer",
                     isActive
-                      ? "bg-foreground text-background font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                      ? " text-primary border-b border-primary font-semibold shadow-xs"
+                      : "text-muted-primary hover:text-primary hover:bg-muted/60"
                   )}
                 >
                   {tab}
@@ -127,7 +127,7 @@ export function BeritaSearchFilter({
           </div>
 
             <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-primary pointer-events-none" />
             <Input
               type="text"
               value={searchQuery}
@@ -138,7 +138,7 @@ export function BeritaSearchFilter({
             {searchQuery && (
               <button
                 onClick={handleClearSearch}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-primary hover:text-primary hover:bg-muted transition-colors cursor-pointer"
                 title="Hapus pencarian"
                 type="button"
               >
