@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { JejakKaryaItem } from "@/lib/jejak-karya-data";
-import { cn } from "@/lib/utils";
+import { cn, formatExternalUrl } from "@/lib/utils";
 
 interface DetailProps {
   project: JejakKaryaItem;
@@ -20,8 +20,54 @@ const TABS: { id: TabType; label: string }[] = [
   { id: "whatWeDid", label: "WHAT WE DID" },
 ];
 
+function getEmbedVideo(url?: string | null) {
+  if (!url) return null;
+  const trimmed = url.trim();
+
+  const ytMatch = trimmed.match(
+    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i,
+  );
+  if (ytMatch && ytMatch[1]) {
+    return {
+      type: "youtube" as const,
+      embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?rel=0`,
+    };
+  }
+
+  const vimeoMatch = trimmed.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
+  if (vimeoMatch && vimeoMatch[1]) {
+    return {
+      type: "vimeo" as const,
+      embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}`,
+    };
+  }
+
+  if (
+    /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(trimmed) ||
+    trimmed.includes("/uploads/")
+  ) {
+    return {
+      type: "file" as const,
+      embedUrl: trimmed,
+    };
+  }
+
+  const normalized = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  return {
+    type: "unknown" as const,
+    embedUrl: normalized,
+  };
+}
+
 export function JejakKaryaDetailClient({ project }: DetailProps) {
   const [activeTab, setActiveTab] = useState<TabType>("challenge");
+
+  const isVideo = project.category === "Video";
+  const videoEmbed = isVideo
+    ? getEmbedVideo(project.demoUrl || project.heroImage)
+    : null;
 
   const getTabContent = () => {
     switch (activeTab) {
@@ -46,10 +92,8 @@ export function JejakKaryaDetailClient({ project }: DetailProps) {
       {/* ── Main Layout Body (TRIONN Dribbble Style Split) ─────────────── */}
       <main className="max-w-[1600px] mx-auto px-6 pb-12 pt-24 md:px-12 md:pb-16 md:pt-28">
         <div className="flex flex-col lg:flex-row items-start gap-12 xl:gap-16">
-          
           {/* ── Left Sticky Column (Details & Tabs) ────────────────────── */}
           <aside className="w-full lg:w-[420px] xl:w-[460px] shrink-0 lg:sticky lg:top-28 lg:h-[calc(100vh-9rem)] lg:flex lg:flex-col lg:justify-between lg:overflow-y-auto scrollbar-none py-1">
-            
             <div className="space-y-6">
               {/* Top Back Link */}
               <div>
@@ -74,15 +118,16 @@ export function JejakKaryaDetailClient({ project }: DetailProps) {
 
               {/* Tags / Service Bullets */}
               <div className="space-y-1.5 pt-1">
-                {project.tags && project.tags.map((tag) => (
-                  <div
-                    key={tag}
-                    className="text-[11px] font-mono uppercase tracking-wider text-slate-500 flex items-center gap-2"
-                  >
-                    <span className="text-blue-600 font-bold">•</span>
-                    <span>{tag}</span>
-                  </div>
-                ))}
+                {project.tags &&
+                  project.tags.map((tag) => (
+                    <div
+                      key={tag}
+                      className="text-[11px] font-mono uppercase tracking-wider text-slate-500 flex items-center gap-2"
+                    >
+                      <span className="text-blue-600 font-bold">•</span>
+                      <span>{tag}</span>
+                    </div>
+                  ))}
               </div>
 
               {/* Section Tab Navigation (THE CHALLENGE, APPROACH, OUTCOME, WHAT WE DID) */}
@@ -98,7 +143,7 @@ export function JejakKaryaDetailClient({ project }: DetailProps) {
                           "text-[11px] font-bold uppercase tracking-wider transition-all pb-1 relative cursor-pointer",
                           isActive
                             ? "text-slate-900"
-                            : "text-slate-400 hover:text-slate-700"
+                            : "text-slate-400 hover:text-slate-700",
                         )}
                       >
                         {tab.label}
@@ -142,59 +187,84 @@ export function JejakKaryaDetailClient({ project }: DetailProps) {
 
           {/* ── Right Showcase Column (Mockup Visual Cards) ─────────────── */}
           <section className="flex-1 w-full min-w-0 space-y-6">
-
-            {/* Hero Image */}
-            <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-md aspect-video w-full">
-              <Image
-                src={project.heroImage}
-                alt={project.title}
-                fill
-                priority
-                sizes="(max-width: 1280px) 100vw, 1200px"
-                className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-              />
-              <div className="absolute bottom-5 left-5 right-5 md:right-auto md:max-w-sm rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-xl">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-blue-900 font-bold block mb-1">
-                      {project.category} • {project.year}
-                    </span>
-                    <h4 className="text-sm font-bold text-slate-900 font-heading">
-                      {project.title}
-                    </h4>
-                    <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
-                      Dibuat oleh {project.author}
-                    </p>
+            {/* Hero Visual / Video Player */}
+            <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-md aspect-video w-full bg-slate-900">
+              {videoEmbed ? (
+                videoEmbed.type === "file" ? (
+                  <video
+                    src={videoEmbed.embedUrl}
+                    controls
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <iframe
+                    src={videoEmbed.embedUrl}
+                    title={project.title}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                )
+              ) : (
+                <>
+                  <Image
+                    src={project.heroImage}
+                    alt={project.title}
+                    fill
+                    priority
+                    sizes="(max-width: 1280px) 100vw, 1200px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                  />
+                  <div className="absolute bottom-5 left-5 right-5 md:right-auto md:max-w-sm rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-xl">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-blue-900 font-bold block mb-1">
+                          {project.category} • {project.year}
+                        </span>
+                        <h4 className="text-sm font-bold text-slate-900 font-heading">
+                          {project.title}
+                        </h4>
+                        <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                          Dibuat oleh {project.author}
+                        </p>
+                      </div>
+                      {project.demoUrl && (
+                        <a
+                          href={formatExternalUrl(project.demoUrl)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2.5 rounded-lg bg-slate-900 text-white hover:bg-blue-900 transition-all shrink-0 shadow-sm"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  {project.demoUrl && (
-                    <a
-                      href={project.demoUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2.5 rounded-lg bg-slate-900 text-white hover:bg-blue-900 transition-all shrink-0 shadow-sm"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
-                  )}
-                </div>
-              </div>
+                </>
+              )}
             </div>
 
-            {/* Gallery — stack kebawah */}
-            {project.galleryImages && project.galleryImages.map((imgUrl, idx) => (
-              <div key={idx} className="group relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-md aspect-video w-full">
-                <Image
-                  src={imgUrl}
-                  alt={`${project.title} preview ${idx + 1}`}
-                  fill
-                  sizes="(max-width: 1280px) 100vw, 1200px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                />
+            {/* Gallery — grid responsif dengan aspect ratio alami (portrait / landscape) */}
+            {project.galleryImages && project.galleryImages.length > 0 && (
+              <div className="columns-1 sm:columns-2 gap-6 space-y-6">
+                {project.galleryImages.map((imgUrl, idx) => (
+                  <div
+                    key={idx}
+                    className="break-inside-avoid group relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-md w-full bg-slate-100/80"
+                  >
+                    <Image
+                      src={imgUrl}
+                      alt={`${project.title} preview ${idx + 1}`}
+                      width={0}
+                      height={0}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 600px"
+                      className="w-full h-auto block transition-transform duration-500 group-hover:scale-[1.02]"
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-
+            )}
           </section>
-
         </div>
       </main>
     </div>

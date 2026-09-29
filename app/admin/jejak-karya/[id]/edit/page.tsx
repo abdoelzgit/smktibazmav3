@@ -59,9 +59,35 @@ export default function EditJejakKaryaPage({
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
 
   const coverRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingVideo(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "jejak-karya");
+
+      const result = await uploadFileAction(formData, "jejak-karya");
+      if (result.success && result.data?.url) {
+        setDemoUrl(result.data.url);
+      } else {
+        alert(result.error || "Gagal mengunggah video");
+      }
+    } catch (err) {
+      console.error("Video upload error:", err);
+      alert("Terjadi kesalahan saat mengunggah video");
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -324,14 +350,15 @@ export default function EditJejakKaryaPage({
                 {galleryImages.length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-bold text-foreground">Galeri</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="columns-1 md:columns-2 gap-4 space-y-4">
                       {galleryImages.map((img, idx) => (
-                        <img
-                          key={idx}
-                          src={img}
-                          alt={`Gallery ${idx + 1}`}
-                          className="w-full aspect-video object-cover rounded-xl border border-border"
-                        />
+                        <div key={idx} className="break-inside-avoid overflow-hidden rounded-xl border border-border shadow-xs bg-muted">
+                          <img
+                            src={img}
+                            alt={`Gallery ${idx + 1}`}
+                            className="w-full h-auto block object-cover"
+                          />
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -433,88 +460,92 @@ export default function EditJejakKaryaPage({
                   onChange={handleCoverUpload}
                 />
 
-                <Separator className="my-4" />
+                {category !== "Video" && (
+                  <>
+                    <Separator className="my-4" />
 
-                <div className="space-y-4">
-                  <Label className="text-sm font-semibold">Tantangan</Label>
-                  <Textarea
-                    value={challenge}
-                    onChange={(e) => setChallenge(e.target.value)}
-                    placeholder="Jelaskan tantangan..."
-                    className="min-h-[100px] border-border focus-visible:ring-1"
-                  />
+                    <div className="space-y-4">
+                      <Label className="text-sm font-semibold">Tantangan</Label>
+                      <Textarea
+                        value={challenge}
+                        onChange={(e) => setChallenge(e.target.value)}
+                        placeholder="Jelaskan tantangan..."
+                        className="min-h-[100px] border-border focus-visible:ring-1"
+                      />
 
-                  <Label className="text-sm font-semibold">Pendekatan</Label>
-                  <Textarea
-                    value={approach}
-                    onChange={(e) => setApproach(e.target.value)}
-                    placeholder="Jelaskan pendekatan..."
-                    className="min-h-[100px] border-border focus-visible:ring-1"
-                  />
+                      <Label className="text-sm font-semibold">Pendekatan</Label>
+                      <Textarea
+                        value={approach}
+                        onChange={(e) => setApproach(e.target.value)}
+                        placeholder="Jelaskan pendekatan..."
+                        className="min-h-[100px] border-border focus-visible:ring-1"
+                      />
 
-                  <Label className="text-sm font-semibold">Hasil</Label>
-                  <Textarea
-                    value={outcome}
-                    onChange={(e) => setOutcome(e.target.value)}
-                    placeholder="Jelaskan hasil..."
-                    className="min-h-[100px] border-border focus-visible:ring-1"
-                  />
+                      <Label className="text-sm font-semibold">Hasil</Label>
+                      <Textarea
+                        value={outcome}
+                        onChange={(e) => setOutcome(e.target.value)}
+                        placeholder="Jelaskan hasil..."
+                        className="min-h-[100px] border-border focus-visible:ring-1"
+                      />
 
-                  <Label className="text-sm font-semibold">Yang Kami Lakukan</Label>
-                  <Textarea
-                    value={whatWeDid}
-                    onChange={(e) => setWhatWeDid(e.target.value)}
-                    placeholder="Jelaskan peran tim..."
-                    className="min-h-[100px] border-border focus-visible:ring-1"
-                  />
-                </div>
-
-                <Separator className="my-4" />
-
-                <div className="space-y-4">
-                  <Label className="text-sm font-semibold">Galeri Gambar</Label>
-                  <Button
-                    variant="outline"
-                    onClick={() => galleryRef.current?.click()}
-                    disabled={isUploadingGallery}
-                    className="w-full gap-2"
-                  >
-                    <Upload className="h-4 w-4" />
-                    {isUploadingGallery ? "Mengunggah..." : "Tambah Gambar Galeri"}
-                  </Button>
-                  <input
-                    ref={galleryRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleGalleryUpload}
-                  />
-
-                  {galleryImages.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {galleryImages.map((img, idx) => (
-                        <div key={idx} className="relative group">
-                          <img
-                            src={img}
-                            alt={`Gallery ${idx + 1}`}
-                            className="w-full aspect-video object-cover rounded-lg border border-border"
-                          />
-                          <button
-                            onClick={() =>
-                              setGalleryImages((prev) =>
-                                prev.filter((_, i) => i !== idx)
-                              )
-                            }
-                            className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ))}
+                      <Label className="text-sm font-semibold">Yang Kami Lakukan</Label>
+                      <Textarea
+                        value={whatWeDid}
+                        onChange={(e) => setWhatWeDid(e.target.value)}
+                        placeholder="Jelaskan peran tim..."
+                        className="min-h-[100px] border-border focus-visible:ring-1"
+                      />
                     </div>
-                  )}
-                </div>
+
+                    <Separator className="my-4" />
+
+                    <div className="space-y-4">
+                      <Label className="text-sm font-semibold">Galeri Gambar</Label>
+                      <Button
+                        variant="outline"
+                        onClick={() => galleryRef.current?.click()}
+                        disabled={isUploadingGallery}
+                        className="w-full gap-2"
+                      >
+                        <Upload className="h-4 w-4" />
+                        {isUploadingGallery ? "Mengunggah..." : "Tambah Gambar Galeri"}
+                      </Button>
+                      <input
+                        ref={galleryRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleGalleryUpload}
+                      />
+
+                      {galleryImages.length > 0 && (
+                        <div className="columns-2 md:columns-3 gap-4 space-y-4">
+                          {galleryImages.map((img, idx) => (
+                            <div key={idx} className="break-inside-avoid relative group overflow-hidden rounded-lg border border-border bg-muted">
+                              <img
+                                src={img}
+                                alt={`Gallery ${idx + 1}`}
+                                className="w-full h-auto block object-cover max-h-[300px]"
+                              />
+                              <button
+                                onClick={() =>
+                                  setGalleryImages((prev) =>
+                                    prev.filter((_, i) => i !== idx)
+                                  )
+                                }
+                                className="absolute top-2 right-2 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-md"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -597,14 +628,38 @@ export default function EditJejakKaryaPage({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-foreground">Demo URL</Label>
+              <Label className="text-xs font-semibold text-foreground">
+                {category === "Video" ? "URL / File Video" : "Demo URL"}
+              </Label>
               <Input
                 value={demoUrl}
                 onChange={(e) => setDemoUrl(e.target.value)}
-                placeholder="https://..."
+                placeholder={category === "Video" ? "Link YouTube / Vimeo / MP4..." : "https://..."}
                 type="url"
                 className="h-8 text-xs"
               />
+              {category === "Video" && (
+                <div className="pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    disabled={isUploadingVideo}
+                    onClick={() => videoRef.current?.click()}
+                    className="w-full h-8 text-xs gap-1.5 cursor-pointer"
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    {isUploadingVideo ? "Mengunggah Video..." : "Unggah File Video (MP4)"}
+                  </Button>
+                  <input
+                    ref={videoRef}
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={handleVideoUpload}
+                  />
+                </div>
+              )}
             </div>
 
             <Separator />
