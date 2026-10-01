@@ -19,19 +19,19 @@ const pembina: Pembina[] = [
         id: 1,
         name: "Ahmad Rifai",
         role: "Penyelia I",
-        image: "/images/asrama/penyelia/1.webp",
+        image: "/images/asrama/penyelia/pak-rifai.webp",
     },
     {
         id: 2,
         name: "Achmad Fauzi, S.Ap",
         role: "Wali Asrama",
-        image: "/images/asrama/penyelia/wali.webp",
+        image: "/images/asrama/penyelia/pak-ujji.webp",
     },
     {
         id: 3,
         name: "Ratno Wijaya",
         role: "Penyelia II",
-        image: "/images/asrama/penyelia/2.webp",
+        image: "/images/asrama/penyelia/pak-ratno.webp",
     },
 ];
 
@@ -86,7 +86,7 @@ export default function Ustadz() {
         <section
             id="pembina-asrama"
             data-nav-theme="light"
-            className="relative w-full bg-white py-12 sm:py-16 px-4 sm:px-6 lg:px-8"
+            className=" w-full bg-white py-12 sm:py-16 px-4 sm:px-6 lg:px-8"
         >
             <div className="mx-auto max-w-5xl w-full">
                 {/* Judul */}

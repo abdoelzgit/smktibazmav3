@@ -22,8 +22,10 @@ export default function LeaderQuote({ className }: LeaderQuoteProps) {
   const role = "Kepala Sekolah SMK TI BAZMA";
   const quote =
     "SMK TI BAZMA adalah Islamic Boarding School berbasis teknologi yang memadukan pendidikan IT, tahfidzul Qur'an, dan pembentukan karakter.";
-  const footerText =
-    "Sekolah Menengah Kejuruan Teknologi Informasi Bazma (SMK TI BAZMA) merupakan sekolah unggulan berasrama yang bebas.";
+  const footerLeft =
+    "#Energi Masa Depan Indonesia";
+  const footerRight =
+    "#Jago IT, Pinter Ngaji";
 
   return (
     <section
@@ -110,9 +112,9 @@ export default function LeaderQuote({ className }: LeaderQuoteProps) {
             custom={2}
             className="grid grid-cols-1 gap-4 border-t border-white/10 pt-4 text-[10px] text-white/70 sm:grid-cols-2 sm:text-xs md:text-sm"
           >
-            <p className="max-w-sm leading-relaxed">{footerText}</p>
-            <p className="max-w-sm leading-relaxed sm:ml-auto sm:text-right">
-              {footerText}
+            <p className="max-w-sm leading-relaxed text-xl uppercase">{footerLeft}</p>
+            <p className="max-w-sm leading-relaxed sm:ml-auto sm:text-right uppercase text-xl">
+              {footerRight}
             </p>
           </motion.div>
         </div>

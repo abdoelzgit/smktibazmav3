@@ -4,6 +4,8 @@ import { TextReveal } from "@/components/ui/text-reveal";
 import { ArrowRight } from "lucide-react";
 import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
 import { AnimatedCounter } from "@/components/animated-counter";
+import { PortalLink } from "@/components/portal-transition";
+
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type Stat = {
@@ -18,6 +20,7 @@ export type SambutanProps = {
   tagline?: string;
   description?: string;
   ctaLabel?: string;
+  ctaHref?: string;
   onCtaClick?: () => void;
 };
 
@@ -37,6 +40,7 @@ export function Sambutan({
   tagline = `#Energi masa depan Indonesia,\n jago IT pinter ngaji`,
   description = "Program pendidikan 4 tahun dengan beasiswa 100% bagi dhuafa, dirancang untuk membekali siswa dengan kompetensi teknologi, dan karakter islami.",
   ctaLabel = "Lebih lengkap",
+  ctaHref='/sekolah',
   onCtaClick,
 }: SambutanProps) {
   return (
@@ -73,14 +77,19 @@ export function Sambutan({
               <p className="text-sm leading-relaxed text-justify text-neutral-500">
                 {description}
               </p>
-              <Button
-                variant="outline"
-                onClick={onCtaClick}
-                className="mt-5 rounded-full border-blue-950 text-blue-950 hover:bg-blue-950 hover:text-white"
+              <PortalLink
+                href={ctaHref}
+                label={'Tentang Sekolah'}
+                className="group relative mt-5 inline-flex items-center gap-2 font-sans text-[13px] font-semibold uppercase tracking-wider text-foreground/50 hover:text-[#132B6D] transition-colors duration-300"
               >
-                {ctaLabel}
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
+                <span>{ctaLabel}</span>
+                <ArrowRight
+                  size={16}
+                  aria-hidden="true"
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                />
+                <span className="absolute -bottom-1 left-0 h-px w-0 bg-[#132B6D] transition-all duration-300 group-hover:w-full" />
+              </PortalLink>
             </div>
           </div>
         </div>

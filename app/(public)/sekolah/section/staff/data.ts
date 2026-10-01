@@ -46,18 +46,38 @@ export const STAFF_CATEGORIES: StaffCategory[] = [
         role: "Guru Mata Pelajaran Produktif",
         image: "/images/foto-guru/bu-parni.webp",
       },
-
-      {
+       {
         id: "guru-4",
-        name: "Priyanto",
+        name: "Priyatno Nugroho S.Pd",
         role: "Guru Proyek Kreatif Kewirausahaan",
         image: "/images/foto-guru/pak-pri.webp",
       },
+       {
+        id: "guru-6",
+        name: "Ilham Syahbana Kusuma M.Pd, Gr.",
+        role: "Guru Bahasa Indonesia",
+        image: "/images/foto-guru/pak-ilham.webp",
+      },
+
+      {
+        id: "guru-7",
+        name: "Indra Sujitno S.I.Kom, Gr.",
+        role: "Guru PPKN",
+        image: "/images/foto-guru/pak-indra.webp",
+      },
+
+     
       {
         id: "guru-4",
-        name: "Miftahul Jannah",
+        name: "Miftahul Jannah S.Pd, Gr.",
         role: "Guru Matematika",
         image: "/images/foto-guru/bu-mita.webp",
+      },
+      {
+        id: "guru-8",
+        name: "Eka Fitriani Putri A. S.Pd., M.Si.",
+        role: "Guru BK",
+        image: "/images/foto-guru/bu-eka.webp",
       },
       {
         id: "guru-5",
@@ -66,45 +86,34 @@ export const STAFF_CATEGORIES: StaffCategory[] = [
         image: "/images/foto-guru/pak-putra.webp",
       },
 
-      {
-        id: "guru-6",
-        name: "Ilham Syahbana Kusuma",
-        role: "Guru Bahasa Indonesia",
-        image: "/images/foto-guru/pak-ilham.webp",
-      },
-
-      {
-        id: "guru-7",
-        name: "Indra Sujitno",
-        role: "Guru PPKN",
-        image: "/images/foto-guru/pak-indra.webp",
-      },
+     
+      
     ],
   },
   {
-    id: "staff-tata-usaha",
-    title: "Staff Tata Usaha",
+    id: "tendik",
+    title: "Jajaran Tendik",
     description:
       "Mendukung kelancaran operasional dan pelayanan administrasi sekolah secara profesional, tertib, dan berintegritas.",
     members: [
       {
-        id: "tu-1",
-        name: "[Nama Staff Administrasi]",
-        role: "Kepala Tata Usaha & Administrasi",
-        isPlaceholder: true,
+        id: "tdk-1",
+        name: "Euis Komariah S.E.",
+        role: "Bendahara & Administrasi Keuangan",
+                image: "/images/foto-guru/bu-euis.webp",
+
       },
       {
-        id: "tu-2",
-        name: "[Nama Staff Keuangan]",
-        role: "Bendahara & Administrasi Keuangan",
-        isPlaceholder: true,
+        id: "tdk-2",
+        name: "Resa Erviana S.Pd",
+        role: "Staff Tata Usaha",
+                image: "/images/foto-guru/bu-resa.webp",
       },
       {
         id: "tu-3",
-        name: "[Nama Staff Dapodik]",
+        name: "Fajar Dzulhijah Lamablawa",
         role: "Operator Dapodik & Data Sekolah",
-        isPlaceholder: true,
-      },
+image:"/images/foto-guru/bang-fajar.webp",      },
     ],
   },
 ];

@@ -1,0 +1,26 @@
+# Dependencies & Build files
+node_modules
+.next
+out
+
+# Version Control
+.git
+.gitignore
+
+# Environment & Config files
+.env
+.env*.local
+.vscode
+.idea
+
+# Documentation & Temporary files
+Dockerfile
+.dockerignore
+docker-compose*.yml
+README.md
+AGENTS.md
+CLAUDE.md
+implementation_plan.md
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

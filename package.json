@@ -26,6 +26,7 @@
     "bcryptjs": "^3.0.3",
     "blobatar": "^2.7.0",
     "class-variance-authority": "^0.7.1",
+    "cloudinary": "^2.11.0",
     "clsx": "^2.1.1",
     "cn": "^0.3.0",
     "framer-motion": "^13.2.0",

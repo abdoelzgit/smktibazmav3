@@ -1,0 +1,44 @@
+services:
+  # Database PostgreSQL Container
+  smktibazma-db:
+    container_name: smktibazma-db
+    image: postgres:16-alpine
+    restart: unless-stopped
+    init: true
+    network_mode: host
+    environment:
+      POSTGRES_USER: nafis_db
+      POSTGRES_PASSWORD: "123"
+      POSTGRES_DB: nafis_smktibazmadb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nafis_db -d nafis_smktibazmadb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Web App Next.js Container
+  smktibazma-web:
+    container_name: smktibazma-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: host
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: "30000"
+      HOSTNAME: "0.0.0.0"
+      NEXT_TELEMETRY_DISABLED: "1"
+      DATABASE_URL: "postgresql://nafis_db:123@127.0.0.1:5432/nafis_smktibazmadb?schema=public"
+      JWT_SECRET: "9f86d081884c7d659a2feaa0c55ad015a13946f"
+    depends_on:
+      smktibazma-db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

@@ -41,7 +41,8 @@ const navLinks: NavLink[] = [
     href: "#program",
     children: [
       { label: "Profil Jurusan", href: "/profil-jurusan" },
-      { label: "Ekstrakulikuler", href: "/ekstrakulikuler" },
+      { label: "Aktivitas Siswa", href: "/ekstrakulikuler" },
+      { label: "BEST", href: "https://best.smktibazma.sch.id/" },
     ],
   },
   { label: "Jejak Karya", href: "/jejak-karya" },
