@@ -52,6 +52,14 @@ const footerColumns: FooterColumn[] = [
   },
 ];
 
+const partnerLogos = [
+  { src: "/images/garuda.webp", alt: "Garuda" },
+  { src: "/images/jhic.webp", alt: "JHIC" },
+  { src: "/images/jagoanhosting.webp", alt: "Jagoan Hosting" },
+  { src: "/images/ngalup.webp", alt: "Ngalup" },
+  { src: "/images/komdigi.webp", alt: "Komdigi" },
+];
+
 export default function Footer() {
   return (
     <footer className="w-full overflow-hidden bg-[#132B6D] text-white">
@@ -148,6 +156,29 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} SMK TI BAZMA. All rights reserved.
           </p>
           <div className="h-px w-full bg-white/20" />
+        </div>
+
+        {/* Partner Logo Section */}
+        <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center">
+          <p className="text-xs font-semibold uppercase tracking-wider text-white/60">
+            DIDUKUNG OLEH
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 lg:gap-5">
+            {partnerLogos.map((logo) => (
+              <div
+                key={logo.src}
+                className="flex h-12 items-center justify-center rounded-lg bg-white px-3 sm:h-14 sm:px-4 lg:h-16 lg:px-5"
+              >
+                <Image
+                  src={logo.src}
+                  alt={logo.alt}
+                  width={160}
+                  height={48}
+                  className="h-7 w-auto object-contain sm:h-8 lg:h-9"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
