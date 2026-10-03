@@ -46,7 +46,7 @@ export default function LeaderQuote({ className }: LeaderQuoteProps) {
         className="hidden md:block object-cover object-top pointer-events-none -z-10"
       />
       <Image
-        src="/images/kepsekbg-mobile.webp"
+        src="/images/mobile-kepsek.webp"
         alt="Background Kepala Sekolah Mobile"
         fill
         sizes="100vw"
