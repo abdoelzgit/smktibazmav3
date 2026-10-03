@@ -301,7 +301,7 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
         py-10
       
       "
-      aria-label="Kegiatan Ekstrakurikuler"
+      aria-label="Aktivitas Siswa"
       aria-roledescription="carousel"
     >
       {/* ═══════════════════════════════════════════════════════════════════
@@ -392,20 +392,6 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
             gap-4
           "
         >
-          <span
-            data-reveal
-            className="
-              text-xs
-              font-mono
-              uppercase
-              tracking-[0.22em]
-              text-white/55
-              sm:text-sm
-            "
-          >
-            Ekstrakurikuler
-          </span>
-
           <h2
             data-reveal
             className="
@@ -451,7 +437,7 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
 
         {/* ── Bottom Navigation ────────────────────────────────────────── */}
 
-        <nav className="relative z-10" aria-label="Navigasi ekstrakurikuler">
+        <nav className="relative z-10" aria-label="Navigasi aktivitas siswa">
           <ul className="flex">
             {items.map((item, index) => {
               const isActive = index === activeIndex;
@@ -481,11 +467,12 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
               focus-visible:ring-white/70
             "
                   >
-                    {/* Title */}
+                    {/* Title (Hidden on Mobile) */}
                     <span
                       className={cn(
                         `
-                  block
+                  hidden
+                  sm:block
                   text-xs
                   font-semibold
                   tracking-wide
@@ -505,9 +492,11 @@ export function EkstraShowcase({ items }: EkstraShowcaseProps) {
                     {/* Progress Track */}
                     <span
                       className="
-                mt-3
+                mt-1
+                sm:mt-3
                 block
-                h-[1px]
+                h-[2px]
+                sm:h-[1px]
                 w-full
                 overflow-hidden
                 bg-white/15

@@ -6,38 +6,38 @@ const ekstraData = [
   {
     title: "MCRobo",
     description:
-      "MCRobo menjadi wadah bagi santri untuk mengembangkan kemampuan di bidang robotika dan teknologi. Kegiatan mencakup perakitan mikrokontroler, pemrograman, Internet of Things (IoT), serta pembuatan berbagai proyek teknologi secara kreatif dan kolaboratif.",
+      "MCRobo (Microcontroller & Robotics) merupakan laboratorium kreatif bagi santri untuk mendalami rancang bangun perangkat keras, pemrograman mikrokontroler, otomasi sistem, dan implementasi Internet of Things (IoT). Melalui eksplorasi sensor, aktuator, dan kecerdasan komputasi, santri diajak mengembangkan proyek teknologi tepat guna secara kolaboratif.",
     image: "/images/ekstrakulikuler/robotik.webp",
   },
   {
     title: "Pramuka",
     description:
-      "Pramuka menjadi kegiatan untuk membentuk karakter santri melalui latihan kedisiplinan, kemandirian, kepemimpinan, dan kerja sama. Berbagai kegiatan dilakukan untuk melatih keberanian, tanggung jawab, serta kepedulian terhadap lingkungan dan sesama.",
+      "Gerakan Pramuka di SMK TI BAZMA menjadi pilar utama pembinaan karakter, kedisiplinan, kemandirian, dan jiwa kepemimpinan santri. Melalui navigasi darat, keterampilan bertahan hidup (survival), penjelajahan alam terbuka, serta bakti sosial, santri dilatih memiliki ketangguhan mental, integritas moral, dan kepekaan sosial yang tinggi.",
     image: "/images/ekstrakulikuler/pramuka.webp",
   },
   {
     title: "Silat",
     description:
-      "Silat menjadi wadah untuk mempelajari seni bela diri sekaligus melatih ketangkasan dan kedisiplinan. Selain kemampuan fisik, kegiatan ini juga membentuk keberanian, pengendalian diri, mental yang kuat, serta sikap menghargai orang lain.",
+      "Pencak Silat membekali santri dengan warisan seni bela diri nusantara yang melatih ketangkasan gerak, kekuatan refleks, serta ketahanan fisik. Lebih dari sekadar teknik pertahanan diri, silat menanamkan nilai-nilai kesatria, kerendahan hati, penguasaan emosi, dan kedisiplinan spiritual yang selaras dengan nilai-nilai keislaman.",
     image: "/images/ekstrakulikuler/silat.webp",
   },
   {
     title: "Futsal",
     description:
-      "Futsal menjadi kegiatan olahraga yang mendorong santri untuk menjaga kebugaran sekaligus belajar bekerja sama dalam tim. Latihan dan pertandingan membantu mengembangkan kemampuan bermain, sportivitas, komunikasi, serta semangat untuk saling mendukung.",
+      "Futsal menjadi sarana pembinaan kebugaran fisik, strategi berpikir cepat, dan soliditas kerja sama tim. Melalui latihan terstruktur dan simulasi pertandingan kompetitif, santri mengasah sportivitas, komunikasi interpersonal yang efektif, serta daya juang pantang menyerah untuk mencapai prestasi bersama.",
     image:
       "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
   },
   {
     title: "Hadroh",
     description:
-      "Hadroh menjadi wadah bagi santri yang memiliki minat dalam seni musik Islami. Melalui permainan rebana dan latihan bersama, santri belajar mengembangkan musikalitas, kekompakan, serta menyalurkan kreativitas dalam kegiatan yang bernuansa dakwah dan syiar Islam.",
+      "Aktivitas Hadroh menyalurkan kecintaan santri pada seni musik perkusi rebana tradisional bernuansa Islami. Melalui harmonisasi ketukan instrumen dan lantunan shalawat, santri melatih kepekaan estetika musikal, kekompakan ansambel, serta menghidupkan syiar dakwah yang menyejukkan hati di lingkungan sekolah dan masyarakat.",
     image: "/images/ekstrakulikuler/hadroh.webp",
   },
   {
     title: "Band",
     description:
-      "Band menjadi ruang bagi santri untuk mengembangkan kemampuan bermusik melalui berbagai instrumen musik modern. Latihan dilakukan secara bersama untuk membangun musikalitas, harmonisasi, kreativitas, dan kemampuan bekerja sebagai sebuah tim.",
+      "Grup Band santri memberikan ruang eksplorasi musikalitas modern melalui perpaduan instrumen gitar, bass, keyboard, dan drum. Kegiatan ini melatih kepekaan aransemen harmoni, ketepatan tempo, serta ekspresi kreativitas audio dalam format pertunjukan grup yang harmonis, inspiratif, dan berjiwa muda.",
     image: "/images/ekstrakulikuler/band.webp",
   },
 ];

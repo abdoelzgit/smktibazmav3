@@ -50,7 +50,7 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
 
   return (
     <main className="min-h-screen">
-      <Hero title="Berita Terkini" backgroundImage="/images/hero-berita.jpg" />
+      <Hero title="Berita Terkini" backgroundImage="/images/hero-berita.webp" />
 
       <section
         data-nav-theme="light"

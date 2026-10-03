@@ -1,15 +1,24 @@
 "use client"
 
 import Image from "next/image"
+import { cn } from "@/lib/utils"
 
 interface HeroProps {
   title: string
   backgroundImage: string
   /** Teks breadcrumb kecil di atas judul, opsional — mis. "Tentang Kami / Profil Sekolah" */
   eyebrow?: string
+  hideTitleOnMobile?: boolean
+  titleClassName?: string
 }
 
-export function Hero({ title, backgroundImage, eyebrow }: HeroProps) {
+export function Hero({
+  title,
+  backgroundImage,
+  eyebrow,
+  hideTitleOnMobile,
+  titleClassName,
+}: HeroProps) {
   return (
     <section
       data-nav-theme="dark"
@@ -37,7 +46,13 @@ export function Hero({ title, backgroundImage, eyebrow }: HeroProps) {
             {eyebrow}
           </p>
         )}
-        <h1 className="font-sans text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
+        <h1
+          className={cn(
+            "font-sans text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl",
+            hideTitleOnMobile && "hidden sm:block",
+            titleClassName,
+          )}
+        >
           {title}
         </h1>
       </div>

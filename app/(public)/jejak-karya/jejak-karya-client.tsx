@@ -71,6 +71,38 @@ export function JejakKaryaClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalVideo, setModalVideo] = useState<any | null>(null);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+
+  const categoryIds: Array<"Website" | "Design" | "Video" | "IoT"> = [
+    "Website",
+    "Design",
+    "Video",
+    "IoT",
+  ];
+
+  const scrollCategories = (direction: "left" | "right") => {
+    const currentIdx = categoryIds.indexOf(selectedCategory as any);
+    const validIdx = currentIdx === -1 ? 0 : currentIdx;
+    const nextIdx =
+      direction === "left"
+        ? (validIdx - 1 + categoryIds.length) % categoryIds.length
+        : (validIdx + 1) % categoryIds.length;
+    const nextCat = categoryIds[nextIdx];
+    setSelectedCategory(nextCat);
+
+    if (categoryScrollRef.current) {
+      const targetCard = categoryScrollRef.current.querySelector<HTMLElement>(
+        `[data-category-id="${nextCat}"]`,
+      );
+      if (targetCard) {
+        targetCard.scrollIntoView({
+          behavior: "smooth",
+          inline: "center",
+          block: "nearest",
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -101,15 +133,40 @@ export function JejakKaryaClient() {
   const filteredProjects = projects;
 
   return (
-    <div className="min-h-screen text-slate-900 font-sans bg-[#e5e5e5] selection:bg-slate-900 selection:text-white">
-      <Hero title="" backgroundImage="/images/hero-berita.jpg" />
+    <div className="min-h-screen text-slate-900 font-sans bg-white selection:bg-slate-900 selection:text-white">
+      <Hero
+        title=""
+        backgroundImage="/images/hero-karya.webp"
+      />
 
       <div
         className="relative z-20 max-w-6xl mx-auto px-4 -mt-24 md:-mt-28"
         data-nav-theme="light"
       >
-        <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl border border-slate-100">
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 scrollbar-none sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible sm:pb-0">
+        <div className="relative bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl border border-slate-100">
+          {/* Tombol Geser Kiri / Kanan (Desktop & Mobile) */}
+          <button
+            type="button"
+            onClick={() => scrollCategories("left")}
+            aria-label="Kategori sebelumnya"
+            className="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-xl border border-slate-200 hover:bg-slate-50 hover:shadow-2xl transition-all active:scale-90 cursor-pointer"
+          >
+            <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => scrollCategories("right")}
+            aria-label="Kategori selanjutnya"
+            className="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-xl border border-slate-200 hover:bg-slate-50 hover:shadow-2xl transition-all active:scale-90 cursor-pointer"
+          >
+            <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+          </button>
+
+          <div
+            ref={categoryScrollRef}
+            className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 scrollbar-none sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible sm:pb-0"
+          >
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               const isActive = selectedCategory === cat.id;
@@ -117,6 +174,7 @@ export function JejakKaryaClient() {
               return (
                 <div
                   key={cat.id}
+                  data-category-id={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
                   className={cn(
                     "group relative flex flex-col w-full justify-between p-5 md:p-6 rounded-2xl transition-all duration-300 cursor-pointer select-none border min-w-[75vw] sm:min-w-0 snap-center sm:snap-align-none shrink-0 sm:shrink",
@@ -346,7 +404,7 @@ function HorizontalProjectsSection({
     <section
       ref={targetRef}
       data-nav-theme="light"
-      className="relative h-[350vh] bg-[#e5e5e5] text-slate-900"
+      className="relative h-[350vh] bg-white text-slate-900"
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center">
         <motion.div
@@ -357,7 +415,7 @@ function HorizontalProjectsSection({
           <div className="w-[50vw] shrink-0 px-6 sm:px-10 md:px-14 lg:px-16">
             <div className="space-y-6">
               <div className="space-y-3">
-                <h2 className="text-4xl sm:text-5xl md:text-[56px] lg:text-[64px] font-extrabold tracking-tight font-heading text-[#3a3a3a] leading-[1.05]">
+                <h2 className="text-4xl sm:text-5xl md:text-[56px] lg:text-[64px] font-extrabold tracking-tight font-heading text-slate-900 leading-[1.05]">
                   Karya Pilihan
                 </h2>
               </div>
@@ -374,7 +432,7 @@ function HorizontalProjectsSection({
             </div>
           </div>
 
-          <div className="w-px self-stretch bg-slate-300/70 shrink-0" />
+          <div className="w-px self-stretch bg-slate-200 shrink-0" />
 
           <div className="flex items-center shrink-0">
             {isLoading ? (
@@ -466,7 +524,7 @@ function HorizontalProjectsSection({
                     </div>
 
                     {idx < projects.length - 1 && (
-                      <div className="w-px self-stretch bg-slate-300/70 shrink-0" />
+                      <div className="w-px self-stretch bg-slate-200 shrink-0" />
                     )}
                   </div>
                 );
@@ -514,11 +572,11 @@ function MobileProjectsCarousel({
   return (
     <section
       data-nav-theme="light"
-      className="bg-[#e5e5e5] text-slate-900 py-12 space-y-8"
+      className="bg-white text-slate-900 py-12 space-y-8"
     >
       {/* Header */}
       <div className="px-6 space-y-4">
-        <h2 className="text-4xl font-extrabold tracking-tight font-heading text-[#3a3a3a] leading-[1.05]">
+        <h2 className="text-4xl font-extrabold tracking-tight font-heading text-slate-900 leading-[1.05]">
           Karya Pilihan
         </h2>
         <button

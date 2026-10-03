@@ -28,7 +28,7 @@ const footerColumns: FooterColumn[] = [
     title: "Program",
     links: [
       { label: "Profil Jurusan", href: "/profil-jurusan" },
-      { label: "Ekstrakulikuler", href: "/ekstrakulikuler" },
+      { label: "Aktivitas Siswa", href: "/ekstrakulikuler" },
     ],
   },
   {
