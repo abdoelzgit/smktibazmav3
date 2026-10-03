@@ -119,6 +119,7 @@ export default function FaqSection({
 
   return (
     <section
+      data-nav-theme="light"
       aria-labelledby="faq-title"
       className="w-full bg-white py-16 sm:py-20 lg:py-24"
     >
@@ -131,24 +132,24 @@ export default function FaqSection({
             ease: [0.22, 1, 0.36, 1],
           }}
           viewport={{ once: true }}
-          className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-16"
+          className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16 xl:gap-24 items-start"
         >
           {/* Sisi Kiri: Judul & Subjudul */}
-          <div className="lg:w-5/12 lg:max-w-md lg:pt-1">
+          <div className="w-full flex flex-col justify-start">
             <h2
               id="faq-title"
-              className="text-2xl font-bold tracking-tight text-[#37497A] sm:text-3xl lg:text-4xl"
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#132B6D] font-heading leading-tight"
             >
               {title}
             </h2>
 
-            <p className="mt-1.5 text-sm font-normal text-[#7A7A7A] sm:text-base">
+            <p className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-slate-500 font-normal leading-relaxed max-w-xl">
               {subtitle}
             </p>
           </div>
 
           {/* Sisi Kanan: Daftar Accordion */}
-          <div className="w-full lg:w-[40%] lg:max-w-3xl">
+          <div className="w-full">
             {items.map((item, index) => (
               <FaqAccordionItem
                 key={index}

@@ -311,7 +311,7 @@ export function PortalOverlay() {
       >
         <div
           ref={portalTextRef}
-          className="flex items-center gap-1 font-heading text-xl sm:text-3xl font-bold tracking-widest text-white whitespace-pre select-none uppercase px-6 drop-shadow-lg"
+          className="flex items-center gap-1 font-heading text-xl sm:text-3xl font-bold tracking-widest text-white whitespace-pre select-none uppercase px-6"
         />
       </div>
     </>

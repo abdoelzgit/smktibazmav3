@@ -397,7 +397,7 @@ export function Navbar() {
     : "/images/logo.png";
   const headerSurface = isScrolled
     ? showInverted
-      ? "bg-primary/80 backdrop-blur-md"
+      ? "bg-[#132B6D]/85 backdrop-blur-md"
       : "bg-background/90 backdrop-blur-md"
     : "";
 

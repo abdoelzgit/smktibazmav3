@@ -3,6 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionValueEvent,
+} from "framer-motion";
+import {
   ArrowRight,
   Check,
   ChevronLeft,
@@ -123,15 +129,6 @@ function padNumber(n: number) {
 */
 const LINE_TOP = 56;
 
-const SCROLL_FACTOR = 1.2;
-
-const DWELL_RATIO = 0.55;
-
-function easeSmoothstep(t: number) {
-  const clamped = Math.min(1, Math.max(0, t));
-  return clamped * clamped * (3 - 2 * clamped);
-}
-
 /* -------------------------------------------------------------------------- */
 /*  Sub-components                                                            */
 /* -------------------------------------------------------------------------- */
@@ -139,7 +136,7 @@ function easeSmoothstep(t: number) {
 function StatusIndicator({ status }: { status: TimelineStatus }) {
   if (status === "past") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-300">
         <Check className="h-3.5 w-3.5" aria-hidden="true" />
         Selesai
       </span>
@@ -148,10 +145,10 @@ function StatusIndicator({ status }: { status: TimelineStatus }) {
 
   if (status === "current") {
     return (
-      <span className="inline-flex items-center gap-2 text-xs font-semibold text-[#37497A]">
+      <span className="inline-flex items-center gap-2 text-xs font-semibold text-white">
         <span className="relative flex h-2.5 w-2.5" aria-hidden="true">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#37497A] opacity-60 motion-reduce:animate-none" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#37497A]" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75 motion-reduce:animate-none" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
         </span>
         Sedang berlangsung
       </span>
@@ -159,7 +156,7 @@ function StatusIndicator({ status }: { status: TimelineStatus }) {
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-200/60">
       <Clock className="h-3.5 w-3.5" aria-hidden="true" />
       Akan datang
     </span>
@@ -175,15 +172,17 @@ function StepDot({
   isFocused?: boolean;
 }) {
   const base =
-    "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-4 border-white shadow-sm transition-transform duration-300";
+    "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-4 border-[#132B6D] shadow-sm transition-transform duration-300";
 
   if (status === "past") {
     return (
       <span
-        className={`${base} bg-[#37497A] ${isFocused ? "scale-110" : ""}`}
+        className={`${base} bg-white text-[#132B6D] ${
+          isFocused ? "scale-110 ring-4 ring-white/30" : ""
+        }`}
         aria-hidden="true"
       >
-        <Check className="h-4 w-4 text-white" strokeWidth={3} />
+        <Check className="h-4 w-4 text-[#132B6D]" strokeWidth={3} />
       </span>
     );
   }
@@ -191,19 +190,20 @@ function StepDot({
   if (status === "current") {
     return (
       <span
-        className={`${base} scale-110 bg-[#37497A] ring-4 ring-[#37497A]/15`}
+        className={`${base} scale-110 bg-white ring-4 ring-white/40`}
         aria-hidden="true"
       >
-        <span className="absolute -inset-1 animate-ping rounded-full bg-[#37497A]/30 motion-reduce:animate-none" />
-        <span className="relative h-2.5 w-2.5 rounded-full bg-white" />
+        <span className="absolute -inset-1 animate-ping rounded-full bg-white/40 motion-reduce:animate-none" />
+        <span className="relative h-2.5 w-2.5 rounded-full bg-[#132B6D]" />
       </span>
     );
   }
 
   return (
     <span
-      className={`${base} bg-slate-100 ${isFocused ? "scale-110 ring-4 ring-[#37497A]/15" : ""
-        }`}
+      className={`${base} bg-white/20 ${
+        isFocused ? "scale-110 ring-4 ring-white/30" : ""
+      }`}
       aria-hidden="true"
     />
   );
@@ -220,10 +220,10 @@ function DesktopNode({
 }) {
   const titleClass =
     item.status === "past"
-      ? "text-slate-500"
+      ? "text-white/70"
       : item.status === "current" || isFocused
-        ? "text-[#37497A]"
-        : "text-slate-800";
+        ? "text-white"
+        : "text-white/85";
 
   return (
     <li
@@ -231,7 +231,7 @@ function DesktopNode({
       className="relative flex w-[230px] shrink-0 flex-col pr-4 sm:w-[270px] lg:w-[300px] xl:w-[320px]"
     >
       <div className="flex h-4 items-center">
-        <span className="text-[11px] font-semibold tracking-[0.15em] text-slate-400">
+        <span className="text-[11px] font-mono font-semibold tracking-[0.15em] text-blue-200/70">
           {padNumber(index + 1)}
         </span>
       </div>
@@ -240,21 +240,20 @@ function DesktopNode({
         <StepDot status={item.status} isFocused={isFocused} />
       </div>
 
-      <div
-        className={`mt-4 transition-opacity duration-300 ${isFocused ? "opacity-100" : "opacity-55"
-          }`}
-      >
-        <h3 className={`text-base font-bold leading-snug ${titleClass}`}>
+      <div className="mt-4">
+        <h3 className={`text-base font-bold leading-snug transition-colors duration-300 ${titleClass}`}>
           {item.title}
         </h3>
 
-        <p className="mt-1 text-sm font-medium text-slate-500">{item.date}</p>
+        <p className="mt-1 text-sm font-medium text-blue-200/80">{item.date}</p>
 
-        {isFocused && (
-          <p className="mt-2 max-w-[230px] text-sm leading-relaxed text-slate-500">
-            {item.description}
-          </p>
-        )}
+        <p
+          className={`mt-2 min-h-[56px] max-w-[240px] text-sm leading-relaxed text-blue-100/80 transition-opacity duration-300 ${
+            isFocused ? "opacity-100 font-normal" : "opacity-40"
+          }`}
+        >
+          {item.description}
+        </p>
       </div>
     </li>
   );
@@ -271,28 +270,27 @@ function MobileTimelineItem({
 }) {
   const titleClass =
     item.status === "past"
-      ? "text-slate-500"
+      ? "text-white/70"
       : item.status === "current"
-        ? "text-[#37497A]"
-        : "text-slate-900";
+        ? "text-white"
+        : "text-white/90";
 
   return (
-    <li className={`relative pl-12 ${isLast ? "" : "pb-8"}`}>
-      {/* Garis vertikal: terisi warna utama kalau tahap ini sudah selesai */}
-      {!isLast && (
-        <span
-          className={`absolute left-[14px] top-4 w-1 rounded-full ${item.status === "past" ? "bg-[#37497A]" : "bg-slate-200"
-            }`}
-          style={{ height: "100%" }}
-          aria-hidden="true"
-        />
-      )}
-
-      <span className="absolute left-0 top-0">
+    <motion.li
+      initial={{ opacity: 0, y: 20, x: -6 }}
+      whileInView={{ opacity: 1, y: 0, x: 0 }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{
+        duration: 0.45,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      className={`relative pl-12 ${isLast ? "" : "pb-8"}`}
+    >
+      <div className="absolute left-0 top-0">
         <StepDot status={item.status} />
-      </span>
+      </div>
 
-      <span className="block text-[11px] font-semibold leading-8 tracking-[0.15em] text-slate-400">
+      <span className="block text-[11px] font-mono font-semibold leading-8 tracking-[0.15em] text-blue-200/70">
         {padNumber(index + 1)}
       </span>
 
@@ -300,16 +298,16 @@ function MobileTimelineItem({
         {item.title}
       </h3>
 
-      <p className="mt-1 text-sm font-medium text-slate-500">{item.date}</p>
+      <p className="mt-1 text-sm font-medium text-blue-200/80">{item.date}</p>
 
-      <p className="mt-2 text-sm leading-relaxed text-slate-500">
+      <p className="mt-2 text-sm leading-relaxed text-blue-100/70">
         {item.description}
       </p>
 
       <div className="mt-3">
         <StatusIndicator status={item.status} />
       </div>
-    </li>
+    </motion.li>
   );
 }
 
@@ -326,15 +324,17 @@ export default function TimelineSection({
 }: TimelineSectionProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const trackContainerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLOListElement>(null);
+  const mobileListRef = useRef<HTMLOListElement>(null);
 
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
   const [isDesktop, setIsDesktop] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
-  const [trackScrollWidth, setTrackScrollWidth] = useState(0);
-  const [translateX, setTranslateX] = useState(0);
+  const [maxTranslate, setMaxTranslate] = useState(0);
+  const [totalTrackWidth, setTotalTrackWidth] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const activeIndexRef = useRef(0);
@@ -344,14 +344,12 @@ export default function TimelineSection({
   useEffect(() => {
     const checkFlags = () => {
       setIsDesktop(window.innerWidth >= 1024);
-
       setReducedMotion(
         window.matchMedia("(prefers-reduced-motion: reduce)").matches,
       );
     };
 
     checkFlags();
-
     window.addEventListener("resize", checkFlags);
 
     return () => {
@@ -359,143 +357,69 @@ export default function TimelineSection({
     };
   }, []);
 
-  useEffect(() => {
-    const trackEl = trackRef.current;
-
-    if (!trackEl) return;
-
-    const updateDimensions = () => {
-      setTrackScrollWidth(trackEl.scrollWidth);
-    };
-
-    updateDimensions();
-
-    const resizeObserver = new ResizeObserver(updateDimensions);
-
-    resizeObserver.observe(trackEl);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [items]);
-
-  const handleScroll = useCallback(() => {
-    if (!hijackActive || !wrapperRef.current || !trackRef.current) {
-      return;
-    }
-
-    const wrapper = wrapperRef.current;
-    const track = trackRef.current;
-
-    const wrapperRect = wrapper.getBoundingClientRect();
-
-    const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
-
-    if (scrollableHeight <= 0) {
-      return;
-    }
-
-    const progress = Math.min(
-      1,
-      Math.max(0, -wrapperRect.top / scrollableHeight),
-    );
-
-    const itemEls = Array.from(
-      track.querySelectorAll<HTMLElement>("[data-timeline-item]"),
-    );
-
-    const n = itemEls.length;
-
-    if (n < 2) {
-      return;
-    }
-
-    const scaledProgress = progress * (n - 1);
-
-    const segmentIndex = Math.min(n - 2, Math.floor(scaledProgress));
-
-    const segmentProgress = scaledProgress - segmentIndex;
-
-    const fromOffset = itemEls[segmentIndex].offsetLeft;
-
-    const toOffset = itemEls[segmentIndex + 1].offsetLeft;
-
-    let movementProgress = 0;
-
-    if (segmentProgress > DWELL_RATIO) {
-      movementProgress = (segmentProgress - DWELL_RATIO) / (1 - DWELL_RATIO);
-    }
-
-    movementProgress = easeSmoothstep(movementProgress);
-
-    const currentOffset =
-      fromOffset + (toOffset - fromOffset) * movementProgress;
-
-    const nextTranslate = -currentOffset;
-
-    requestAnimationFrame(() => {
-      setTranslateX(nextTranslate);
-    });
-
-    let closestIndex = 0;
-    let minDistance = Infinity;
-
-    itemEls.forEach((el, idx) => {
-      const distance = Math.abs(el.offsetLeft + nextTranslate);
-
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestIndex = idx;
-      }
-    });
-
-    if (activeIndexRef.current !== closestIndex) {
-      activeIndexRef.current = closestIndex;
-
-      setActiveIndex(closestIndex);
-      setCanPrev(closestIndex > 0);
-      setCanNext(closestIndex < n - 1);
-    }
-  }, [hijackActive]);
+  const measureDimensions = useCallback(() => {
+    if (!trackRef.current || !trackContainerRef.current) return;
+    const trackW = trackRef.current.scrollWidth;
+    const contW = trackContainerRef.current.clientWidth;
+    const maxScroll = Math.max(0, trackW - contW + 40);
+    setMaxTranslate(maxScroll);
+    setTotalTrackWidth(trackW);
+  }, []);
 
   useEffect(() => {
-    if (!hijackActive) {
-      setTranslateX(0);
-      return;
-    }
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    handleScroll();
-
+    measureDimensions();
+    window.addEventListener("resize", measureDimensions);
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", measureDimensions);
     };
-  }, [hijackActive, handleScroll]);
+  }, [items, isDesktop, measureDimensions]);
+
+  // Desktop horizontal scroll
+  const { scrollYProgress } = useScroll({
+    target: wrapperRef,
+    offset: ["start start", "end end"],
+  });
+
+  const x = useTransform(scrollYProgress, [0, 1], [0, -maxTranslate]);
+
+  const progressLineWidth = useTransform(scrollYProgress, (v) => {
+    if (!totalTrackWidth) return 32;
+    return 32 + v * (totalTrackWidth - 32);
+  });
+
+  // Mobile vertical scroll line
+  const { scrollYProgress: mobileScrollProgress } = useScroll({
+    target: mobileListRef,
+    offset: ["start 75%", "end 65%"],
+  });
+
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    const count = items.length;
+    if (count <= 1) return;
+
+    const index = Math.min(
+      count - 1,
+      Math.max(0, Math.round(latest * (count - 1))),
+    );
+
+    if (index !== activeIndexRef.current) {
+      activeIndexRef.current = index;
+      setActiveIndex(index);
+      setCanPrev(index > 0);
+      setCanNext(index < count - 1);
+    }
+  });
 
   const scrollToIndex = (targetIndex: number) => {
     const safeIndex = Math.max(0, Math.min(items.length - 1, targetIndex));
 
-    const track = trackRef.current;
-
-    if (!track) {
-      return;
-    }
-
     if (hijackActive && wrapperRef.current) {
       const wrapper = wrapperRef.current;
-
       const n = items.length;
+      if (n < 2) return;
 
-      if (n < 2) {
-        return;
-      }
-
-      const targetProgress =
-        safeIndex === n - 1 ? 1 : (safeIndex + DWELL_RATIO / 2) / (n - 1);
-
+      const targetProgress = safeIndex / (n - 1);
       const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
-
       const wrapperTopAbsolute =
         wrapper.getBoundingClientRect().top + window.scrollY;
 
@@ -506,11 +430,10 @@ export default function TimelineSection({
         top: targetScrollY,
         behavior: "smooth",
       });
-    } else {
-      const el = track.querySelectorAll<HTMLElement>("[data-timeline-item]")[
-        safeIndex
-      ];
-
+    } else if (trackRef.current) {
+      const el = trackRef.current.querySelectorAll<HTMLElement>(
+        "[data-timeline-item]",
+      )[safeIndex];
       el?.scrollIntoView({
         behavior: "smooth",
         inline: "center",
@@ -528,54 +451,57 @@ export default function TimelineSection({
   };
 
   const arrowClass =
-    "flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-[#37497A] transition-colors hover:border-[#37497A] hover:bg-[#37497A] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#37497A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-white disabled:text-slate-300 cursor-pointer shadow-sm";
-
-  const progressWidth = Math.min(trackScrollWidth, Math.abs(translateX));
+    "flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:border-white hover:bg-white hover:text-[#132B6D] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 cursor-pointer shadow-sm";
 
   return (
     <div
       ref={wrapperRef}
-      className="relative w-full bg-white"
+      data-nav-theme="dark"
+      className="relative w-full bg-[#132B6D] text-white"
       style={{
         height: hijackActive
-          ? `calc(100vh + ${trackScrollWidth * SCROLL_FACTOR}px)`
+          ? `calc(100vh + ${(items.length - 1) * 320}px)`
           : "auto",
       }}
     >
       <section
         ref={sectionRef}
+        data-nav-theme="dark"
         aria-labelledby="timeline-title"
         className={
           hijackActive
-            ? "sticky top-0 flex h-screen w-full items-center overflow-hidden py-6 lg:py-12"
-            : "relative w-full bg-white py-8 sm:py-12 lg:py-16"
+            ? "sticky top-0 flex h-screen w-full items-center overflow-hidden py-6 lg:py-12 bg-[#132B6D] text-white"
+            : "relative w-full bg-[#132B6D] text-white pt-2 pb-14 sm:pt-4 sm:pb-20 lg:py-16"
         }
       >
         <div className="mx-auto flex h-full w-full max-w-[1920px] flex-col justify-center px-4 sm:px-6 lg:px-16 xl:px-24">
-          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3 lg:gap-16">
-            <div className="lg:col-span-1 lg:self-center">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3 lg:gap-16 lg:items-center">
+            {/* Sisi Kiri / Header: Sticky di Mobile & Tablet, Centered di Desktop */}
+            <div className="sticky top-14 sm:top-16 z-20 bg-[#132B6D] pt-4 pb-5 shadow-[0_16px_20px_-10px_rgba(19,43,109,0.95)] lg:shadow-none lg:static lg:bg-transparent lg:p-0 lg:col-span-1 lg:self-center">
               <h2
                 id="timeline-title"
-                className="text-3xl font-bold tracking-tight text-[#37497A] sm:text-4xl"
+                className="text-2xl font-bold tracking-tight text-white font-heading sm:text-4xl lg:text-5xl leading-tight"
               >
                 {title}
               </h2>
 
-              <p className="mt-4 max-w-md text-base leading-relaxed text-slate-600">
+              <p className="mt-2 sm:mt-4 max-w-md text-xs sm:text-base leading-relaxed text-blue-100/80">
                 {description}
               </p>
 
-              <Link
-                href={ctaHref}
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#37497A] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#2b3a63] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#37497A] focus-visible:ring-offset-2"
-              >
-                {ctaLabel}
-
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
+              <div className="mt-4 sm:mt-8">
+                <Link
+                  href={ctaHref}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-[#132B6D] transition-colors hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 shadow-sm"
+                >
+                  {ctaLabel}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </div>
             </div>
 
-            <div className="flex min-w-0 flex-col lg:col-span-2">
+            <div className="flex min-w-0 flex-col lg:col-span-2 pt-2">
+              {/* Desktop View */}
               <div className="hidden lg:block">
                 <div className="mb-4 flex justify-end gap-3 px-1">
                   <button
@@ -599,44 +525,41 @@ export default function TimelineSection({
                   </button>
                 </div>
 
-                {/* pl/pr diperbesar 4px -> 8px supaya ring node tidak terpotong */}
-                <div className="relative w-full overflow-hidden pl-2 pr-2">
-                  <ol
+                <div
+                  ref={trackContainerRef}
+                  className="relative w-full overflow-hidden px-2 py-4"
+                >
+                  <motion.ol
                     ref={trackRef}
                     tabIndex={0}
                     aria-label="Tahapan penerimaan siswa baru"
-                    className={`relative flex w-full py-4 focus:outline-none ${hijackActive
+                    className={`relative flex w-max py-4 focus:outline-none ${
+                      hijackActive
                         ? "overflow-visible"
                         : "overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-                      }`}
+                    }`}
                     style={{
-                      transform: hijackActive
-                        ? `translateX(${translateX}px)`
-                        : "none",
-
-                      transition: hijackActive
-                        ? "transform 0.1s linear"
-                        : "none",
+                      x: hijackActive ? x : 0,
                     }}
                   >
-                    {/* Track abu-abu */}
+                    {/* Track garis latar */}
                     <span
-                      className="pointer-events-none absolute left-0 h-1 -translate-y-1/2 rounded-full bg-slate-200"
+                      className="pointer-events-none absolute left-0 h-1 -translate-y-1/2 rounded-full bg-white/20"
                       style={{
                         top: LINE_TOP,
-                        width: trackScrollWidth
-                          ? `${trackScrollWidth}px`
+                        width: totalTrackWidth
+                          ? `${totalTrackWidth}px`
                           : "100%",
                       }}
                       aria-hidden="true"
                     />
 
-                    {/* Progress */}
-                    <span
-                      className="pointer-events-none absolute left-0 h-1 -translate-y-1/2 rounded-full bg-[#37497A] transition-[width] duration-100"
+                    {/* Progress line */}
+                    <motion.span
+                      className="pointer-events-none absolute left-0 h-1 -translate-y-1/2 rounded-full bg-white"
                       style={{
                         top: LINE_TOP,
-                        width: `${progressWidth}px`,
+                        width: hijackActive ? progressLineWidth : "0px",
                       }}
                       aria-hidden="true"
                     />
@@ -649,20 +572,38 @@ export default function TimelineSection({
                         isFocused={idx === activeIndex}
                       />
                     ))}
-                  </ol>
+                  </motion.ol>
                 </div>
               </div>
 
-              <ol className="lg:hidden">
-                {items.map((item, idx) => (
-                  <MobileTimelineItem
-                    key={item.id}
-                    item={item}
-                    index={idx}
-                    isLast={idx === items.length - 1}
-                  />
-                ))}
-              </ol>
+              {/* Mobile View with Continuous Scroll-Progress Line */}
+              <div className="relative lg:hidden pt-4">
+                <ol ref={mobileListRef} className="relative pl-0">
+                  {/* Continuous background vertical line */}
+                  <div
+                    className="absolute left-[15px] top-4 bottom-6 w-[2px] bg-white/20 rounded-full"
+                    aria-hidden="true"
+                  >
+                    {/* Continuous animated vertical progress line */}
+                    <motion.div
+                      style={{
+                        scaleY: mobileScrollProgress,
+                        transformOrigin: "top",
+                      }}
+                      className="w-full h-full bg-white rounded-full"
+                    />
+                  </div>
+
+                  {items.map((item, idx) => (
+                    <MobileTimelineItem
+                      key={item.id}
+                      item={item}
+                      index={idx}
+                      isLast={idx === items.length - 1}
+                    />
+                  ))}
+                </ol>
+              </div>
             </div>
           </div>
         </div>
