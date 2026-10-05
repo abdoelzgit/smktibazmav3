@@ -64,7 +64,11 @@ export default function CountdownSection({
   const padZero = (num: number) => String(num).padStart(2, "0");
 
   return (
-    <section aria-label="Countdown SPMB" className="w-full bg-white py-12 sm:py-16 lg:py-20">
+    <section
+      data-nav-theme="light"
+      aria-label="Countdown SPMB"
+      className="w-full bg-white py-12 sm:py-16 lg:py-20"
+    >
       <div className="mx-auto w-full max-w-[1920px] px-6 sm:px-10 lg:px-16 xl:px-24">
         {/* Banner Horizontal Utama */}
         <div className="relative min-h-[220px] sm:min-h-[260px] lg:min-h-[300px] w-full overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl flex items-center justify-center">
@@ -83,7 +87,7 @@ export default function CountdownSection({
 
           {/* Konten Teks & Timer */}
           <div className="relative z-10 flex flex-col items-center justify-center p-6 sm:p-10 text-center text-white">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white mb-4 sm:mb-6">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white font-heading mb-4 sm:mb-6">
               {title}
             </h2>
 

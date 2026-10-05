@@ -147,11 +147,9 @@ export default function MitraProfileFullScreen() {
       );
 
       // Only update React state when active index actually changes
-      if (computedIndex !== activeIndex) {
-        setActiveIndex(computedIndex);
-      }
+      setActiveIndex((prev) => (computedIndex !== prev ? computedIndex : prev));
     });
-  }, [hijackActive, activeIndex]);
+  }, [hijackActive]);
 
   useEffect(() => {
     if (!hijackActive) {

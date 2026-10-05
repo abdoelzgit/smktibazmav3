@@ -1,8 +1,10 @@
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { TextReveal } from "@/components/ui/text-reveal";
 import { ArrowRight } from "lucide-react";
 import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
 import { AnimatedCounter } from "@/components/animated-counter";
+import { PortalLink } from "@/components/portal-transition";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type Stat = {
@@ -17,6 +19,7 @@ export type SambutanProps = {
     tagline?: string;
     description?: string;
     ctaLabel?: string;
+    ctaHref?: string;
     onCtaClick?: () => void;
 };
 
@@ -25,6 +28,8 @@ export type InfoSekilasProps = {
     title?: string;
     subtitle?: string;
     stats?: Stat[];
+    ctaLabel?: string;
+    ctaHref?: string;
     partnerLogos?: string[];
 };
 
@@ -36,6 +41,7 @@ export function Sambutan({
     tagline = `#Energi masa depan Indonesia,\n jago IT pinter ngaji`,
     description = "Program pendidikan 4 tahun dengan beasiswa 100% bagi dhuafa, dirancang untuk membekali siswa dengan kompetensi teknologi, dan karakter islami.",
     ctaLabel = "Lebih lengkap",
+    ctaHref = "/sekolah",
     onCtaClick,
 }: SambutanProps) {
     return (
@@ -72,14 +78,19 @@ export function Sambutan({
                             <p className="text-sm leading-relaxed text-justify text-neutral-500">
                                 {description}
                             </p>
-                            <Button
-                                variant="outline"   
-                                onClick={onCtaClick}
-                                className="mt-5 rounded-full border-blue-950 text-blue-950 hover:bg-blue-950 hover:text-white"
-                            >
-                                {ctaLabel}
-                                <ArrowRight className="ml-1 h-4 w-4" />
-                            </Button>
+                             <PortalLink
+                                            href={ctaHref}
+                                            label={'Tentang Sekolah'}
+                                            className="group relative mt-5 inline-flex items-center gap-2 font-sans text-[13px] font-semibold uppercase tracking-wider text-foreground/50 hover:text-[#132B6D] transition-colors duration-300"
+                                          >
+                                            <span>{ctaLabel}</span>
+                                            <ArrowRight
+                                              size={16}
+                                              aria-hidden="true"
+                                              className="transition-transform duration-300 group-hover:translate-x-1"
+                                            />
+                                            <span className="absolute -bottom-1 left-0 h-px w-0 bg-[#132B6D] transition-all duration-300 group-hover:w-full" />
+                                          </PortalLink>
                         </div>
                     </div>
                 </div>
@@ -105,11 +116,13 @@ export function InfoSekilas({
             {/* Container 1: kartu gambar + statistik */}
             <div className="mx-auto w-full max-w-[1920px] px-6 sm:px-10 lg:px-16 xl:px-24">
                 <div className="relative overflow-hidden rounded-3xl">
-                    <img
+                    <Image
                         src={image}
                         alt=""
                         aria-hidden="true"
-                        className="absolute inset-0 h-full w-full object-cover"
+                        fill
+                        sizes="100vw"
+                        className="object-cover"
                     />
                     <div className="absolute inset-0 bg-[#132B6D]/80" />
 

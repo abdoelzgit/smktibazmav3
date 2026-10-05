@@ -40,7 +40,7 @@ export interface SaveImageResult {
  */
 export async function convertBufferToWebP(
   buffer: Uint8Array | Buffer,
-  quality = 80
+  quality = 80,
 ): Promise<Buffer> {
   return await sharp(buffer).webp({ quality }).toBuffer();
 }
@@ -51,7 +51,7 @@ export async function convertBufferToWebP(
  */
 export async function saveUploadedImage(
   file: File,
-  options: SaveImageOptions = {}
+  options: SaveImageOptions = {},
 ): Promise<SaveImageResult> {
   const {
     folder = "general",
@@ -86,7 +86,10 @@ export async function saveUploadedImage(
       finalBuffer = await convertBufferToWebP(inputBuffer, quality);
       fileExtension = ".webp";
     } catch (error) {
-      console.warn("Gagal mengonversi gambar ke WebP, menggunakan file asli:", error);
+      console.warn(
+        "Gagal mengonversi gambar ke WebP, menggunakan file asli:",
+        error,
+      );
     }
   }
 
@@ -121,7 +124,7 @@ export async function saveUploadedImage(
  * Contoh URL: `/uploads/berita/1726712345-cover.webp`
  */
 export async function deleteUploadedFile(
-  publicUrl: string | null | undefined
+  publicUrl: string | null | undefined,
 ): Promise<boolean> {
   if (!publicUrl || typeof publicUrl !== "string") {
     return false;

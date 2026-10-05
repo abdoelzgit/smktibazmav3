@@ -1,6 +1,4 @@
 "use server";
-
-import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { CreateBeritaInput } from "./berita";
 

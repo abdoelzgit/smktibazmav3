@@ -1,6 +1,7 @@
 "use client";
 
 import React, { memo, useState, useEffect } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useMotionValue, animate, motion } from "motion/react";
 import useMeasure from "react-use-measure";
@@ -115,7 +116,7 @@ const InfiniteSlider = memo(function InfiniteSlider({
 
 const LogoImage = memo(function LogoImage({ logo }: { logo: Logo }) {
   return (
-    <img
+    <Image
       alt={logo.alt}
       src={logo.src}
       width={logo.width ?? 120}

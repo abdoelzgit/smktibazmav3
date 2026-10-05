@@ -26,7 +26,7 @@ export default function StaffSection({ className }: { className?: string }) {
     if (!section || !wrapper) return;
 
     const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     ).matches;
 
     const ctx = gsap.context(() => {
@@ -69,7 +69,8 @@ export default function StaffSection({ className }: { className?: string }) {
 
           const getHoldTime = (index: number) => {
             const membersCount = STAFF_CATEGORIES[index].members.length;
-            const base = membersCount > 4 ? baseHoldDuration * 1.6 : baseHoldDuration;
+            const base =
+              membersCount > 4 ? baseHoldDuration * 1.6 : baseHoldDuration;
             const extraForScroll = overflowAmounts[index] / scrollPxPerSecond;
             return base + extraForScroll;
           };
@@ -86,7 +87,7 @@ export default function StaffSection({ className }: { className?: string }) {
                   duration: holdTime,
                   ease: "none",
                 },
-                holdStart
+                holdStart,
               );
             }
             currentTime += holdTime;
@@ -105,7 +106,7 @@ export default function StaffSection({ className }: { className?: string }) {
                 ease: "power1.inOut",
                 force3D: true,
               },
-              animStartTime
+              animStartTime,
             );
             masterTl.to(
               nextPanel,
@@ -116,7 +117,7 @@ export default function StaffSection({ className }: { className?: string }) {
                 ease: "power1.inOut",
                 force3D: true,
               },
-              animStartTime
+              animStartTime,
             );
 
             currentTime += fadeDuration;
@@ -133,14 +134,14 @@ export default function StaffSection({ className }: { className?: string }) {
                 duration: lastHoldTime,
                 ease: "none",
               },
-              lastHoldStart
+              lastHoldStart,
             );
           }
           currentTime += lastHoldTime;
 
           const totalScrollDistance = Math.max(
             window.innerHeight * 1.2,
-            currentTime * 120
+            currentTime * 120,
           );
 
           if (scrollTriggerRef.current) {
@@ -189,7 +190,7 @@ export default function StaffSection({ className }: { className?: string }) {
       className={cn(
         "relative w-full bg-white text-slate-900",
         "py-16 sm:py-20 lg:py-0 lg:h-screen",
-        className
+        className,
       )}
     >
       <div ref={wrapperRef} className="relative w-full h-full">
@@ -203,7 +204,7 @@ export default function StaffSection({ className }: { className?: string }) {
               "w-full flex flex-col lg:flex-row lg:items-stretch lg:gap-16 xl:gap-24",
               "lg:absolute lg:inset-0 lg:h-full lg:py-16 xl:py-20",
               "mx-auto max-w-[1920px] px-6 sm:px-10 md:px-14 lg:px-16 xl:px-24",
-              "will-change-[opacity]"
+              "will-change-[opacity]",
             )}
           >
             {/* Kolom Kiri: Title — diam di tengah, tidak ikut scroll */}
@@ -224,14 +225,17 @@ export default function StaffSection({ className }: { className?: string }) {
               className={cn(
                 "w-full lg:w-[60%] xl:w-[62%] lg:grow lg:h-full px-0 lg:pr-4",
                 "flex lg:grid lg:grid-cols-2 flex-row lg:flex-row overflow-x-auto lg:overflow-hidden gap-4 lg:gap-x-6 lg:gap-y-12 snap-x snap-mandatory lg:snap-none py-2",
-                "no-scrollbar"
+                "no-scrollbar",
               )}
             >
-            {category.members.map((member, index) => (
-  <div key={`${member.id}-${index}`} className="shrink-0 lg:shrink flex lg:contents snap-center">
-    <StaffCard member={member} />
-  </div>
-))}
+              {category.members.map((member, index) => (
+                <div
+                  key={`${member.id}-${index}`}
+                  className="shrink-0 lg:shrink flex lg:contents snap-center"
+                >
+                  <StaffCard member={member} />
+                </div>
+              ))}
             </div>
           </div>
         ))}

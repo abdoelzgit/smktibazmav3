@@ -1,7 +1,14 @@
 "use client";
 
-import { useId, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useId, useRef, useState, useEffect } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useTransform,
+  useMotionValueEvent,
+  type MotionValue,
+} from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -167,54 +174,94 @@ const PREPARATION_ITEMS: PreparationItem[] = [
 ];
 
 /* -------------------------------------------------------------------------- */
-/*  Row sub-component                                                        */
+// Rentang scroll untuk tiap item: muncul bertahap dan tetap aktif
+const STEP_RANGES = [
+  { range: [0.0, 0.2, 1.0], opacity: [0.2, 1, 1], y: [36, 0, 0] },
+  { range: [0.25, 0.5, 1.0], opacity: [0.2, 1, 1], y: [36, 0, 0] },
+  { range: [0.55, 0.8, 1.0], opacity: [0.2, 1, 1], y: [36, 0, 0] },
+];
+
+/* -------------------------------------------------------------------------- */
+/*  Row Sub-Component with Scroll Progress Animation                          */
 /* -------------------------------------------------------------------------- */
 
 function PreparationRow({
   item,
+  index,
+  isUnlocked,
+  scrollYProgress,
   isOpen,
   onToggle,
 }: {
   item: PreparationItem;
+  index: number;
+  isUnlocked: boolean;
+  scrollYProgress: MotionValue<number>;
   isOpen: boolean;
   onToggle: () => void;
 }) {
   const panelId = useId();
+  const config = STEP_RANGES[index] || STEP_RANGES[0];
+
+  const opacity = useTransform(scrollYProgress, config.range, config.opacity);
+  const y = useTransform(scrollYProgress, config.range, config.y);
 
   return (
-    <div className="border-b border-[#CFCFCF]">
+    <motion.div
+      style={{ opacity, y }}
+      className={`border-b border-[#CFCFCF] transition-all duration-300 ${isUnlocked ? "opacity-100" : "opacity-35"
+        }`}
+    >
       <button
         type="button"
-        onClick={onToggle}
-        aria-expanded={isOpen}
+        disabled={!isUnlocked}
+        onClick={isUnlocked ? onToggle : undefined}
+        aria-expanded={isUnlocked && isOpen}
         aria-controls={panelId}
-        className="flex w-full items-start justify-between gap-4 py-6 text-left transition-colors hover:bg-[#37497A]/[0.03] sm:py-8"
+        className={`group flex w-full items-start justify-between gap-4 py-5 text-left sm:py-6 lg:py-7 ${isUnlocked
+            ? "cursor-pointer"
+            : "cursor-not-allowed select-none pointer-events-none"
+          }`}
       >
-        <div className="flex min-w-0 gap-4 sm:gap-6">
-          <span className="shrink-0 text-2xl font-bold tabular-nums text-[#37497A] sm:text-3xl">
+        <div className="flex min-w-0 items-start gap-4 sm:gap-6">
+          <span
+            className={`shrink-0 font-mono text-2xl font-semibold leading-snug sm:text-3xl transition-colors ${isUnlocked ? "text-[#37497A]" : "text-black"
+              }`}
+          >
             {item.number}
           </span>
           <div className="min-w-0">
-            <h3 className="text-base font-bold uppercase tracking-wide text-[#222222] sm:text-lg">
+            <h3
+              className={`font-heading text-base font-bold uppercase tracking-wide leading-snug sm:text-lg lg:text-xl transition-colors ${isUnlocked
+                  ? "text-[#222222] group-hover:text-[#132B6D]"
+                  : "text-black"
+                }`}
+            >
               {item.title}
             </h3>
-            <p className="mt-1 max-w-xl text-sm leading-relaxed text-[#7A7A7A] sm:text-base">
+            <p
+              className={`mt-1.5 text-sm leading-relaxed sm:text-base max-w-2xl transition-colors ${isUnlocked ? "text-[#7A7A7A]" : "text-black"
+                }`}
+            >
               {item.shortDescription}
             </p>
           </div>
         </div>
 
         <motion.span
-          animate={{ rotate: isOpen ? 180 : 0 }}
+          animate={{ rotate: isUnlocked && isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          className="mt-1 shrink-0 text-[#37497A]"
+          className={`mt-1 shrink-0 transition-colors ${isUnlocked
+              ? "text-[#37497A] group-hover:text-[#132B6D]"
+              : "text-black opacity-0"
+            }`}
         >
-          <ChevronDown className="h-5 w-5" aria-hidden="true" />
+          <ChevronDown className="h-5 w-5 lg:h-6 lg:w-6" aria-hidden="true" />
         </motion.span>
       </button>
 
       <AnimatePresence initial={false}>
-        {isOpen && (
+        {isUnlocked && isOpen && (
           <motion.div
             id={panelId}
             role="region"
@@ -225,22 +272,52 @@ function PreparationRow({
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="pb-8 pl-0 pr-1 sm:pb-10 sm:pl-[calc(2rem+1.5rem)]">
-              {item.detail}
+            <div className="pb-6 pt-1 pl-10 pr-2 sm:pb-8 sm:pl-14 lg:pl-16">
+              <div className="max-h-[34vh] sm:max-h-[38vh] overflow-y-auto pr-3 [scrollbar-width:thin] [scrollbar-color:rgba(19,43,109,0.18)_transparent]">
+                {item.detail}
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Main component                                                            */
+/*  Main component with Sticky Scroll-in-Place                                */
 /* -------------------------------------------------------------------------- */
 
 export default function PreparationSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [unlockedIndex, setUnlockedIndex] = useState(0);
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  // Pantau progress scroll untuk membuka kunci item berikutnya
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    if (latest >= 0.55) {
+      setUnlockedIndex(2);
+    } else if (latest >= 0.25) {
+      setUnlockedIndex(1);
+    } else {
+      setUnlockedIndex(0);
+    }
+  });
+
+  // Jika di-scroll naik dan item yang terbuka terkunci lagi, tutup accordionnya
+  useEffect(() => {
+    if (openId) {
+      const activeIdx = PREPARATION_ITEMS.findIndex((it) => it.id === openId);
+      if (activeIdx > unlockedIndex) {
+        setOpenId(null);
+      }
+    }
+  }, [unlockedIndex, openId]);
 
   const toggle = (id: string) => {
     setOpenId((current) => (current === id ? null : id));
@@ -248,33 +325,54 @@ export default function PreparationSection() {
 
   return (
     <section
+      ref={containerRef}
+      data-nav-theme="light"
       aria-labelledby="preparation-title"
-      className="w-full bg-white py-16 sm:py-20 lg:py-24"
+      className="relative w-full h-[240vh] bg-white text-slate-900"
     >
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#37497A]">
-          Sebelum Mendaftar
-        </span>
-        <h2
-          id="preparation-title"
-          className="mt-3 text-2xl font-bold tracking-tight text-[#222222] sm:text-3xl"
-        >
-          Persiapkan Pendaftaran
-        </h2>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#7A7A7A] sm:text-base">
-          Persiapkan hal-hal yang diperlukan sebelum mengikuti seluruh
-          rangkaian SPMB.
-        </p>
+      {/* Sticky Viewport Frame */}
+      <div className="sticky top-0 flex min-h-screen w-full flex-col justify-between px-6 pt-16 pb-6 sm:px-10 sm:pt-20 sm:pb-8 lg:px-16 xl:px-24 overflow-hidden">
+        <div className="mx-auto w-full max-w-[1920px] my-auto">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16 xl:gap-24 items-center">
+            {/* Kolom Kiri: Teks diam & sticky di tengah vertikal dengan hierarki font jajaran guru */}
+            <div className="w-full flex flex-col justify-center">
+              <h2
+                id="preparation-title"
+                className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#132B6D] font-heading leading-tight"
+              >
+                Persiapan Pendaftaran
+              </h2>
+              <p className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-slate-500 font-normal leading-relaxed max-w-xl">
+                Persiapkan hal-hal yang diperlukan sebelum mengikuti seluruh
+                rangkaian alur seleksi SPMB SMK TI BAZMA.
+              </p>
+            </div>
 
-        <div className="mt-10 border-t border-[#CFCFCF] sm:mt-12">
-          {PREPARATION_ITEMS.map((item) => (
-            <PreparationRow
-              key={item.id}
-              item={item}
-              isOpen={openId === item.id}
-              onToggle={() => toggle(item.id)}
+            {/* Kolom Kanan: Isi muncul satu persatu berjejer (tanpa border atas) */}
+            <div className="w-full flex flex-col justify-center">
+              {PREPARATION_ITEMS.map((item, index) => (
+                <PreparationRow
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  isUnlocked={index <= unlockedIndex}
+                  scrollYProgress={scrollYProgress}
+                  isOpen={openId === item.id}
+                  onToggle={() => toggle(item.id)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Full-width Scroll Progress Bar at the Bottom */}
+        <div className="mx-auto w-full max-w-[1920px] pt-4" aria-hidden="true">
+          <div className="relative h-[2px] w-full bg-[#132B6D]/15 overflow-hidden">
+            <motion.div
+              style={{ scaleX: scrollYProgress, transformOrigin: "left" }}
+              className="h-full w-full bg-[#132B6D]"
             />
-          ))}
+          </div>
         </div>
       </div>
     </section>

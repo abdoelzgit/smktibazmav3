@@ -1,9 +1,5 @@
-import LoginPpdb from "@/components/ppdb-login";
+import { redirect } from 'next/navigation';
 
-export default function LoginPage() {
-  return (
-    <main className="flex">
-      <LoginPpdb />
-    </main>
-  )
+export default function Page() {
+	redirect('/login');
 }

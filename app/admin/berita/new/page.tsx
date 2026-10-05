@@ -131,7 +131,7 @@ export default function CreateBeritaPage() {
     setIsSubmitting(true);
     
     const result = await createBeritaAction({
-      title,
+       title,
       excerpt,
       category,
       coverSrc,

@@ -41,7 +41,8 @@ const navLinks: NavLink[] = [
     href: "#program",
     children: [
       { label: "Profil Jurusan", href: "/profil-jurusan" },
-      { label: "Ekstrakulikuler", href: "/ekstrakulikuler" },
+      { label: "Aktivitas Siswa", href: "/ekstrakulikuler" },
+      { label: "BEST", href: "https://best.smktibazma.sch.id/" },
     ],
   },
   { label: "Jejak Karya", href: "/jejak-karya" },
@@ -396,7 +397,7 @@ export function Navbar() {
     : "/images/logo.png";
   const headerSurface = isScrolled
     ? showInverted
-      ? "bg-primary/80 backdrop-blur-md"
+      ? "bg-[#132B6D]/85 backdrop-blur-md"
       : "bg-background/90 backdrop-blur-md"
     : "";
 

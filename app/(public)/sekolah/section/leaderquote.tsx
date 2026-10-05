@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -21,21 +22,39 @@ export default function LeaderQuote({ className }: LeaderQuoteProps) {
   const role = "Kepala Sekolah SMK TI BAZMA";
   const quote =
     "SMK TI BAZMA adalah Islamic Boarding School berbasis teknologi yang memadukan pendidikan IT, tahfidzul Qur'an, dan pembentukan karakter.";
-  const footerText =
-    "Sekolah Menengah Kejuruan Teknologi Informasi Bazma (SMK TI BAZMA) merupakan sekolah unggulan berasrama yang bebas.";
+  const footerLeft =
+    "#Energi Masa Depan Indonesia";
+  const footerRight =
+    "#Jago IT, Pinter Ngaji";
 
   return (
     <section
       data-nav-theme="dark"
       className={cn(
-        "relative z-10 w-full overflow-hidden text-white",
-        "py-16 sm:py-20 md:py-28 lg:py-36",
-        "bg-[url('/images/kepsekbg-mobile.webp')] md:bg-[url('/images/kepsekbg.webp')]",
-        " lg:bg-cover bg-[position:top_center] bg-no-repeat bg-[#132B6D]",
+        "relative z-10 w-full overflow-hidden text-white transform-gpu [isolation:isolate]",
+        "shadow-[0_-25px_60px_rgba(0,0,0,0.35)]",
+        "py-16 sm:py-20 md:py-28 lg:py-36 bg-[#132B6D]",
         className,
       )}
     >
-      {/* Overlay gradient di atas background-image, bukan di atas <img> lagi */}
+      <Image
+        src="/images/kepsekbg.webp"
+        alt="Background Kepala Sekolah"
+        fill
+        sizes="100vw"
+        quality={85}
+        className="hidden md:block object-cover object-top pointer-events-none -z-10"
+      />
+      <Image
+        src="/images/mobile-kepsek.webp"
+        alt="Background Kepala Sekolah Mobile"
+        fill
+        sizes="100vw"
+        quality={85}
+        className="block md:hidden object-cover object-top pointer-events-none -z-10"
+      />
+
+      {/* Overlay gradient di atas background-image */}
       <div
         className="pointer-events-none absolute inset-0 z-0"
         style={{
@@ -44,8 +63,8 @@ export default function LeaderQuote({ className }: LeaderQuoteProps) {
         }}
       />
 
-      {/* Konten — tinggi section otomatis ngikutin ini + padding, TIDAK pakai min-h fix */}
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl min-h-[130vh] flex-col justify-between gap-10 px-6 sm:px-10 md:px-14 lg:20px ">
+      {/* Konten — tinggi section dibuat tinggi (120vh) agar foto kepala sekolah terlihat penuh & gagah seperti semula */}
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl min-h-[120vh] flex-col justify-between gap-10 px-6 sm:px-10 md:px-14 lg:px-20">
         <motion.div
           variants={fadeUp}
           initial="hidden"
@@ -93,9 +112,9 @@ export default function LeaderQuote({ className }: LeaderQuoteProps) {
             custom={2}
             className="grid grid-cols-1 gap-4 border-t border-white/10 pt-4 text-[10px] text-white/70 sm:grid-cols-2 sm:text-xs md:text-sm"
           >
-            <p className="max-w-sm leading-relaxed">{footerText}</p>
-            <p className="max-w-sm leading-relaxed sm:ml-auto sm:text-right">
-              {footerText}
+            <p className="max-w-sm leading-relaxed text-xl uppercase">{footerLeft}</p>
+            <p className="max-w-sm leading-relaxed sm:ml-auto sm:text-right uppercase text-xl">
+              {footerRight}
             </p>
           </motion.div>
         </div>

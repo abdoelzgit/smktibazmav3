@@ -1,35 +1,26 @@
 "use client"
 
 import { ReactLenis, useLenis } from "lenis/react"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { usePathname } from "next/navigation"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
 gsap.registerPlugin(ScrollTrigger)
 
-// ✅ Fix #2: Pisahkan logic ke komponen anak supaya useLenis bisa
-//    mengakses context ReactLenis yang sudah ter-render
 function LenisSync() {
-  // ✅ Fix #3: Tidak perlu callback kalau tidak dipakai
   const lenis = useLenis()
   const pathname = usePathname()
+  const prevHeightRef = useRef<number>(0)
 
-  // Sinkronisasi Lenis dengan ticker GSAP
+  // Sinkronisasi ScrollTrigger dengan event scroll Lenis (Native RAF)
   useEffect(() => {
     if (!lenis) return
 
-    function raf(time: number) {
-      lenis?.raf(time * 1000)
-    }
-
-    gsap.ticker.add(raf)
-    gsap.ticker.lagSmoothing(0)
     lenis.on("scroll", ScrollTrigger.update)
 
     return () => {
       lenis.off("scroll", ScrollTrigger.update)
-      gsap.ticker.remove(raf)
     }
   }, [lenis])
 
@@ -40,7 +31,7 @@ function LenisSync() {
     lenis.scrollTo(0, { immediate: true })
 
     // Memaksa Lenis dan ScrollTrigger menghitung ulang tinggi dokumen baru
-    requestAnimationFrame(() => {
+    const rafId = requestAnimationFrame(() => {
       lenis?.resize()
       ScrollTrigger.refresh(true)
     })
@@ -50,24 +41,35 @@ function LenisSync() {
       ScrollTrigger.refresh(true)
     }, 250)
 
-    return () => clearTimeout(timer)
+    return () => {
+      cancelAnimationFrame(rafId)
+      clearTimeout(timer)
+    }
   }, [pathname, lenis])
 
-  // ResizeObserver untuk konten yang berubah (lazy image, dll)
-  // Debounce untuk mencegah rapid consecutive ScrollTrigger.refresh() calls
+  // ResizeObserver untuk konten dinamis yang merubah tinggi halaman
   useEffect(() => {
-    if (!lenis) return
+    if (!lenis || typeof window === "undefined") return
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-    const observer = new ResizeObserver(() => {
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (!entry) return
+
+      const currentHeight = Math.round(entry.contentRect.height)
+      // Hanya refresh jika tinggi konten berubah signifikan (> 10px)
+      if (Math.abs(currentHeight - prevHeightRef.current) < 10) return
+
+      prevHeightRef.current = currentHeight
+
       if (timeoutId) clearTimeout(timeoutId)
 
       timeoutId = setTimeout(() => {
         lenis?.resize()
         ScrollTrigger.refresh()
         timeoutId = null
-      }, 150)
+      }, 250)
     })
 
     observer.observe(document.body)
@@ -85,13 +87,12 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     <ReactLenis
       root
       options={{
-        lerp: 0.1,
-        duration: 1.2,
+        lerp: 0.08,
         smoothWheel: true,
-        touchMultiplier: 2,
+        wheelMultiplier: 1,
+        touchMultiplier: 1.5,
       }}
     >
-      {/* ✅ LenisSync di dalam ReactLenis supaya context tersedia */}
       <LenisSync />
       {children}
     </ReactLenis>

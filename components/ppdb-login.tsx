@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { loginAction } from '@/app/actions/auth';
+import { loginAction, registerPpdbAction } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,7 +28,7 @@ export default function LoginPage() {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Handler Submit Login
+      // Handler Submit Login
   const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage('');
@@ -37,18 +37,17 @@ export default function LoginPage() {
 
     const result = await loginAction(new FormData(e.currentTarget));
 
-    if (result.success) {
-      setSuccessMessage('Login berhasil! Mengalihkan ke dashboard...');
-      router.push('/dashboard-ppdb/dashboard');
+    if (result.success && result.redirectTo) {
+      router.push(result.redirectTo);
       router.refresh();
     } else {
       setIsLoading(false);
-      setErrorMessage(result.error ?? 'Email atau password salah!');
+      setErrorMessage(result.error ?? 'Login gagal');
     }
   };
 
   // Handler Submit Register
-  const handleRegisterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleRegisterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
@@ -60,17 +59,16 @@ export default function LoginPage() {
 
     setIsLoading(true);
 
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    const result = await registerPpdbAction(formData);
+
+    if (result.success && result.redirectTo) {
+      router.push(result.redirectTo);
+      router.refresh();
+    } else {
       setIsLoading(false);
-      setSuccessMessage('Pendaftaran berhasil! Silakan masuk ke akun Anda.');
-      // Pindah ke mode login setelah registrasi
-      setIsLogin(true);
-      // Reset form register
-      setRegFullName('');
-      setRegEmail('');
-      setRegPassword('');
-      setRegConfirmPassword('');
-    }, 1000);
+      setErrorMessage(result.error ?? 'Pendaftaran gagal');
+    }
   };
 
   // Fungsi toggle perpindahan mode
@@ -89,9 +87,13 @@ export default function LoginPage() {
           {/* Logo & Header */}
           <div className="text-center space-y-2">
             <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 relative flex items-center justify-center">
-                {/* Placeholder Logo Icon */}
-                <div className="w-10 h-10 border-4 border-blue-600 border-t-yellow-400 border-r-green-500 rounded-full transform -rotate-45"></div>
+              <div className="w-20 h-20 relative flex items-center justify-center">
+                <Image
+                  src="/images/logo.png"
+                  alt="Logo SMK TI BAZMA"
+                  fill
+                  className="object-contain"
+                />
               </div>
             </div>
 
@@ -190,6 +192,7 @@ export default function LoginPage() {
                 </Label>
                 <Input
                   id="register-name"
+                  name="name"
                   type="text"
                   required
                   value={regFullName}
@@ -204,6 +207,7 @@ export default function LoginPage() {
                 </Label>
                 <Input
                   id="register-email"
+                  name="email"
                   type="email"
                   required
                   placeholder="m@example.com"
@@ -219,6 +223,7 @@ export default function LoginPage() {
                 </Label>
                 <Input
                   id="register-password"
+                  name="password"
                   type="password"
                   required
                   value={regPassword}

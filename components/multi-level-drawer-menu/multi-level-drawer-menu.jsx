@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import './multi-level-drawer-menu.css';
@@ -570,8 +571,8 @@ export default function MultiLevelDrawerMenu({
               <h1 className="mldm_page_heading">{heroHeading}</h1>
               <p className="mldm_page_sub">{heroSub}</p>
             </div>
-            <div className="mldm_page_poster">
-              <img className="mldm_page_poster_img" src={heroImage} alt="" />
+            <div className="mldm_page_poster relative w-full h-full min-h-[300px]">
+              <Image className="mldm_page_poster_img object-cover" src={heroImage} alt="" fill sizes="100vw" />
             </div>
           </div>
         </section>
@@ -683,8 +684,8 @@ export default function MultiLevelDrawerMenu({
                   data-anm-mldm-secondary
                   href="#"
                 >
-                  <span className="mldm_card_media">
-                    <img className="mldm_card_img" src={card.src} alt={card.alt || ''} />
+                  <span className="mldm_card_media relative w-full h-full block">
+                    <Image className="mldm_card_img object-cover" src={card.src} alt={card.alt || ''} fill sizes="300px" />
                   </span>
                   <span className="mldm_card_label">{card.label}</span>
                 </a>

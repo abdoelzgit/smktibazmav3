@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
+import Image from "next/image";
 
 interface ImageAutoSliderProps {
   itemCount?: number;
@@ -81,14 +82,16 @@ export function ImageAutoSlider({ itemCount = 8, logos }: ImageAutoSliderProps) 
               {duplicatedItems.map((logoFile, index) => (
                 <div
                   key={`${logoFile}-${index}`}
-                  className="flex-shrink-0 w-36 h-20 sm:w-48 sm:h-28 md:w-72 md:h-36 lg:w-80 lg:h-40 rounded-xl overflow-hidden bg-white flex items-center justify-center p-2.5 sm:p-4 md:p-6"
+                  className="relative flex-shrink-0 w-36 h-20 sm:w-48 sm:h-28 md:w-72 md:h-36 lg:w-80 lg:h-40 rounded-xl overflow-hidden bg-white flex items-center justify-center p-2.5 sm:p-4 md:p-6"
                 >
-                  <img
+                  <Image
                     src={`/images/mitra/${logoFile}`}
                     alt={`Logo Mitra ${index + 1}`}
+                    fill
+                    sizes="(max-width: 640px) 150px, 320px"
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-contain"
+                    className="object-contain p-2.5 sm:p-4 md:p-6"
                   />
                 </div>
               ))}

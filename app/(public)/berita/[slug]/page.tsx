@@ -1,5 +1,6 @@
 import { ShareButton } from "@/components/share-button";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -9,12 +10,17 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  const berita = await prisma.berita.findMany({
-    where: { published: true },
-    select: { slug: true },
-  });
+  try {
+    const berita = await prisma.berita.findMany({
+      where: { published: true },
+      select: { slug: true },
+    });
 
-  return berita.map((b) => ({ slug: b.slug }));
+    return berita.map((b) => ({ slug: b.slug }));
+  } catch (error) {
+    console.error("Gagal mengambil static params berita saat build:", error);
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -96,11 +102,14 @@ export default async function BeritaDetailPage({ params }: PageProps) {
 
           {/* Cover Image Banner */}
           {berita.coverImage && !berita.coverImage.startsWith("blob:") && (
-            <div className="overflow-hidden rounded-2xl border border-border shadow-sm">
-              <img
+            <div className="relative overflow-hidden rounded-2xl border border-border shadow-sm aspect-video w-full">
+              <Image
                 src={berita.coverImage}
                 alt={berita.title}
-                className="w-full aspect-video object-cover"
+                fill
+                priority
+                sizes="(max-width: 1280px) 100vw, 1200px"
+                className="object-cover"
               />
             </div>
           )}
@@ -121,11 +130,15 @@ export default async function BeritaDetailPage({ params }: PageProps) {
                 )}
                 {block.type === "image" && block.imageSrc && (
                   <figure className="my-6 space-y-2">
-                    <img
-                      src={block.imageSrc}
-                      alt="Konten Berita"
-                      className="rounded-xl w-full max-h-[450px] object-cover border border-border"
-                    />
+                    <div className="relative w-full h-[320px] sm:h-[450px] overflow-hidden rounded-xl border border-border">
+                      <Image
+                        src={block.imageSrc}
+                        alt="Konten Berita"
+                        fill
+                        sizes="(max-width: 1280px) 100vw, 1200px"
+                        className="object-cover"
+                      />
+                    </div>
                     {block.caption && (
                       <figcaption className="text-center text-xs text-muted-foreground">
                         {block.caption}

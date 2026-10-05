@@ -149,7 +149,7 @@ export default function CoreValue() {
     <div
       ref={trackRef}
       data-nav-theme="light"
-      className="relative w-full bg-[#f1f5f9] min-h-[350vh] px-4 sm:px-6 lg:px-8"
+      className="relative w-full bg-[#f1f5f9] min-h-[120vh] px-4 sm:px-6 lg:px-8"
     >
 
       {/* STICKY AREA: tinggi h-screen, header & tumpukan card tetap di viewport

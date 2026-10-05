@@ -1,3 +1,5 @@
+import type {Metadata} from "next";
+import Image from "next/image";
 import { Hero } from "@/components/hero";
 import {
   getPublishedBeritaAction,
@@ -6,6 +8,11 @@ import {
 import { BeritaSearchFilter } from "./berita-search-filter";
 import { PortalLink } from "@/components/portal-transition";
 import { Newspaper, Calendar, ArrowRight, SearchX } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Berita",
+  description: "Kumpulan berita terkini, artikel, dan kabar seputar SMK TI BAZMA.",
+};
 
 interface BeritaPageProps {
   searchParams: Promise<{
@@ -38,16 +45,17 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
     "Teknologi",
   ];
 
-  const hasFilterActive = currentCategory !== "Semua" || searchQuery.trim() !== "";
+  const hasFilterActive =
+    currentCategory !== "Semua" || searchQuery.trim() !== "";
 
   return (
     <main className="min-h-screen">
-      <Hero
-        title="Berita Terkini"
-        backgroundImage="/images/hero-berita.jpg"
-      />
+      <Hero title="Berita Terkini" backgroundImage="/images/hero-berita.webp" />
 
-      <section data-nav-theme="light" className="px-4 py-12 md:py-16 md:px-8 lg:px-16 max-w-7xl mx-auto">
+      <section
+        data-nav-theme="light"
+        className="px-4 py-12 md:py-16 md:px-8 lg:px-16 max-w-7xl mx-auto"
+      >
         {/* Search & Category Filter Header */}
         <BeritaSearchFilter
           categories={activeCategories}
@@ -72,10 +80,12 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
                   {/* Cover Image */}
                   <div className="aspect-video w-full overflow-hidden bg-muted/40 relative">
                     {berita.coverImage ? (
-                      <img
+                      <Image
                         src={berita.coverImage}
                         alt={berita.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
@@ -92,10 +102,12 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3.5 w-3.5 text-primary/70" />
-                        <time dateTime={berita.publishedAt}>{berita.publishedAt}</time>
+                        <time dateTime={berita.publishedAt}>
+                          {berita.publishedAt}
+                        </time>
                       </div>
 
-                      <h3 className="text-xl font-bold text-foreground font-heading line-clamp-2 group-hover:text-primary transition-colors">
+                      <h3 className="text-xl font-bold text-blue- font-heading line-clamp-2 group-hover:text-[#13] transition-colors">
                         {berita.title}
                       </h3>
 
@@ -117,7 +129,7 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
               </article>
             ))
           ) : (
-            <div className="col-span-full text-center py-20 px-4  bg-card/50">
+            <div className="col-span-full text-center py-20 px-4  bg-card">
               {hasFilterActive ? (
                 <div className="max-w-md mx-auto space-y-3">
                   <SearchX className="h-14 w-14 mx-auto text-muted-foreground/50" />
@@ -136,9 +148,12 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
               ) : (
                 <div className="max-w-md mx-auto space-y-3">
                   <Newspaper className="h-14 w-14 mx-auto text-muted-foreground/50" />
-                  <h3 className="text-xl font-bold text-foreground">Belum Ada Berita</h3>
+                  <h3 className="text-xl font-bold text-foreground">
+                    Belum Ada Berita
+                  </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Saat ini belum ada berita yang dipublikasikan. Cek kembali nanti untuk kabar terbaru.
+                    Saat ini belum ada berita yang dipublikasikan. Cek kembali
+                    nanti untuk kabar terbaru.
                   </p>
                 </div>
               )}
@@ -170,4 +185,3 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
     </main>
   );
 }
-

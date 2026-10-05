@@ -75,18 +75,19 @@ export function ProgramHero({
             <p className="font-sans text-sm leading-relaxed text-white/85 md:text-base">
               {description}
             </p>
-            <PortalLink
-              href={ctaHref}
-              label={label || "Profil Jurusan"}
-              className="group mt-5 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-medium text-white backdrop-blur-sm transition-colors duration-300 hover:bg-white hover:text-[#132B6D] md:ml-auto"
-            >
-              {ctaLabel}
-              <ArrowRight
-                size={16}
-                aria-hidden="true"
-                className="transition-transform duration-300 group-hover:translate-x-0.5"
-              />
-            </PortalLink>
+             <PortalLink
+                href={ctaHref}
+                label={ctaLabel}
+                className="group relative mt-5 inline-flex items-center gap-2 font-sans text-[13px] font-semibold uppercase tracking-wider text-white transition-colors duration-300"
+              >
+                <span>{ctaLabel}</span>
+                <ArrowRight
+                  size={16}
+                  aria-hidden="true"
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                />
+                <span className="absolute -bottom-1 left-0 h-px w-0 bg-white transition-all duration-300 group-hover:w-full" />
+              </PortalLink>
           </div>
         </div>
       </div>
