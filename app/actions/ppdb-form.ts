@@ -145,8 +145,28 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
     const nik = asString(formData.get('nik'));
     const nisn = asString(formData.get('nisn'));
     const kewarganegaraan = asString(formData.get('kewarganegaraan')) || 'Indonesia';
-    const anakKeStr = asString(formData.get('anakKe'));
-    const jumlahSaudaraStr = asString(formData.get('jumlahSaudara'));
+    const anakKeRaw = asString(formData.get('anakKe'));
+    const jumlahSaudaraRaw = asString(formData.get('jumlahSaudara'));
+
+    let anakKeVal: number | null = null;
+    let jumlahSaudaraVal: number | null = null;
+
+    if (anakKeRaw) {
+      // Parsing format input "2 / 3", "2/3", "2 dari 3", dsb.
+      const match = anakKeRaw.match(/^(\d+)\s*(?:[/\\-]|dari)\s*(\d+)$/i);
+      if (match) {
+        anakKeVal = parseInt(match[1], 10);
+        jumlahSaudaraVal = parseInt(match[2], 10);
+      } else {
+        const parsed = parseInt(anakKeRaw, 10);
+        anakKeVal = isNaN(parsed) ? null : parsed;
+      }
+    }
+
+    if (!jumlahSaudaraVal && jumlahSaudaraRaw) {
+      const parsed = parseInt(jumlahSaudaraRaw, 10);
+      jumlahSaudaraVal = isNaN(parsed) ? null : parsed;
+    }
     const statusKeluarga = asString(formData.get('statusKeluarga')) || 'ANAK_KANDUNG';
     const tinggalBersama = asString(formData.get('tinggalBersama'));
     const alamatLengkap = asString(formData.get('alamatLengkap'));
@@ -180,8 +200,8 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
         nik,
         nisn,
         kewarganegaraan,
-        anakKe: anakKeStr ? parseInt(anakKeStr, 10) : null,
-        jumlahSaudara: jumlahSaudaraStr ? parseInt(jumlahSaudaraStr, 10) : null,
+        anakKe: anakKeVal,
+        jumlahSaudara: jumlahSaudaraVal,
         statusKeluarga: statusKeluarga as StatusKeluarga,
         tinggalBersama,
         alamatLengkap,
@@ -208,8 +228,8 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
         nik,
         nisn,
         kewarganegaraan,
-        anakKe: anakKeStr ? parseInt(anakKeStr, 10) : null,
-        jumlahSaudara: jumlahSaudaraStr ? parseInt(jumlahSaudaraStr, 10) : null,
+        anakKe: anakKeVal,
+        jumlahSaudara: jumlahSaudaraVal,
         statusKeluarga: statusKeluarga as StatusKeluarga,
         tinggalBersama,
         alamatLengkap,

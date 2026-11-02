@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { StatusPendaftaran } from '@prisma/client';
+import { Peserta } from '@/components/types';
 
 export type ActionResult<T = unknown> = {
   success: boolean;
@@ -10,25 +11,8 @@ export type ActionResult<T = unknown> = {
   error?: string;
 };
 
-export type PesertaAdminData = {
-  id: string;
-  nomorPendaftaran: string;
-  nisn: string;
-  nama: string;
-  email: string;
-  noHp: string;
-  alamat: string;
-  nik: string;
-  sekolahAsal: string;
-  npsnSekolah: string;
-  tanggalDaftar: string;
-  status: "Belum Diverifikasi" | "Sudah Diverifikasi";
+export type PesertaAdminData = Peserta & {
   rawStatus: StatusPendaftaran;
-  fotoFormalUrl?: string | null;
-  namaAyah?: string | null;
-  namaIbu?: string | null;
-  noHpOrangTua?: string | null;
-  berkasCount: number;
 };
 
 export async function getPendaftaranPpdbListAction(): Promise<ActionResult<PesertaAdminData[]>> {
@@ -91,6 +75,65 @@ export async function getPendaftaranPpdbListAction(): Promise<ActionResult<Peser
           namaIbu: item.orangTua?.namaIbu,
           noHpOrangTua: item.orangTua?.noHpOi,
           berkasCount: berkasUploaded,
+
+          // Akun User
+          namaAkun: item.user.name,
+          emailAkun: item.user.email,
+
+          // Biodata Siswa Lengkap
+          tempatLahir: item.biodata?.tempatLahir,
+          tanggalLahir: item.biodata?.tanggalLahir
+            ? item.biodata.tanggalLahir.toISOString().split('T')[0]
+            : null,
+          kewarganegaraan: item.biodata?.kewarganegaraan || 'Indonesia',
+          anakKe: item.biodata?.anakKe,
+          jumlahSaudara: item.biodata?.jumlahSaudara,
+          statusKeluarga: item.biodata?.statusKeluarga,
+          tinggalBersama: item.biodata?.tinggalBersama,
+          mediaSosial: item.biodata?.mediaSosial,
+          bahasaAsing: item.biodata?.bahasaAsing,
+          riwayatPrestasi: item.biodata?.riwayatPrestasi,
+          riwayatOrganisasi: item.biodata?.riwayatOrganisasi,
+          beratBadan: item.biodata?.beratBadan,
+          tinggiBadan: item.biodata?.tinggiBadan,
+          riwayatPenyakit: item.biodata?.riwayatPenyakit,
+          isMerokok: item.biodata?.isMerokok,
+          isButaWarna: item.biodata?.isButaWarna,
+          hasPenyakitMenular: item.biodata?.hasPenyakitMenular,
+          pernyataanSiswa: item.biodata?.pernyataanSiswa,
+
+          // Data Orang Tua Lengkap
+          keadaanOrangTua: item.orangTua?.keadaanOrangTua,
+          pekerjaanAyah: item.orangTua?.pekerjaanAyah,
+          alamatDomisiliAyah: item.orangTua?.alamatDomisiliAyah,
+          pekerjaanIbu: item.orangTua?.pekerjaanIbu,
+          penghasilanOrangTua: item.orangTua?.penghasilanOrangTua,
+          pernyataanOrangTua: item.orangTua?.pernyataanOrangTua,
+
+          // Data Sekolah Asal Lengkap
+          statusSekolah: item.sekolahAsal?.statusSekolah,
+          tahunLulus: item.sekolahAsal?.tahunLulus,
+          alamatSekolah: item.sekolahAsal?.alamatSekolah,
+
+          // Surat Rekomendasi Lengkap
+          namaPemberiRekomendasi: item.rekomendasi?.namaPemberiRekomendasi,
+          jabatanInstansi: item.rekomendasi?.jabatanInstansi,
+          noHpPemberiRekomendasi: item.rekomendasi?.noHpPemberiRekomendasi,
+          catatanRekomendasi: item.rekomendasi?.catatanRekomendasi,
+          suratRekomendasiUrl: item.rekomendasi?.suratRekomendasiUrl,
+
+          // Berkas Lampiran Lengkap
+          kkUrl: item.berkas?.kkUrl,
+          ktpOrangTuaUrl: item.berkas?.ktpOrangTuaUrl,
+          kipUrl: item.berkas?.kipUrl,
+          akteUrl: item.berkas?.akteUrl,
+          ijazahUrl: item.berkas?.ijazahUrl,
+          raporUrl: item.berkas?.raporUrl,
+          prestasiUrl: item.berkas?.prestasiUrl,
+          tampakDepanRumahUrl: item.berkas?.tampakDepanRumahUrl,
+          tampakSampingRumahUrl: item.berkas?.tampakSampingRumahUrl,
+          kamarTidurUrl: item.berkas?.kamarTidurUrl,
+          ruangTamuUrl: item.berkas?.ruangTamuUrl,
         };
       })
     );
