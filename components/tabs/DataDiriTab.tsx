@@ -26,6 +26,10 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
             formatted[k] = v instanceof Date ? v.toISOString().split("T")[0] : v;
           }
         });
+        if (resData.anakKe && resData.jumlahSaudara) {
+          formatted.anakKe = `${resData.anakKe} / ${resData.jumlahSaudara}`;
+          formatted.jumlahSaudara = resData.jumlahSaudara;
+        }
         updateFields("Data Diri", formatted);
       }
       setStatus("Data diri berhasil disimpan.");
@@ -131,10 +135,20 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
               name="anakKe"
               type="text"
               value={formData.anakKe ?? ""}
-              onChange={(e) => updateField("Data Diri", "anakKe", e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                updateField("Data Diri", "anakKe", val);
+                const match = val.match(/^(\d+)\s*(?:[/\\-]|dari)\s*(\d+)$/i);
+                if (match) {
+                  updateField("Data Diri", "jumlahSaudara", match[2]);
+                }
+              }}
               placeholder="Contoh: 2 / 3"
               className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            {formData.jumlahSaudara && (
+              <input type="hidden" name="jumlahSaudara" value={formData.jumlahSaudara} />
+            )}
           </div>
 
           <div>
