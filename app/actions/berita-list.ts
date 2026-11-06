@@ -35,6 +35,7 @@ export async function getBeritaListAction() {
       success: true,
       data: berita.map((b) => ({
         id: b.id,
+        slug: b.slug,
         title: b.title,
         excerpt: b.excerpt || "",
         category: b.category,
