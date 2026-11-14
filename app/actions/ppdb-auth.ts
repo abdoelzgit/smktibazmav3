@@ -98,7 +98,7 @@ export async function loginPpdbAction(formData: FormData): Promise<PpdbAuthResul
       return { success: false, error: 'Konfigurasi autentikasi belum tersedia' };
     }
 
-    revalidatePath('/dashboard-ppdb/dashboard');
+    revalidatePath('/ppdb/dashboard');
     return { success: true };
   } catch (error) {
     console.error('PPDB login error:', error);
@@ -152,7 +152,7 @@ export async function registerPpdbAction(formData: FormData): Promise<PpdbAuthRe
 
     await createPpdbSession(user);
 
-    revalidatePath('/dashboard-ppdb/dashboard');
+    revalidatePath('/ppdb/dashboard');
     return { success: true };
   } catch (error) {
     console.error('PPDB register error:', error);
@@ -165,7 +165,7 @@ export async function logoutPpdbAction(): Promise<PpdbAuthResult> {
     const cookieStore = await cookies();
     cookieStore.delete(COOKIE_NAME);
     cookieStore.delete('admin_session');
-    revalidatePath('/dashboard-ppdb/dashboard');
+    revalidatePath('/ppdb/dashboard');
     return { success: true };
   } catch (error) {
     console.error('PPDB logout error:', error);

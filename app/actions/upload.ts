@@ -4,7 +4,7 @@ import { ActionResult } from "./berita";
 import { saveUploadedImage } from "@/lib/image-utils";
 
 /**
- * Server Action generik untuk mengunggah gambar ke folder `public/uploads/[folder]/`.
+ * Server Action generik untuk mengunggah gambar ke `[UPLOADS_DIR]/[folder]/`.
  * Mendukung pengiriman nama sub-folder (misal: "berita", "fasilitas", "user", "galeri").
  */
 export async function uploadFileAction(

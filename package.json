@@ -16,6 +16,9 @@
     "pm2:restart": "pm2 restart ecosystem.config.js",
     "pm2:logs": "pm2 logs smktibazmav3"
   },
+  "prisma": {
+  "seed": "ts-node --compiler-options={\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
     "@blobatar/react": "^2.7.0",
@@ -50,7 +53,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20",
+    "@types/node": "^20.19.43",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
@@ -60,6 +63,6 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }

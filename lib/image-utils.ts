@@ -1,10 +1,11 @@
 import fs from "fs/promises";
 import path from "path";
 import sharp from "sharp";
+import { getRelativeUploadPath, resolveUploadPath, toUploadUrl } from "@/lib/upload-storage";
 
 export interface SaveImageOptions {
   /**
-   * Sub-folder tujuan di dalam `public/uploads/`.
+   * Sub-folder tujuan di dalam direktori upload.
    * Contoh: `"berita"`, `"fasilitas"`, `"pengumuman"`, `"user"`.
    * Default: `"general"`
    */
@@ -46,7 +47,7 @@ export async function convertBufferToWebP(
 }
 
 /**
- * Utilitas serbaguna untuk menyimpan gambar ke `public/uploads/[folder]/`
+ * Utilitas untuk menyimpan gambar ke `[UPLOADS_DIR]/[folder]/`
  * dengan opsi konversi otomatis ke WebP.
  */
 export async function saveUploadedImage(
@@ -101,16 +102,16 @@ export async function saveUploadedImage(
     .replace(/[^a-z0-9]/g, "-");
   const uniqueFileName = `${Date.now()}-${cleanFileName}${fileExtension}`;
 
-  // Path tujuan penyimpanan di folder public/uploads/[folder]/
-  const uploadDir = path.join(process.cwd(), "public", "uploads", folder);
+  const uploadDir = resolveUploadPath(folder);
 
   // Pastikan folder tujuan ada
   await fs.mkdir(uploadDir, { recursive: true });
 
-  const filePath = path.join(uploadDir, uniqueFileName);
+  const relativePath = path.join(folder, uniqueFileName);
+  const filePath = resolveUploadPath(relativePath);
   await fs.writeFile(filePath, finalBuffer);
 
-  const publicUrl = `/uploads/${folder}/${uniqueFileName}`;
+  const publicUrl = toUploadUrl(relativePath);
 
   return {
     url: publicUrl,
@@ -120,8 +121,8 @@ export async function saveUploadedImage(
 }
 
 /**
- * Menghapus berkas gambar dari direktori `public/` berdasarkan URL publik relatifnya.
- * Contoh URL: `/uploads/berita/1726712345-cover.webp`
+ * Menghapus berkas gambar berdasarkan URL upload relatifnya.
+ * Contoh URL: `/api/uploads/berita/1726712345-cover.webp`
  */
 export async function deleteUploadedFile(
   publicUrl: string | null | undefined,
@@ -130,14 +131,10 @@ export async function deleteUploadedFile(
     return false;
   }
 
-  // Hanya proses URL lokal yang berada di /uploads/
-  if (!publicUrl.startsWith("/uploads/")) {
-    return false;
-  }
-
   try {
-    const cleanUrl = publicUrl.split("?")[0];
-    const absolutePath = path.join(process.cwd(), "public", cleanUrl);
+    const relativePath = getRelativeUploadPath(publicUrl);
+    if (!relativePath) return false;
+    const absolutePath = resolveUploadPath(relativePath);
 
     await fs.unlink(absolutePath);
     return true;

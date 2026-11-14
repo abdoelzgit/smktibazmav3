@@ -9,7 +9,6 @@ export const config = {
   matcher: [
     '/admin/:path*',
     '/login',
-    '/dashboard-ppdb/dashboard/:path*',
-    '/dashboard-ppdb/login',
+    '/ppdb/:path*',
   ],
 };

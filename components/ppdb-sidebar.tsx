@@ -19,14 +19,14 @@ const data = {
   navMain: [
     {
       title: "Beranda",
-      url: "/dashboard-ppdb/dashboard",
+      url: "/ppdb/dashboard",
       icon: (
         <House />
       ),
       isActive: true,
     },{
       title: "Formulir Pendaftaran",
-      url: "/dashboard-ppdb/dashboard/pendaftaran",
+      url: "/ppdb/dashboard/pendaftaran",
       icon: (
         <FolderInput />
       )
@@ -52,7 +52,7 @@ export function PpdbSidebar({ user, ...props }: React.ComponentProps<typeof Side
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<a href="/dashboard-ppdb/dashboard" />}>
+            <SidebarMenuButton size="lg" render={<a href="/ppdb/dashboard" />}>
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
                 <img src="/images/logo.avif" alt="Logo SMK TI BAZMA" className="size-8 object-contain" />
               </div>

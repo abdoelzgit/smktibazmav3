@@ -80,7 +80,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className=" md:block">
-                  <BreadcrumbLink href="./../dashboard-ppdb/dashboard">
+                  <BreadcrumbLink href="/ppdb/dashboard">
                     MENU
                   </BreadcrumbLink>
                 </BreadcrumbItem>

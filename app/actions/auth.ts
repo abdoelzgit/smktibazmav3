@@ -128,7 +128,7 @@ export async function loginAction(
       path: '/',
     });
 
-    const redirectTo = user.role === 'ADMIN' ? '/admin' : '/dashboard-ppdb/dashboard';
+    const redirectTo = user.role === 'ADMIN' ? '/admin' : '/ppdb/dashboard';
     revalidatePath(redirectTo);
     
     return { success: true, role: user.role, redirectTo };
@@ -219,8 +219,8 @@ export async function registerPpdbAction(
       path: '/',
     });
 
-    revalidatePath('/dashboard-ppdb/dashboard');
-    return { success: true, role: 'USER', redirectTo: '/dashboard-ppdb/dashboard' };
+    revalidatePath('/ppdb/dashboard');
+    return { success: true, role: 'USER', redirectTo: '/ppdb/dashboard' };
   } catch (error) {
     console.error('PPDB register error:', error);
     return { success: false, error: 'Terjadi kesalahan pada server' };
@@ -233,7 +233,7 @@ export async function logoutAction() {
   cookieStore.delete('admin_session');
   revalidatePath('/');
   revalidatePath('/admin');
-  revalidatePath('/dashboard-ppdb/dashboard');
+  revalidatePath('/ppdb/dashboard');
   return { success: true };
 }
 

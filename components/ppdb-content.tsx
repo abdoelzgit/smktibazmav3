@@ -165,7 +165,7 @@ function ProgressPendaftaran({ items }: { items: ProgressItem[] }) {
         {items.map((item, i) => (
           <Link
             key={`${item.title}-${i}`}
-            href={`/dashboard-ppdb/dashboard/pendaftaran?tab=${encodeURIComponent(tabByTitle[item.title] ?? "Data Diri")}`}
+            href={`/ppdb/dashboard/pendaftaran?tab=${encodeURIComponent(tabByTitle[item.title] ?? "Data Diri")}`}
               className="group flex min-h-12 flex-col items-start justify-between gap-4 rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:ring-slate-300"
           >
             <div className="flex w-full items-center justify-between">

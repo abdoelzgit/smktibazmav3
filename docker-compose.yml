@@ -5,15 +5,16 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     init: true
-    network_mode: host
+#    network_mode: host
     environment:
-      POSTGRES_USER: nafis_db
-      POSTGRES_PASSWORD: "123"
-      POSTGRES_DB: nafis_smktibazmadb
+      POSTGRES_USER: bedul
+      POSTGRES_PASSWORD: "@B3dul"
+      POSTGRES_DB: smktibazmadb
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nafis_db -d nafis_smktibazmadb"]
+      test: ["CMD-SHELL", "pg_isready -U bedul -d smktibazmadb"]
+#      test: ["CMD-SHELL", "pg_isready -U bedul -d smktibazmadb"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -24,7 +25,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    network_mode: host
+    #network_mode: host
     restart: unless-stopped
     init: true
     env_file:
@@ -34,11 +35,24 @@ services:
       PORT: "30000"
       HOSTNAME: "0.0.0.0"
       NEXT_TELEMETRY_DISABLED: "1"
-      DATABASE_URL: "postgresql://nafis_db:123@127.0.0.1:5432/nafis_smktibazmadb?schema=public"
+      UPLOADS_DIR: /app/uploads
+      DATABASE_URL: "postgresql://bedul:@B3dul@smktibazma-db:5432/smktibazmadb?schema=public"
+     #DATABASE_URL: "postgresql://bedul:B3dul@127.0.0.1:5432/smktibazmadb?schema=public"
       JWT_SECRET: "9f86d081884c7d659a2feaa0c55ad015a13946f"
+    volumes:
+      - ${UPLOADS_HOST_DIR:?Set UPLOADS_HOST_DIR in .env}:/app/uploads
+    ports:
+      - "127.0.0.1:5555:5555"
     depends_on:
       smktibazma-db:
         condition: service_healthy
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    restart: unless-stopped
+    #network_mode: host
 
 volumes:
   postgres_data:

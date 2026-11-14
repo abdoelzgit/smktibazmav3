@@ -44,8 +44,8 @@ const authOptions: NextAuthOptions = {
             data: {
               email: user.email.toLowerCase(),
               name: user.name || user.email.split('@')[0],
-              password: null as any,
-              role: 'USER' as any,
+              password: null,
+              role: 'USER',
             },
           });
         }

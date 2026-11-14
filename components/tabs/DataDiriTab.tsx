@@ -87,7 +87,6 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
               accept="image/*"
               onChange={handlePhotoChange}
               className="hidden"
-              required={!formData.fotoFormalUrl && !photoPreview}
             />
           </label>
         </div>

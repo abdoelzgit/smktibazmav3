@@ -10,6 +10,7 @@ import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/app/actions/auth';
 import { revalidatePath } from 'next/cache';
 import { convertImageToWebp, isAllowedDocument, isImageFile } from '@/lib/image.utils';
+import { getRelativeUploadPath, resolveUploadPath, toUploadUrl } from '@/lib/upload-storage';
 
 const COOKIE_NAME = 'auth_session';
 const LEGACY_COOKIE_NAME = 'admin_session';
@@ -249,7 +250,7 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
+    revalidatePath('/ppdb/dashboard/pendaftaran');
     return { success: true, data: biodata };
   } catch (error) {
     console.error('saveDataDiriAction error:', error);
@@ -304,7 +305,7 @@ export async function saveDataOrangTuaAction(formData: FormData): Promise<FormRe
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
+    revalidatePath('/ppdb/dashboard/pendaftaran');
     return { success: true, data: orangTua };
   } catch (error) {
     console.error('saveDataOrangTuaAction error:', error);
@@ -347,7 +348,7 @@ export async function saveDataSekolahAction(formData: FormData): Promise<FormRes
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
+    revalidatePath('/ppdb/dashboard/pendaftaran');
     return { success: true, data: sekolah };
   } catch (error) {
     console.error('saveDataSekolahAction error:', error);
@@ -404,7 +405,7 @@ export async function saveRekomendasiAction(formData: FormData): Promise<FormRes
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
+    revalidatePath('/ppdb/dashboard/pendaftaran');
     return { success: true, data: rekomendasi };
   } catch (error) {
     console.error('saveRekomendasiAction error:', error);
@@ -469,7 +470,7 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
+    revalidatePath('/ppdb/dashboard/pendaftaran');
     return { success: true, data: berkas };
   } catch (error) {
     console.error('uploadBerkasAction error:', error);
@@ -483,10 +484,10 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
 async function deleteFileSilently(fileUrl: string) {
   try {
     if (!fileUrl || typeof fileUrl !== 'string') return;
-    const cleanUrl = fileUrl.replace(/^\/+/, '');
-    if (!cleanUrl.startsWith('uploads/')) return;
-    
-    const absolutePath = path.join(process.cwd(), 'public', cleanUrl);
+    const relativePath = getRelativeUploadPath(fileUrl);
+    if (!relativePath) return;
+
+    const absolutePath = resolveUploadPath(relativePath);
     await unlink(absolutePath);
   } catch (error) {
     console.warn(`[deleteFileSilently] Tidak dapat menghapus berkas lama di ${fileUrl}:`, error);
@@ -518,8 +519,8 @@ async function saveUploadedFile(
   const image = isImageFile(value);
   const extension = image ? '.webp' : path.extname(value.name).toLowerCase() || '.pdf';
   const fileName = `${fieldName}-${randomUUID()}${extension}`;
-  const relativeDirectory = path.join('uploads', 'ppdb', userId);
-  const absoluteDirectory = path.join(process.cwd(), 'public', relativeDirectory);
+  const relativeDirectory = path.join('ppdb', userId);
+  const absoluteDirectory = resolveUploadPath(relativeDirectory);
 
   await mkdir(absoluteDirectory, { recursive: true });
   const contents = image
@@ -527,7 +528,7 @@ async function saveUploadedFile(
     : Buffer.from(await value.arrayBuffer());
   await writeFile(path.join(absoluteDirectory, fileName), contents);
 
-  const newUrl = `/${relativeDirectory.replaceAll(path.sep, '/')}/${fileName}`;
+  const newUrl = toUploadUrl(path.join(relativeDirectory, fileName));
 
   // Hapus file lama jika ada file baru yang diunggah
   if (existingUrl && existingUrl !== newUrl) {
@@ -573,7 +574,7 @@ export async function submitPendaftaranAction(): Promise<FormResult> {
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/dashboard-ppdb/dashboard/pendaftaran');
+    revalidatePath('/ppdb/dashboard/pendaftaran');
     return { success: true, data: updated };
   } catch (error) {
     console.error('submitPendaftaranAction error:', error);

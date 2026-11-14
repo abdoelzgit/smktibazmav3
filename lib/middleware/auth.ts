@@ -32,8 +32,8 @@ export async function handleAuthMiddleware(request: NextRequest): Promise<NextRe
   const token = request.cookies.get(COOKIE_NAME)?.value;
 
   const isAdminRoute = pathname.startsWith('/admin');
-  const isPpdbDashboardRoute = pathname.startsWith('/dashboard-ppdb/dashboard');
-  const isLegacyPpdbLogin = pathname === '/dashboard-ppdb/login';
+  const isPpdbDashboardRoute = pathname.startsWith('/ppdb/dashboard');
+  const isLegacyPpdbLogin = pathname === '/ppdb/login';
   const isLoginRoute = pathname === '/login';
 
   // Redirect legacy PPDB login to unified login
@@ -68,13 +68,13 @@ export async function handleAuthMiddleware(request: NextRequest): Promise<NextRe
 
     // Authenticated user on login page -> redirect to appropriate dashboard
     if (isLoginRoute) {
-      const dashboardPath = role === 'ADMIN' ? '/admin' : '/dashboard-ppdb/dashboard';
+      const dashboardPath = role === 'ADMIN' ? '/admin' : '/ppdb/dashboard';
       return NextResponse.redirect(new URL(dashboardPath, origin));
     }
 
     // Role guard: USER cannot access admin routes
     if (isAdminRoute && role === 'USER') {
-      return NextResponse.redirect(new URL('/dashboard-ppdb/dashboard', origin));
+      return NextResponse.redirect(new URL('/ppdb/dashboard', origin));
     }
 
     // Valid token + accessing protected route -> allow

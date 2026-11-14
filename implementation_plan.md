@@ -18,7 +18,7 @@ Rencana implementasi komponen **RegisterForm** (`components/register-form.tsx`),
    - Melakukan hash password dengan `bcryptjs`.
    - Menyimpan user baru ke database PostgreSQL dengan **`role: 'USER'`** (Peserta PPDB).
    - Membaca / membuat cookie session autentikasi (`auth_session`).
-   - Mengembalikan `{ success: true, redirectTo: '/dashboard-ppdb/dashboard' }`.
+   - Mengembalikan `{ success: true, redirectTo: '/ppdb/dashboard' }`.
 5. **Auto Redirect:** Pengguna langsung di-redirect ke Dashboard PPDB setelah pendaftaran berhasil.
 
 ---
@@ -58,7 +58,7 @@ As users navigate between pages (e.g., Home → Sekolah → Mitra → Asrama), t
   - Hash password dengan `bcrypt.hash(password, 10)`.
   - Simpan record baru ke tabel `user` dengan `role: 'USER'`.
   - Set cookie `auth_session` (JWT session).
-  - Kembalikan `{ success: true, redirectTo: '/dashboard-ppdb/dashboard' }`.
+  - Kembalikan `{ success: true, redirectTo: '/ppdb/dashboard' }`.
 
 ---
 
@@ -121,10 +121,10 @@ As users navigate between pages (e.g., Home → Sekolah → Mitra → Asrama), t
    - Isi Nama, Email, Password (min. 8 karakter), dan Konfirmasi Password.
    - Klik *"Daftar Akun PPDB"*.
    - Verifikasi user tersimpan di PostgreSQL DB dengan `role: USER`.
-   - Verifikasi pengguna langsung otomatis masuk ke `/dashboard-ppdb/dashboard`.
+   - Verifikasi pengguna langsung otomatis masuk ke `/ppdb/dashboard`.
 3. **Pendaftaran dengan Google:**
    - Di tab Register, klik *"Daftar dengan Google"*.
-   - Verifikasi akun Google baru terbuat di DB dengan `role: USER` dan langsung mengarah ke `/dashboard-ppdb/dashboard`.
+   - Verifikasi akun Google baru terbuat di DB dengan `role: USER` dan langsung mengarah ke `/ppdb/dashboard`.
 =======
 ### Manual Verification
 1. **Navigation Stress Test**: Open DevTools Performance / Memory tab. Navigate sequentially across all pages (`/` → `/sekolah` → `/mitra` → `/asrama` → `/spmb` → `/`...) 10+ times.
