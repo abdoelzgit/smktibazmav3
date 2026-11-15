@@ -5,6 +5,7 @@ import CountdownSection from "./section/countdown";
 import FaqSection from "./section/faq";
 import TimelineSection from "./section/timeline";
 import PreparationSection from "./section/preparation";
+import { DaftarSpmbSection } from "./section/daftar";
 
 export const metadata: Metadata = {
   title: "SPMB",
@@ -28,8 +29,10 @@ export default function SpmbPage() {
                 title="Frequently Asked Questions (FAQ)"
                 subtitle="Pertanyaan seputar proses penerimaan peserta didik"
             />
-            <CountdownSection />
+            {/* <CountdownSection /> */}
 
+
+            <DaftarSpmbSection/>
         </main>
     );
 }
