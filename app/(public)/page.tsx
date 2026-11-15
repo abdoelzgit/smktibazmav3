@@ -2,12 +2,11 @@ import HeroCarousel from "./hero-carousel";
 import { Sambutan, InfoSekilas } from "./summary";
 import { ProgramHero } from "./profil-jurusan";
 import HowWeWork from "./how-we-work";
+import { SpmbSection } from "./spmb";
 
 export default function Home() {
   return (
     <main className="flex flex-col items-center" id="main-content">
-     
-      {/* <Navbar /> */}
       <div id="hero" className="w-full">
         <HeroCarousel />
       </div>
@@ -44,7 +43,9 @@ export default function Home() {
         <HowWeWork />
       </div>
 
-   
+      <div id="spmb" className="w-full">
+        <SpmbSection />
+      </div>
     </main>
   );
 }
