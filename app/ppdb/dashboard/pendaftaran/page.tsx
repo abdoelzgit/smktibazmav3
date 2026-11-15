@@ -38,10 +38,8 @@ async function getInitialFormData() {
           formData[key] = value instanceof Date ? value.toISOString().split('T')[0] : value;
         }
       });
-      if (pendaftaran.biodata.anakKe && pendaftaran.biodata.jumlahSaudara) {
-        formData.anakKe = `${pendaftaran.biodata.anakKe} / ${pendaftaran.biodata.jumlahSaudara}`;
-        formData.jumlahSaudara = pendaftaran.biodata.jumlahSaudara;
-      }
+      formData.anakKe = pendaftaran.biodata.anakKe?.toString() ?? "";
+      formData.jumlahSaudara = pendaftaran.biodata.jumlahSaudara?.toString() ?? "";
     }
 
     if (pendaftaran.orangTua) {

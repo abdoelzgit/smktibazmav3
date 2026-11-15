@@ -20,6 +20,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Hero } from "@/components/hero";
 import { getPublishedJejakKaryaAction } from "@/app/actions/jejak-karya-list";
+import { useToast } from "@/components/toast-provider";
 import { PortalLink } from "@/components/portal-transition";
 
 type CategoryFilter = "Semua" | "Website" | "Design" | "Video" | "IoT";
@@ -69,7 +70,7 @@ export function JejakKaryaClient() {
     useState<CategoryFilter>("Website");
   const [projects, setProjects] = useState<Array<any>>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
   const [modalVideo, setModalVideo] = useState<any | null>(null);
   const categoryScrollRef = useRef<HTMLDivElement>(null);
 
@@ -107,7 +108,6 @@ export function JejakKaryaClient() {
   useEffect(() => {
     const fetchProjects = async () => {
       setIsLoading(true);
-      setError(null);
       try {
         const res = await getPublishedJejakKaryaAction({
           category: selectedCategory === "Semua" ? undefined : selectedCategory,
@@ -115,12 +115,12 @@ export function JejakKaryaClient() {
         if (res.success && res.data) {
           setProjects(res.data);
         } else {
-          setError(res.error || "Gagal memuat data");
+          showToast(res.error || "Gagal memuat data", "error");
           setProjects([]);
         }
       } catch (err) {
         console.error("Error fetching projects:", err);
-        setError("Terjadi kesalahan saat memuat data");
+        showToast("Terjadi kesalahan saat memuat data", "error");
         setProjects([]);
       } finally {
         setIsLoading(false);
@@ -128,7 +128,7 @@ export function JejakKaryaClient() {
     };
 
     fetchProjects();
-  }, [selectedCategory]);
+  }, [selectedCategory, showToast]);
 
   const filteredProjects = projects;
 

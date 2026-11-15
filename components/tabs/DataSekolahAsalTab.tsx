@@ -71,7 +71,9 @@ export default function DataSekolahAsalTab({ action }: { action?: unknown } = {}
           <Input
             id="npsnSekolah"
             name="npsnSekolah"
-            type="text"
+            type="number"
+            min="0"
+            step="1"
             value={formData.npsnSekolah ?? ""}
             onChange={(e) => updateField("Data sekolah Asal", "npsnSekolah", e.target.value)}
             placeholder="Masukkan NPSN Sekolah"
@@ -100,7 +102,8 @@ export default function DataSekolahAsalTab({ action }: { action?: unknown } = {}
           <Input
             id="tahunLulus"
             name="tahunLulus"
-            type="text"
+            type="number"
+            step="1"
             value={formData.tahunLulus ?? ""}
             onChange={(e) => updateField("Data sekolah Asal", "tahunLulus", e.target.value)}
             placeholder="Contoh: 2025"

@@ -20,6 +20,31 @@
   line-height: 1.5;
 }
 
+.toast-viewport {
+  position: fixed;
+  top: calc(32px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  z-index: 999999999;
+  display: flex;
+  width: min(356px, calc(100vw - 32px));
+  flex-direction: column;
+  gap: 10px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.toast-viewport > * {
+  width: 100%;
+  pointer-events: auto;
+}
+
+@media (max-width: 600px) {
+  .toast-viewport {
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    width: calc(100vw - 32px);
+  }
+}
+
 .swipe-toast[data-inline='false'] {
   position: fixed;
   right: var(--st-offset);
@@ -161,6 +186,11 @@
 }
 
 .swipe-toast__desc {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
   color: color-mix(in srgb, var(--st-ink) 66%, transparent);
   font-weight: 400;
   line-height: 1.4;
@@ -181,9 +211,21 @@
     opacity 160ms ease;
 }
 
+.swipe-toast__card:focus-visible {
+  outline: 2px solid var(--st-fuse);
+  outline-offset: -2px;
+}
+
+.swipe-toast__action:focus-visible,
+.swipe-toast__close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 .swipe-toast__action {
-  height: 24px;
-  padding: 0 8px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
   border-radius: 5px;
   background: var(--st-ink);
   color: var(--st-bg);
@@ -205,7 +247,7 @@
 .swipe-toast__close::before {
   content: '';
   position: absolute;
-  inset: -8px;
+  inset: -10px;
 }
 
 .swipe-toast__action:active,

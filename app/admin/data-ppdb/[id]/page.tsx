@@ -16,11 +16,11 @@ import {
   MapPin,
   Phone,
   Mail,
-  AlertCircle,
   Loader2,
 } from "lucide-react";
 import StatusBadge from "@/components/status-badge";
 import { getPendaftaranDetailAction } from "@/app/actions/ppdb-admin";
+import { FormStatusAlert } from "@/components/form-status-alert";
 
 interface DetailPageProps {
   params: Promise<{ id: string }>;
@@ -64,18 +64,17 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
   if (error || !data) {
     return (
       <div className="min-h-screen bg-slate-50 p-6 md:p-8">
-        <div className="max-w-4xl mx-auto rounded-xl border border-red-200 bg-red-50 p-6 text-red-800">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="h-6 w-6 text-red-600 shrink-0" />
-            <div>
-              <h2 className="text-base font-bold">Terjadi Kesalahan</h2>
-              <p className="text-xs mt-1">{error || "Data pendaftaran tidak ditemukan."}</p>
-            </div>
-          </div>
+        <div className="mx-auto max-w-4xl rounded-xl bg-white p-6 shadow-sm">
+          <FormStatusAlert
+            message={error || "Data pendaftaran tidak ditemukan."}
+            type="error"
+            onDismiss={() => undefined}
+          />
+          <h2 className="text-base font-semibold text-slate-900">Detail pendaftaran tidak tersedia</h2>
           <div className="mt-4">
             <Link
               href="/admin/data-ppdb"
-              className="inline-flex items-center gap-2 rounded-lg bg-white border border-red-200 px-4 py-2 text-xs font-semibold text-red-700 shadow-sm hover:bg-red-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
             >
               <ArrowLeft className="h-4 w-4" />
               Kembali ke Daftar PPDB

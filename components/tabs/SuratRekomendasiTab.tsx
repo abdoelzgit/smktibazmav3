@@ -5,13 +5,22 @@ import { saveRekomendasiAction } from "@/app/actions/ppdb-form";
 import { useForm } from "@/components/form-context";
 import { compressUploadImage, formatFileSize } from "@/lib/compress-upload-image";
 import { FormStatusAlert } from "@/components/form-status-alert";
+import { DocumentPreviewDialog } from "@/components/ppdb-document-preview";
+import { Button } from "@/components/ui/button";
+import { Check, Eye, FileText } from "lucide-react";
+import { useId } from "react";
+import { PhoneInput01 } from "@/components/shadcn-studio/phone-input/phone-input-01";
+import { toPhoneInputValue } from "@/lib/phone-input-value";
 
 export default function SuratRekomendasiTab({ action }: { action?: unknown } = {}) {
   const { formData, updateField, updateFields } = useForm();
   const [status, setStatus] = useState<{ message: string; type: "info" | "success" | "error" | "warning" } | null>(null);
   const [recommendationFile, setRecommendationFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<{ file: File | string; title: string } | null>(null);
   const [isPreparingFile, setIsPreparingFile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const uploadInputId = useId();
+  const existingUrl = typeof formData.suratRekomendasiUrl === "string" ? formData.suratRekomendasiUrl : "";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -108,36 +117,86 @@ export default function SuratRekomendasiTab({ action }: { action?: unknown } = {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
+          <label htmlFor="noHpPemberiRekomendasi" className="block text-sm font-bold text-gray-800 mb-1">
             No HP Pemberi Rekomendasi
           </label>
-          <input
+          <PhoneInput01
+            id="noHpPemberiRekomendasi"
             name="noHpPemberiRekomendasi"
-            type="text"
-            value={formData.noHpPemberiRekomendasi ?? ""}
-            onChange={(e) => updateField("Surat Rekomendasi", "noHpPemberiRekomendasi", e.target.value)}
-            placeholder="+62..."
-            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            defaultCountry="ID"
+            international
+            value={toPhoneInputValue(formData.noHpPemberiRekomendasi)}
+            onChange={(value) => updateField("Surat Rekomendasi", "noHpPemberiRekomendasi", value)}
+            placeholder="Masukkan nomor handphone"
+            className="w-full"
+            inputClassName="h-10 rounded-r-lg border-gray-400 px-3 py-2 text-sm text-gray-700 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
+            triggerClassName="h-10 border-gray-400"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            Upload Surat Rekomendasi (PDF/Image)
-          </label>
-          <input
-            name="suratRekomendasiUrl"
-            type="file"
-            accept=".pdf,image/*"
-            disabled={isPreparingFile || isSaving}
-            onChange={(event) => void handleFileChange(event.target.files?.[0])}
-            className="w-full border border-gray-400 rounded-lg px-3 py-1.5 text-sm text-gray-700 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100 cursor-pointer"
-          />
-          {formData.suratRekomendasiUrl && (
-            <a href={formData.suratRekomendasiUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex text-sm font-medium text-[#132b6d] underline underline-offset-2 hover:text-[#0f2257]">
-              Lihat berkas yang tersimpan
-            </a>
-          )}
+        <div className="min-w-0">
+          <article className="flex min-w-0 flex-col rounded-lg border border-gray-200 bg-white p-3.5 transition-colors hover:border-gray-300 sm:p-4">
+            <div className="flex min-w-0 items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <label htmlFor={uploadInputId} className="block text-[13px] font-semibold leading-5 text-gray-900">
+                  Surat Rekomendasi
+                </label>
+                <p className="mt-0.5 text-[11px] text-gray-500">PDF atau gambar</p>
+              </div>
+              {existingUrl && !recommendationFile && (
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-800">
+                  <Check className="size-3" aria-hidden="true" /> Tersimpan
+                </span>
+              )}
+            </div>
+            <div className="relative mt-3">
+              <input
+                id={uploadInputId}
+                name="suratRekomendasiUrl"
+                type="file"
+                accept=".pdf,image/*"
+                disabled={isPreparingFile || isSaving}
+                onChange={(event) => void handleFileChange(event.target.files?.[0])}
+                aria-label="Pilih surat rekomendasi"
+                className="peer absolute inset-0 z-10 h-11 w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+              />
+              {recommendationFile ? (
+                <div className="flex min-h-11 min-w-0 items-center gap-2 rounded-md bg-gray-50 px-2.5 py-2 peer-hover:bg-gray-100 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#132b6d]">
+                  <FileText className="size-4 shrink-0 text-[#132b6d]" aria-hidden="true" />
+                  <span className="min-w-0 flex-1 truncate text-xs font-medium text-gray-800">{recommendationFile.name}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="relative z-20 h-8 shrink-0 px-2"
+                    onClick={() => setPreview({ file: recommendationFile, title: "Surat Rekomendasi" })}
+                  >
+                    <Eye aria-hidden="true" />
+                    Preview
+                  </Button>
+                </div>
+              ) : existingUrl ? (
+                <div className="flex min-h-11 min-w-0 items-center gap-2 rounded-md bg-emerald-50/70 px-2.5 py-2 text-xs text-emerald-900 peer-hover:bg-emerald-50 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#132b6d]">
+                  <FileText className="size-4 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 flex-1 truncate">Berkas tersimpan</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="relative z-20 h-8 shrink-0 px-2 text-emerald-900"
+                    onClick={() => setPreview({ file: existingUrl, title: "Surat Rekomendasi" })}
+                  >
+                    <Eye aria-hidden="true" />
+                    Preview
+                  </Button>
+                </div>
+              ) : (
+                <span className="flex min-h-11 items-center justify-center rounded-md border border-gray-200 bg-gray-50 px-3 text-xs font-medium text-gray-700 transition-colors peer-hover:bg-gray-100 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#132b6d]">
+                  {isPreparingFile ? "Menyiapkan berkas..." : "Pilih dokumen"}
+                </span>
+              )}
+            </div>
+          </article>
         </div>
 
         <div className="md:col-span-2">
@@ -165,6 +224,12 @@ export default function SuratRekomendasiTab({ action }: { action?: unknown } = {
           {isSaving ? "Menyimpan..." : "Simpan Surat Rekomendasi"}
         </button>
       </div>
+      <DocumentPreviewDialog
+        open={Boolean(preview)}
+        file={preview?.file ?? null}
+        title={preview?.title ?? "Surat Rekomendasi"}
+        onOpenChange={(open) => { if (!open) setPreview(null); }}
+      />
     </form>
   );
 }

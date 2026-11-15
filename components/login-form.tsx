@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginAction } from "@/app/actions/auth";
+import { useToast } from "@/components/toast-provider";
 
 export function LoginForm({
   className,
@@ -20,6 +21,7 @@ export function LoginForm({
   const [state, action, isPending] = useActionState(loginAction, {
     success: false,
   });
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (state?.success && state.redirectTo) {
@@ -35,6 +37,12 @@ export function LoginForm({
       ? "Sesi Anda telah berakhir. Silakan login kembali."
       : null);
 
+  useEffect(() => {
+    if (errorMessage) {
+      showToast(errorMessage, "error", { id: "admin-login-error" });
+    }
+  }, [errorMessage, showToast, state]);
+
   return (
     <form
       action={action}
@@ -47,12 +55,6 @@ export function LoginForm({
           Masukkan email dan password Anda untuk masuk
         </p>
       </div>
-
-      {errorMessage && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md border border-red-200">
-          {errorMessage}
-        </div>
-      )}
 
       <div className="grid gap-4">
         <div className="grid gap-2">

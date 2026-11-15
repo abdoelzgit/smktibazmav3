@@ -249,7 +249,6 @@ export default function SwipeToast({
             role={role}
             aria-live={ariaLive}
             aria-atomic="true"
-            tabIndex={0}
             style={{ transform, opacity: fade }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
@@ -292,7 +291,11 @@ export default function SwipeToast({
             ) : null}
             <span className="swipe-toast__body">
               <span className="swipe-toast__title">{title}</span>
-              {description ? <span className="swipe-toast__desc">{description}</span> : null}
+              {description ? (
+                <span className="swipe-toast__desc" title={description}>
+                  {description}
+                </span>
+              ) : null}
             </span>
             {actionLabel ? (
               <button
@@ -307,7 +310,7 @@ export default function SwipeToast({
               </button>
             ) : null}
             {closeButton ? (
-              <button type="button" className="swipe-toast__close" aria-label="Close" onClick={() => close('close')}>
+              <button type="button" className="swipe-toast__close" aria-label="Tutup notifikasi" onClick={() => close('close')}>
                 <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={2.5} />
               </button>
             ) : null}

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { registerPpdbAction } from "@/app/actions/auth";
+import { useToast } from "@/components/toast-provider";
 
 export function RegisterForm({
   className,
@@ -16,6 +17,7 @@ export function RegisterForm({
   const [state, action, isPending] = useActionState(registerPpdbAction, {
     success: false,
   });
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (state?.success && state.redirectTo) {
@@ -24,6 +26,12 @@ export function RegisterForm({
   }, [state?.success, state?.redirectTo]);
 
   const errorMessage = state?.error;
+
+  useEffect(() => {
+    if (errorMessage) {
+      showToast(errorMessage, "error", { id: "ppdb-register-error" });
+    }
+  }, [errorMessage, showToast, state]);
 
   return (
     <form
@@ -37,12 +45,6 @@ export function RegisterForm({
           Buat akun baru untuk mendaftar sebagai peserta PPDB
         </p>
       </div>
-
-      {errorMessage && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md border border-red-200">
-          {errorMessage}
-        </div>
-      )}
 
       <div className="grid gap-4">
         <div className="grid gap-2">

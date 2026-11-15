@@ -25,7 +25,7 @@ import {
   getPendaftaranPpdbListAction,
   deletePendaftaranAction,
 } from "@/app/actions/ppdb-admin";
-import { FormStatusAlert } from "@/components/form-status-alert";
+import { useToast } from "@/components/toast-provider";
 
 const CSV_HEADERS = [
   // 1. Data Registrasi
@@ -346,10 +346,10 @@ function downloadExcelFile(filename: string, rows: string[][]) {
 }
 
 export default function DashboardContent() {
+  const { showToast: notify } = useToast();
   const [pesertaList, setPesertaList] = useState<Peserta[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPending, startTransition] = useTransition();
-  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null);
 
   const loadDataFromDb = async () => {
     setLoading(true);
@@ -372,23 +372,27 @@ export default function DashboardContent() {
   const verifikasiPercentage = totalPeserta > 0 ? Math.round((totalTerverifikasi / totalPeserta) * 100) : 0;
 
   const showToast = (message: string, type: "success" | "error" | "warning" = "success") => {
-    setNotification({ message, type });
+    notify(message, type);
   };
 
   const handleDelete = (peserta: Peserta) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus data pendaftaran ${peserta.nama} dari database?`)) {
-      setPesertaList((prev) => prev.filter((p) => p.id !== peserta.id));
+    showToast(`Hapus data pendaftaran ${peserta.nama}? Tindakan ini tidak dapat dibatalkan.`, "warning", {
+      duration: 0,
+      actionLabel: "Hapus",
+      onAction: async () => {
+        setPesertaList((prev) => prev.filter((p) => p.id !== peserta.id));
 
-      startTransition(async () => {
-        const res = await deletePendaftaranAction(peserta.id);
-        if (res.success) {
-          showToast(`Data peserta ${peserta.nama} berhasil dihapus dari database.`);
-        } else {
-          loadDataFromDb();
-          showToast(res.error || "Gagal menghapus data dari database.", "error");
-        }
-      });
-    }
+        startTransition(async () => {
+          const res = await deletePendaftaranAction(peserta.id);
+          if (res.success) {
+            showToast(`Data peserta ${peserta.nama} berhasil dihapus dari database.`);
+          } else {
+            loadDataFromDb();
+            showToast(res.error || "Gagal menghapus data dari database.", "error");
+          }
+        });
+      },
+    });
   };
 
   // Unduh data tunggal untuk peserta tertentu
@@ -422,13 +426,6 @@ export default function DashboardContent() {
 
   return (
     <div className="min-h-screen space-y-6 bg-slate-50/60 p-4 sm:p-6 md:p-8">
-      {notification && (
-        <FormStatusAlert
-          {...notification}
-          onDismiss={() => setNotification(null)}
-        />
-      )}
-
       {/* Header Section */}
       <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
         <div>

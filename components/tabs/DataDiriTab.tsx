@@ -15,6 +15,9 @@ import { saveDataDiriAction } from "@/app/actions/ppdb-form";
 import { useForm } from "@/components/form-context";
 import { PhotoCropDialog } from "@/components/ppdb-photo-crop-dialog";
 import { calculateAgeInYears, MAX_APPLICANT_AGE } from "@/lib/calculate-age";
+import { FormStatusAlert } from "@/components/form-status-alert";
+import { PhoneInput01 } from "@/components/shadcn-studio/phone-input/phone-input-01";
+import { toPhoneInputValue } from "@/lib/phone-input-value";
 
 export default function DataDiriTab({ action }: { action?: unknown } = {}) {
   void action;
@@ -27,7 +30,7 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
   const [isPreparingPhotoEdit, setIsPreparingPhotoEdit] = useState(false);
   const [isBirthCalendarOpen, setIsBirthCalendarOpen] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<{ message: string; type: "info" | "success" | "error" } | null>(null);
   const [showPhotoActions, setShowPhotoActions] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const displayPhoto = photoPreview || formData.fotoFormalUrl || null;
@@ -43,11 +46,11 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
     e.preventDefault();
     const age = calculateAgeInYears(dateOfBirthValue);
     if (!dateOfBirthValue || age === null) {
-      setStatus("Masukkan tanggal lahir yang valid.");
+      setStatus({ message: "Masukkan tanggal lahir yang valid.", type: "error" });
       return;
     }
     if (age > MAX_APPLICANT_AGE) {
-      setStatus(`Usia maksimal pendaftar adalah ${MAX_APPLICANT_AGE} tahun.`);
+      setStatus({ message: `Usia maksimal pendaftar adalah ${MAX_APPLICANT_AGE} tahun.`, type: "error" });
       return;
     }
 
@@ -56,7 +59,7 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
       return;
     }
 
-    setStatus("Menyimpan...");
+    setStatus({ message: "Menyimpan data diri...", type: "info" });
     const formElement = e.currentTarget;
     const data = new FormData(formElement);
     if (croppedPhoto) data.set("fotoFormalUrl", croppedPhoto);
@@ -71,17 +74,13 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
             formatted[k] = v instanceof Date ? v.toISOString().split("T")[0] : v;
           }
         });
-        if (resData.anakKe && resData.jumlahSaudara) {
-          formatted.anakKe = `${resData.anakKe} / ${resData.jumlahSaudara}`;
-          formatted.jumlahSaudara = resData.jumlahSaudara;
-        }
         updateFields("Data Diri", formatted);
       }
       setCroppedPhoto(null);
       setPhotoError(null);
-      setStatus("Data diri berhasil disimpan.");
+      setStatus({ message: "Data diri berhasil disimpan.", type: "success" });
     } else {
-      setStatus(result.error ?? "Data diri gagal disimpan.");
+      setStatus({ message: result.error ?? "Data diri gagal disimpan.", type: "error" });
     }
   };
 
@@ -196,37 +195,50 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Anak Ke / Jumlah Saudara</label>
-            <Input
-              name="anakKe"
-              type="text"
-              value={formData.anakKe ?? ""}
-              onChange={(e) => {
-                const val = e.target.value;
-                updateField("Data Diri", "anakKe", val);
-                const match = val.match(/^(\d+)\s*(?:[/\\-]|dari)\s*(\d+)$/i);
-                if (match) {
-                  updateField("Data Diri", "jumlahSaudara", match[2]);
-                }
-              }}
-              placeholder="Contoh: 2 / 3"
-              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {formData.jumlahSaudara && (
-              <input type="hidden" name="jumlahSaudara" value={formData.jumlahSaudara} />
-            )}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label htmlFor="anakKe" className="mb-1 block text-sm font-bold text-gray-800">Anak Ke</label>
+              <Input
+                id="anakKe"
+                name="anakKe"
+                type="number"
+                min="1"
+                step="1"
+                value={formData.anakKe ?? ""}
+                onChange={(e) => updateField("Data Diri", "anakKe", e.target.value)}
+                placeholder="Contoh: 2"
+                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="jumlahSaudara" className="mb-1 block text-sm font-bold text-gray-800">Jumlah Saudara</label>
+              <Input
+                id="jumlahSaudara"
+                name="jumlahSaudara"
+                type="number"
+                min="0"
+                step="1"
+                value={formData.jumlahSaudara ?? ""}
+                onChange={(e) => updateField("Data Diri", "jumlahSaudara", e.target.value)}
+                placeholder="Contoh: 3"
+                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">No Hp</label>
-            <Input
+            <label htmlFor="noHpWhatsapp" className="block text-sm font-bold text-gray-800 mb-1">No Hp</label>
+            <PhoneInput01
+              id="noHpWhatsapp"
               name="noHpWhatsapp"
-              type="text"
-              value={formData.noHpWhatsapp ?? ""}
-              onChange={(e) => updateField("Data Diri", "noHpWhatsapp", e.target.value)}
+              defaultCountry="ID"
+              international
+              value={toPhoneInputValue(formData.noHpWhatsapp)}
+              onChange={(value) => updateField("Data Diri", "noHpWhatsapp", value)}
               placeholder="Masukkan nomor handphone"
-              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full"
+              inputClassName="h-10 rounded-r-lg border-gray-400 px-3 py-2 text-sm text-gray-700 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
+              triggerClassName="h-10 border-gray-400"
             />
           </div>
 
@@ -276,7 +288,9 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
             <label className="block text-sm font-bold text-gray-800 mb-1">NIK</label>
             <Input
               name="nik"
-              type="text"
+              type="number"
+              min="0"
+              step="1"
               value={formData.nik ?? ""}
               onChange={(e) => updateField("Data Diri", "nik", e.target.value)}
               placeholder="Masukkan NIK"
@@ -288,7 +302,9 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
             <label className="block text-sm font-bold text-gray-800 mb-1">NISN</label>
             <Input
               name="nisn"
-              type="text"
+              type="number"
+              min="0"
+              step="1"
               value={formData.nisn ?? ""}
               onChange={(e) => updateField("Data Diri", "nisn", e.target.value)}
               placeholder="Masukkan NISN"
@@ -390,7 +406,9 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
             <label className="block text-sm font-bold text-gray-800 mb-1">Berat Badan (KG)</label>
             <Input
               name="beratBadan"
-              type="text"
+              type="number"
+              min="0"
+              step="any"
               value={formData.beratBadan ?? ""}
               onChange={(e) => updateField("Data Diri", "beratBadan", e.target.value)}
               placeholder="Masukkan Berat Badan"
@@ -402,7 +420,9 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
             <label className="block text-sm font-bold text-gray-800 mb-1">Tinggi Badan (CM)</label>
             <Input
               name="tinggiBadan"
-              type="text"
+              type="number"
+              min="0"
+              step="any"
               value={formData.tinggiBadan ?? ""}
               onChange={(e) => updateField("Data Diri", "tinggiBadan", e.target.value)}
               placeholder="Masukkan Tinggi Badan"
@@ -538,13 +558,11 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
               className="hidden"
             />
             
-            {photoError && <p className="mt-2 text-center text-xs text-red-700" role="alert">{photoError}</p>}
           </div>
         </aside>
       </div>
 
       <div className="flex justify-end">
-        {status && <p className="mr-4 self-center text-sm text-gray-600" role="status">{status}</p>}
         <button
           type="submit"
           className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -552,6 +570,8 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
           Simpan Data Diri  
         </button>
       </div>
+      {status && <FormStatusAlert {...status} onDismiss={() => setStatus(null)} />}
+      {photoError && <FormStatusAlert message={photoError} type="error" onDismiss={() => setPhotoError(null)} />}
       <PhotoCropDialog
         key={pendingPhotoUrl ?? "closed"}
         open={isPhotoCropOpen}

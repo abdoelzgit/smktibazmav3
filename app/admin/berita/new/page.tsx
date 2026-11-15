@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/toast-provider";
 import {
   ArrowLeft,
   Type,
@@ -26,7 +27,6 @@ import {
   Save,
   Send,
   FolderOpen,
-  Check,
 } from "lucide-react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -56,6 +56,7 @@ const CATEGORIES = [
 
 export default function CreateBeritaPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [coverSrc, setCoverSrc] = useState<string | null>(null);
@@ -64,7 +65,6 @@ export default function CreateBeritaPage() {
   const [sidebarTab, setSidebarTab] = useState<"blocks" | "settings">("blocks");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [blocks, setBlocks] = useState<Block[]>([
@@ -115,11 +115,11 @@ export default function CreateBeritaPage() {
       if (result.success && result.data?.url) {
         setCoverSrc(result.data.url);
       } else {
-        alert(result.error || "Gagal mengunggah gambar cover");
+        showToast(result.error || "Gagal mengunggah gambar cover", "error");
       }
     } catch (err) {
       console.error("Cover upload error:", err);
-      alert("Terjadi kesalahan saat mengunggah gambar cover");
+      showToast("Terjadi kesalahan saat mengunggah gambar cover", "error");
     } finally {
       setIsUploadingCover(false);
     }
@@ -142,13 +142,12 @@ export default function CreateBeritaPage() {
     setIsSubmitting(false);
 
     if (result.success) {
-      setSaveMessage("Draft berhasil disimpan");
+      showToast("Draft berhasil disimpan", "success");
       setTimeout(() => {
         router.push("/admin/berita");
       }, 1000);
     } else {
-      setSaveMessage(result.error || "Gagal menyimpan");
-      setTimeout(() => setSaveMessage(null), 3000);
+      showToast(result.error || "Gagal menyimpan", "error");
     }
   };
 
@@ -168,13 +167,12 @@ export default function CreateBeritaPage() {
     setIsSubmitting(false);
 
     if (result.success) {
-      setSaveMessage("Berita telah berhasil diterbitkan!");
+      showToast("Berita telah berhasil diterbitkan!", "success");
       setTimeout(() => {
         router.push("/admin/berita");
       }, 1000);
     } else {
-      setSaveMessage(result.error || "Gagal menerbitkan");
-      setTimeout(() => setSaveMessage(null), 3000);
+      showToast(result.error || "Gagal menerbitkan", "error");
     }
   };
 
@@ -209,13 +207,6 @@ export default function CreateBeritaPage() {
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
-          {saveMessage && (
-            <div className="hidden md:flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium px-2.5 py-1 bg-emerald-500/10 rounded-full animate-in fade-in">
-              <Check className="h-3.5 w-3.5" />
-              {saveMessage}
-            </div>
-          )}
-
           <Button
             variant="ghost"
             size="sm"
@@ -600,6 +591,7 @@ function BlockRow({
   onRemove: () => void;
   onMove: (dir: "up" | "down") => void;
 }) {
+  const { showToast } = useToast();
   const imageRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -616,11 +608,11 @@ function BlockRow({
       if (result.success && result.data?.url) {
         onUpdate({ imageSrc: result.data.url });
       } else {
-        alert(result.error || "Gagal mengunggah gambar");
+        showToast(result.error || "Gagal mengunggah gambar", "error");
       }
     } catch (err) {
       console.error("Block image upload error:", err);
-      alert("Terjadi kesalahan saat mengunggah gambar");
+      showToast("Terjadi kesalahan saat mengunggah gambar", "error");
     } finally {
       setIsUploading(false);
     }

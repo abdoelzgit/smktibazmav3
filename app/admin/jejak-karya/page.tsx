@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/toast-provider";
 import {
   Plus,
   Search,
@@ -59,6 +60,7 @@ const CATEGORY_ICONS = {
 };
 
 export default function JejakKaryaAdminPage() {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
   const [list, setList] = useState<JejakKaryaItem[]>([]);
@@ -102,15 +104,20 @@ export default function JejakKaryaAdminPage() {
     return item.category === activeTab;
   });
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus jejak karya ini?")) {
-      const res = await deleteJejakKaryaAction(id);
-      if (res.success) {
-        setList((prev) => prev.filter((b) => b.id !== id));
-      } else {
-        alert(res.error || "Gagal menghapus jejak karya");
-      }
-    }
+  const handleDelete = (id: string) => {
+    showToast("Hapus jejak karya ini? Tindakan ini tidak dapat dibatalkan.", "warning", {
+      duration: 0,
+      actionLabel: "Hapus",
+      onAction: async () => {
+        const res = await deleteJejakKaryaAction(id);
+        if (res.success) {
+          setList((prev) => prev.filter((b) => b.id !== id));
+          showToast("Jejak karya berhasil dihapus.", "success");
+        } else {
+          showToast(res.error || "Gagal menghapus jejak karya", "error");
+        }
+      },
+    });
   };
 
   return (

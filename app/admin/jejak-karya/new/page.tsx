@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/toast-provider";
 import {
   ArrowLeft,
   Upload,
@@ -19,7 +20,6 @@ import {
   Save,
   Send,
   FolderOpen,
-  Check,
   X,
   Plus,
 } from "lucide-react";
@@ -28,6 +28,7 @@ const CATEGORIES = ["Website", "Design", "Video", "IoT"];
   
 export default function CreateJejakKaryaPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   
   // Form state
   const [title, setTitle] = useState("");
@@ -50,7 +51,6 @@ export default function CreateJejakKaryaPage() {
   const [status, setStatus] = useState<"draft" | "published">("draft");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
@@ -74,11 +74,11 @@ export default function CreateJejakKaryaPage() {
       if (result.success && result.data?.url) {
         setDemoUrl(result.data.url);
       } else {
-        alert(result.error || "Gagal mengunggah video");
+        showToast(result.error || "Gagal mengunggah video", "error");
       }
     } catch (err) {
       console.error("Video upload error:", err);
-      alert("Terjadi kesalahan saat mengunggah video");
+      showToast("Terjadi kesalahan saat mengunggah video", "error");
     } finally {
       setIsUploadingVideo(false);
     }
@@ -98,11 +98,11 @@ export default function CreateJejakKaryaPage() {
       if (result.success && result.data?.url) {
         setCoverSrc(result.data.url);
       } else {
-        alert(result.error || "Gagal mengunggah gambar cover");
+        showToast(result.error || "Gagal mengunggah gambar cover", "error");
       }
     } catch (err) {
       console.error("Cover upload error:", err);
-      alert("Terjadi kesalahan saat mengunggah gambar cover");
+      showToast("Terjadi kesalahan saat mengunggah gambar cover", "error");
     } finally {
       setIsUploadingCover(false);
     }
@@ -123,11 +123,13 @@ export default function CreateJejakKaryaPage() {
         const result = await uploadFileAction(formData, "jejak-karya");
         if (result.success && result.data?.url) {
           setGalleryImages((prev) => [...prev, result.data!.url]);
+      } else {
+        showToast(result.error || "Gagal mengunggah galeri", "error");
         }
       }
     } catch (err) {
       console.error("Gallery upload error:", err);
-      alert("Terjadi kesalahan saat mengunggah galeri");
+      showToast("Terjadi kesalahan saat mengunggah galeri", "error");
     } finally {
       setIsUploadingGallery(false);
     }
@@ -168,20 +170,19 @@ export default function CreateJejakKaryaPage() {
     setIsSubmitting(false);
 
     if (result.success) {
-      setSaveMessage("Draft berhasil disimpan");
+      showToast("Draft berhasil disimpan", "success");
       setTimeout(() => {
         router.push("/admin/jejak-karya");
       }, 1000);
     } else {
-      setSaveMessage(result.error || "Gagal menyimpan");
-      setTimeout(() => setSaveMessage(null), 3000);
+      showToast(result.error || "Gagal menyimpan", "error");
     }
   };
 
   const handlePublish = async () => {
     if (isSubmitting) return;
     if (!title.trim() || !author.trim() || !description.trim()) {
-      alert("Judul, penulis, dan deskripsi harus diisi");
+      showToast("Judul, penulis, dan deskripsi harus diisi", "error");
       return;
     }
 
@@ -207,13 +208,12 @@ export default function CreateJejakKaryaPage() {
     setIsSubmitting(false);
 
     if (result.success) {
-      setSaveMessage("Jejak karya berhasil dipublikasikan!");
+      showToast("Jejak karya berhasil dipublikasikan!", "success");
       setTimeout(() => {
         router.push("/admin/jejak-karya");
       }, 1000);
     } else {
-      setSaveMessage(result.error || "Gagal menerbitkan");
-      setTimeout(() => setSaveMessage(null), 3000);
+      showToast(result.error || "Gagal menerbitkan", "error");
     }
   };
 
@@ -243,13 +243,6 @@ export default function CreateJejakKaryaPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {saveMessage && (
-            <div className="hidden md:flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium px-2.5 py-1 bg-emerald-500/10 rounded-full animate-in fade-in">
-              <Check className="h-3.5 w-3.5" />
-              {saveMessage}
-            </div>
-          )}
-
           <Button
             variant="ghost"
             size="sm"
@@ -586,7 +579,8 @@ export default function CreateJejakKaryaPage() {
               <Input
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
-                type="text"
+                type="number"
+                step="1"
                 className="h-8 text-xs"
               />
             </div>

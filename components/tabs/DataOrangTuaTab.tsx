@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveDataOrangTuaAction } from "@/app/actions/ppdb-form";
 import { useForm } from "@/components/form-context";
+import { PhoneInput01 } from "@/components/shadcn-studio/phone-input/phone-input-01";
+import { toPhoneInputValue } from "@/lib/phone-input-value";
 import { FormStatusAlert } from "@/components/form-status-alert";
 
 export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
@@ -82,14 +84,18 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
           />
         </div>
         <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">No HP Orang Tua</label>
-          <Input
+          <label htmlFor="noHpOi" className="block text-sm font-bold text-gray-800 mb-1">No HP Orang Tua</label>
+          <PhoneInput01
+            id="noHpOi"
             name="noHpOi"
-            type="text"
-            value={formData.noHpOi ?? ""}
-            onChange={(e) => updateField("Data orang Tua", "noHpOi", e.target.value)}
-            placeholder="+62..."
-            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            defaultCountry="ID"
+            international
+            value={toPhoneInputValue(formData.noHpOi)}
+            onChange={(value) => updateField("Data orang Tua", "noHpOi", value)}
+            placeholder="Masukkan nomor handphone"
+            className="w-full"
+            inputClassName="h-10 rounded-r-lg border-gray-400 px-3 py-2 text-sm text-gray-700 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
+            triggerClassName="h-10 border-gray-400"
           />
         </div>
 
@@ -113,15 +119,22 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">Penghasilan Ayah/Ibu</label>
-          <Input
+          <label htmlFor="penghasilanOrangTua" className="block text-sm font-bold text-gray-800 mb-1">Penghasilan Ayah/Ibu</label>
+          <Select
             name="penghasilanOrangTua"
-            type="text"
             value={formData.penghasilanOrangTua ?? ""}
-            onChange={(e) => updateField("Data orang Tua", "penghasilanOrangTua", e.target.value)}
-            placeholder="Masukan Penghasilan Orang Tua"
-            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+            onValueChange={(value) => updateField("Data orang Tua", "penghasilanOrangTua", String(value ?? ""))}
+          >
+            <SelectTrigger id="penghasilanOrangTua" className="w-full">
+              <SelectValue placeholder="Pilih rentang penghasilan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Tidak Berpenghasilan">Tidak Berpenghasilan</SelectItem>
+              <SelectItem value="0-1jt">0-1jt</SelectItem>
+              <SelectItem value="1jt-5jt">1jt-5jt</SelectItem>
+              <SelectItem value="5jt-10jt">5jt-10jt</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div>

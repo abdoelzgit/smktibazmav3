@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/toast-provider";
 import {
   Plus,
   Search,
@@ -61,6 +62,7 @@ const TABS = [
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function BeritaAdminPage() {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
   const [beritaList, setBeritaList] = useState<BeritaItem[]>([]);
@@ -93,15 +95,20 @@ export default function BeritaAdminPage() {
     return item.category === activeTab;
   });
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus berita ini?")) {
-      const res = await deleteBeritaAction(id);
-      if (res.success) {
-        setBeritaList((prev) => prev.filter((b) => b.id !== id));
-      } else {
-        alert(res.error || "Gagal menghapus berita");
-      }
-    }
+  const handleDelete = (id: string) => {
+    showToast("Hapus berita ini? Tindakan ini tidak dapat dibatalkan.", "warning", {
+      duration: 0,
+      actionLabel: "Hapus",
+      onAction: async () => {
+        const res = await deleteBeritaAction(id);
+        if (res.success) {
+          setBeritaList((prev) => prev.filter((b) => b.id !== id));
+          showToast("Berita berhasil dihapus.", "success");
+        } else {
+          showToast(res.error || "Gagal menghapus berita", "error");
+        }
+      },
+    });
   };
 
   return (
