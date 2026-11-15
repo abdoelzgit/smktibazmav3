@@ -134,7 +134,7 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
             Pernyataan Orang Tua / Wali Calon Siswa
           </label>
           <p className="text-xs text-gray-500 mb-2">
-            1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang dilampirkan dalam berkas pendaftaran PPDB SMK TI BAZMA TA 2021-2022 adalah benar;
+            1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang dilampirkan dalam berkas pendaftaran PPDB SMK TI BAZMA TA 2027-2028 adalah benar;
           </p>
           <p className="text-xs text-gray-500 mb-2">
             2. Saya mendukung dan memberi izin anak/tanggungan saya dalam mengikuti keseluruhan proses seleksi PPDB SMK TI BAZMA;

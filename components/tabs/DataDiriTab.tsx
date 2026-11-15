@@ -367,7 +367,7 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
 
           <div className="md:col-span-2">
             <label className="block text-sm font-bold text-gray-800 mb-1">Pernyataan Calon Siswa</label>
-            <p className="text-xs text-gray-500 mb-2">1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang saya lampirkan dalam berkas pendaftaran PPDB SMK TI BAZMA TA 2021-2022 adalah benar.</p>
+            <p className="text-xs text-gray-500 mb-2">1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang saya lampirkan dalam berkas pendaftaran PPDB SMK TI BAZMA TA 2027-2028 adalah benar.</p>
             <p className="text-xs text-gray-500 mb-2">2. Apabila diperlukan, saya bersedia memberikan informasi lebih lanjut untuk melengkapi dokumen pendaftaran ini.</p>
             <select
               name="pernyataanSiswa"
