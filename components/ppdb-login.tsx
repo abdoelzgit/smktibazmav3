@@ -7,6 +7,7 @@ import { loginAction, registerPpdbAction } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { FormStatusAlert } from '@/components/form-status-alert';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,15 +25,13 @@ export default function LoginPage() {
   const [regConfirmPassword, setRegConfirmPassword] = useState<string>('');
 
   // State untuk penanganan pesan error & sukses
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [notice, setNotice] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
       // Handler Submit Login
   const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setErrorMessage('');
-    setSuccessMessage('');
+    setNotice(null);
     setIsLoading(true);
 
     const result = await loginAction(new FormData(e.currentTarget));
@@ -42,18 +41,17 @@ export default function LoginPage() {
       router.refresh();
     } else {
       setIsLoading(false);
-      setErrorMessage(result.error ?? 'Login gagal');
+      setNotice({ message: result.error ?? 'Login gagal', type: "error" });
     }
   };
 
   // Handler Submit Register
   const handleRegisterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setErrorMessage('');
-    setSuccessMessage('');
+    setNotice(null);
 
     if (regPassword !== regConfirmPassword) {
-      setErrorMessage('Konfirmasi password tidak cocok!');
+      setNotice({ message: 'Konfirmasi password tidak cocok.', type: "error" });
       return;
     }
 
@@ -67,15 +65,14 @@ export default function LoginPage() {
       router.refresh();
     } else {
       setIsLoading(false);
-      setErrorMessage(result.error ?? 'Pendaftaran gagal');
+      setNotice({ message: result.error ?? 'Pendaftaran gagal', type: "error" });
     }
   };
 
   // Fungsi toggle perpindahan mode
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
-    setErrorMessage('');
-    setSuccessMessage('');
+    setNotice(null);
   };
 
   return (
@@ -107,17 +104,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Pesan Notifikasi Feedback */}
-          {errorMessage && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md border border-red-200">
-              {errorMessage}
-            </div>
-          )}
-          {successMessage && (
-            <div className="p-3 text-sm text-green-600 bg-green-50 rounded-md border border-green-200">
-              {successMessage}
-            </div>
-          )}
+          {notice && <FormStatusAlert {...notice} onDismiss={() => setNotice(null)} />}
 
           {/* FORM LOGIN */}
           {isLogin ? (

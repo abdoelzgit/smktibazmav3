@@ -66,9 +66,11 @@ export const berkasSchema = z.object({
   ijazahUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   raporUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   prestasiUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
+  bpjsUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   tampakDepanRumahUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   tampakSampingRumahUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   kamarTidurUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
+  kamarMandiUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   ruangTamuUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
 });
 

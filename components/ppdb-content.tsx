@@ -208,18 +208,62 @@ function AlurPendaftaran({
   return (
     <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
       {/* Header navy */}
-      <div className="flex items-center justify-between bg-[#0F1E4D] px-6 py-4">
+      <div className="flex flex-col items-start gap-3 bg-[#0F1E4D] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <h2 className="text-base font-semibold text-white">Alur Pendaftaran</h2>
-        <button
-          type="button"
-          className="rounded-full border border-white/30 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-white/10"
-        >
-          Tata Cara Pendaftaran
-        </button>
+        
       </div>
 
-      {/* Stepper */}
-      <div className="px-6 py-8">
+      {/* Mobile timeline */}
+      <div className="px-4 py-5 sm:px-6 lg:hidden">
+        <ol className="space-y-4">
+          {steps.map((step, index) => {
+            const isDone = step.id < currentStep;
+            const isActive = step.id === currentStep;
+            const isLast = index === steps.length - 1;
+            const Icon = step.icon;
+
+            return (
+              <li key={step.id} className="relative flex min-h-12 items-start gap-3">
+                {!isLast && (
+                  <span
+                    aria-hidden="true"
+                    className={`absolute left-5 top-10 -bottom-4 w-px ${
+                      isDone ? "bg-[#0F1E4D]" : "bg-slate-200"
+                    }`}
+                  />
+                )}
+                <span
+                  className={`relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full ${
+                    isActive || isDone
+                      ? "bg-[#0F1E4D] text-white"
+                      : "bg-slate-100 text-slate-400"
+                  } ${isActive ? "ring-4 ring-[#0F1E4D]/10" : ""}`}
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                </span>
+                <div className="min-w-0 flex-1 pt-1.5">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                    Tahap {String(step.id).padStart(2, "0")}
+                  </p>
+                  <p className={`mt-0.5 break-words text-sm ${
+                    isActive ? "font-semibold text-slate-900" : isDone ? "font-medium text-slate-700" : "text-slate-500"
+                  }`}>
+                    {step.label}
+                  </p>
+                </div>
+                {isActive && (
+                  <span className="mt-2 shrink-0 rounded-full bg-[#0F1E4D]/5 px-2 py-1 text-[10px] font-semibold text-[#0F1E4D]">
+                    Saat ini
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      {/* Desktop stepper */}
+      <div className="hidden px-6 py-8 lg:block">
         <ol className="flex items-start justify-between">
           {steps.map((step, index) => {
             const isDone = step.id < currentStep;

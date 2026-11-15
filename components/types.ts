@@ -72,8 +72,10 @@ export interface Peserta {
   ijazahUrl?: string | null;
   raporUrl?: string | null;
   prestasiUrl?: string | null;
+  bpjsUrl?: string | null;
   tampakDepanRumahUrl?: string | null;
   tampakSampingRumahUrl?: string | null;
   kamarTidurUrl?: string | null;
+  kamarMandiUrl?: string | null;
   ruangTamuUrl?: string | null;
 }

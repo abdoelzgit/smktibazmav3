@@ -1,16 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveDataOrangTuaAction } from "@/app/actions/ppdb-form";
 import { useForm } from "@/components/form-context";
+import { FormStatusAlert } from "@/components/form-status-alert";
 
 export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
   const { formData, updateField, updateFields } = useForm();
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<{ message: string; type: "info" | "success" | "error" } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setStatus("Menyimpan...");
+    setStatus({ message: "Menyimpan data orang tua...", type: "info" });
     const formElement = e.currentTarget;
     const data = new FormData(formElement);
 
@@ -19,14 +22,14 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
       if (result.data && typeof result.data === "object") {
         updateFields("Data orang Tua", result.data as Record<string, unknown>);
       }
-      setStatus("Data orang tua berhasil disimpan.");
+      setStatus({ message: "Data orang tua berhasil disimpan.", type: "success" });
     } else {
-      setStatus(result.error ?? "Data orang tua gagal disimpan.");
+      setStatus({ message: result.error ?? "Data orang tua gagal disimpan.", type: "error" });
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="w-full min-w-0 space-y-6">
       <div className="mb-6">
         <span className="bg-[#1e3a8a] text-white px-5 py-2 rounded-lg font-semibold text-base shadow-sm inline-block">
           Data Orang Tua
@@ -36,7 +39,7 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Nama Ayah</label>
-          <input
+          <Input
             name="namaAyah"
             type="text"
             value={formData.namaAyah ?? ""}
@@ -47,7 +50,7 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Pekerjaan Ayah</label>
-          <input
+          <Input
             name="pekerjaanAyah"
             type="text"
             value={formData.pekerjaanAyah ?? ""}
@@ -58,7 +61,7 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Nama Ibu</label>
-          <input
+          <Input
             name="namaIbu"
             type="text"
             value={formData.namaIbu ?? ""}
@@ -69,7 +72,7 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Pekerjaan Ibu</label>
-          <input
+          <Input
             name="pekerjaanIbu"
             type="text"
             value={formData.pekerjaanIbu ?? ""}
@@ -80,7 +83,7 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">No HP Orang Tua</label>
-          <input
+          <Input
             name="noHpOi"
             type="text"
             value={formData.noHpOi ?? ""}
@@ -92,22 +95,26 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
 
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Keadaan Orang Tua</label>
-          <select
+          <Select
             name="keadaanOrangTua"
             value={formData.keadaanOrangTua ?? "LENGKAP"}
-            onChange={(e) => updateField("Data orang Tua", "keadaanOrangTua", e.target.value)}
-            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            onValueChange={(value) => updateField("Data orang Tua", "keadaanOrangTua", String(value ?? ""))}
           >
-            <option value="LENGKAP">Orang Tua Saya Lengkap</option>
-            <option value="YATIM">Saya Yatim</option>
-            <option value="PIATU">Saya Piatu</option>
-            <option value="YATIM_PIATU">Saya Yatim Piatu</option>
-          </select>
+            <SelectTrigger id="keadaanOrangTua">
+              <SelectValue>{formData.keadaanOrangTua === "YATIM" ? "Saya Yatim" : formData.keadaanOrangTua === "PIATU" ? "Saya Piatu" : formData.keadaanOrangTua === "YATIM_PIATU" ? "Saya Yatim Piatu" : "Orang Tua Saya Lengkap"}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="LENGKAP">Orang Tua Saya Lengkap</SelectItem>
+              <SelectItem value="YATIM">Saya Yatim</SelectItem>
+              <SelectItem value="PIATU">Saya Piatu</SelectItem>
+              <SelectItem value="YATIM_PIATU">Saya Yatim Piatu</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Penghasilan Ayah/Ibu</label>
-          <input
+          <Input
             name="penghasilanOrangTua"
             type="text"
             value={formData.penghasilanOrangTua ?? ""}
@@ -119,7 +126,7 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
 
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Alamat Domisili Ayah</label>
-          <input
+          <Input
             name="alamatDomisiliAyah"
             type="text"
             value={formData.alamatDomisiliAyah ?? ""}
@@ -142,20 +149,19 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
           <p className="text-xs text-gray-500 mb-2">
             3. Jika nantinya anak/tanggungan saya dinyatakan lolos seleksi maka saya memberi izin untuknya bertempat tinggal di asrama selama masa pendidikan berlangsung.
           </p>
-          <select
+          <Select
             name="pernyataanOrangTua"
             value={String(Boolean(formData.pernyataanOrangTua))}
-            onChange={(e) => updateField("Data orang Tua", "pernyataanOrangTua", e.target.value === "true")}
-            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            onValueChange={(value) => updateField("Data orang Tua", "pernyataanOrangTua", value === "true")}
           >
-            <option value="true">Ya</option>
-            <option value="false">Tidak</option>
-          </select>
+            <SelectTrigger id="pernyataanOrangTua"><SelectValue>{formData.pernyataanOrangTua ? "Ya" : "Tidak"}</SelectValue></SelectTrigger>
+            <SelectContent><SelectItem value="true">Ya</SelectItem><SelectItem value="false">Tidak</SelectItem></SelectContent>
+          </Select>
         </div>
       </div>
 
       <div className="flex justify-end">
-        {status && <p className="mr-4 self-center text-sm text-gray-600" role="status">{status}</p>}
+        {status && <FormStatusAlert {...status} onDismiss={() => setStatus(null)} />}
         <button
           type="submit"
           className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

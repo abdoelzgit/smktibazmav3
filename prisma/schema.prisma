@@ -173,9 +173,11 @@ model BerkasPendaftaran {
   ijazahUrl             String?
   raporUrl              String?
   prestasiUrl           String?
+  bpjsUrl               String?
   tampakDepanRumahUrl   String?
   tampakSampingRumahUrl String?
   kamarTidurUrl         String?
+  kamarMandiUrl         String?
   ruangTamuUrl          String?
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt

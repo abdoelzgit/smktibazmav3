@@ -130,9 +130,11 @@ export async function getPendaftaranPpdbListAction(): Promise<ActionResult<Peser
           ijazahUrl: item.berkas?.ijazahUrl,
           raporUrl: item.berkas?.raporUrl,
           prestasiUrl: item.berkas?.prestasiUrl,
+          bpjsUrl: item.berkas?.bpjsUrl,
           tampakDepanRumahUrl: item.berkas?.tampakDepanRumahUrl,
           tampakSampingRumahUrl: item.berkas?.tampakSampingRumahUrl,
           kamarTidurUrl: item.berkas?.kamarTidurUrl,
+          kamarMandiUrl: item.berkas?.kamarMandiUrl,
           ruangTamuUrl: item.berkas?.ruangTamuUrl,
         };
       })

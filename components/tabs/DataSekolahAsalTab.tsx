@@ -1,16 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
+import { ExternalLink } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { saveDataSekolahAction } from "@/app/actions/ppdb-form";
 import { useForm } from "@/components/form-context";
+import { FormStatusAlert } from "@/components/form-status-alert";
 
 export default function DataSekolahAsalTab({ action }: { action?: unknown } = {}) {
   const { formData, updateField, updateFields } = useForm();
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<{ message: string; type: "info" | "success" | "error" } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setStatus("Menyimpan...");
+    setStatus({ message: "Menyimpan data sekolah asal...", type: "info" });
     const formElement = e.currentTarget;
     const data = new FormData(formElement);
 
@@ -19,26 +24,27 @@ export default function DataSekolahAsalTab({ action }: { action?: unknown } = {}
       if (result.data && typeof result.data === "object") {
         updateFields("Data sekolah Asal", result.data as Record<string, unknown>);
       }
-      setStatus("Data sekolah berhasil disimpan.");
+      setStatus({ message: "Data sekolah asal berhasil disimpan.", type: "success" });
     } else {
-      setStatus(result.error ?? "Data sekolah gagal disimpan.");
+      setStatus({ message: result.error ?? "Data sekolah gagal disimpan.", type: "error" });
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="w-full min-w-0 space-y-6">
       <div className="mb-6">
         <span className="bg-[#1e3a8a] text-white px-5 py-2 rounded-lg font-semibold text-base shadow-sm inline-block">
           Data Sekolah Asal
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
+          <label htmlFor="namaSekolahAsal" className="mb-1.5 block text-sm font-semibold text-gray-800">
             Nama Sekolah Asal (SMP / MTs)
           </label>
-          <input
+          <Input
+            id="namaSekolahAsal"
             name="namaSekolahAsal"
             type="text"
             value={formData.namaSekolahAsal ?? ""}
@@ -49,19 +55,21 @@ export default function DataSekolahAsalTab({ action }: { action?: unknown } = {}
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
-            NPSN Sekolah
-          </label>
-          <a
-            href="https://referensi.data.kemdikbud.go.id/index11.php"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mb-1 block text-sm text-blue-500 underline"
-          >
-            https://referensi.data.kemdikbud.go.id/index11.php
-          </a>
+          <div className="mb-1.5 flex h-5 items-center justify-between gap-3">
+            <label htmlFor="npsnSekolah" className="block text-sm font-semibold leading-5 text-gray-800">NPSN Sekolah</label>
+            <a
+              href="https://sekolah.data.kemendikdasmen.go.id/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Cari NPSN di situs Data Sekolah"
+              className="inline-flex shrink-0 items-center gap-1 rounded text-xs leading-5 font-medium text-[#132b6d] underline underline-offset-2 hover:text-[#0f2257] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#132b6d]"
+            >
+              Cari NPSN <ExternalLink className="size-3" aria-hidden="true" />
+            </a>
+          </div>
 
-          <input
+          <Input
+            id="npsnSekolah"
             name="npsnSekolah"
             type="text"
             value={formData.npsnSekolah ?? ""}
@@ -72,25 +80,25 @@ export default function DataSekolahAsalTab({ action }: { action?: unknown } = {}
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
+          <label htmlFor="statusSekolah" className="mb-1.5 block text-sm font-semibold text-gray-800">
             Status Sekolah
           </label>
-          <select
+          <Select
             name="statusSekolah"
             value={formData.statusSekolah ?? "NEGERI"}
-            onChange={(e) => updateField("Data sekolah Asal", "statusSekolah", e.target.value)}
-            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            onValueChange={(value) => updateField("Data sekolah Asal", "statusSekolah", String(value ?? ""))}
           >
-            <option value="NEGERI">Negeri</option>
-            <option value="SWASTA">Swasta</option>
-          </select>
+            <SelectTrigger id="statusSekolah"><SelectValue>{formData.statusSekolah === "SWASTA" ? "Swasta" : "Negeri"}</SelectValue></SelectTrigger>
+            <SelectContent><SelectItem value="NEGERI">Negeri</SelectItem><SelectItem value="SWASTA">Swasta</SelectItem></SelectContent>
+          </Select>
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-800 mb-1">
+          <label htmlFor="tahunLulus" className="mb-1.5 block text-sm font-semibold text-gray-800">
             Tahun Lulus
           </label>
-          <input
+          <Input
+            id="tahunLulus"
             name="tahunLulus"
             type="text"
             value={formData.tahunLulus ?? ""}
@@ -101,10 +109,11 @@ export default function DataSekolahAsalTab({ action }: { action?: unknown } = {}
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-bold text-gray-800 mb-1">
+          <label htmlFor="alamatSekolah" className="mb-1.5 block text-sm font-semibold text-gray-800">
             Alamat Lengkap Sekolah Asal
           </label>
-          <textarea
+          <Textarea
+            id="alamatSekolah"
             name="alamatSekolah"
             rows={2}
             value={formData.alamatSekolah ?? ""}
@@ -115,11 +124,11 @@ export default function DataSekolahAsalTab({ action }: { action?: unknown } = {}
         </div>
       </div>
 
-      <div className="flex justify-end">
-        {status && <p className="mr-4 self-center text-sm text-gray-600" role="status">{status}</p>}
+      <div className="flex flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-end">
+        {status && <FormStatusAlert {...status} onDismiss={() => setStatus(null)} />}
         <button
           type="submit"
-          className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#132b6d] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0f2257] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#132b6d] focus-visible:ring-offset-2"
         >
           Simpan Data Sekolah Asal
         </button>

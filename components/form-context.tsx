@@ -94,9 +94,11 @@ const initialFormData: AllFormData = {
   ijazahUrl: '',
   raporUrl: '',
   prestasiUrl: '',
+  bpjsUrl: '',
   tampakDepanRumahUrl: '',
   tampakSampingRumahUrl: '',
   kamarTidurUrl: '',
+  kamarMandiUrl: '',
   ruangTamuUrl: '',
 };
 

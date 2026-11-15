@@ -426,17 +426,52 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
       where: { pendaftaranId: pendaftaran.id },
     });
 
-    const kkUrl = await saveUploadedFile(formData.get('kkUrl'), user.userId, 'kk', existingBerkas?.kkUrl);
-    const ktpOrangTuaUrl = await saveUploadedFile(formData.get('ktpOrangTuaUrl'), user.userId, 'ktp-orang-tua', existingBerkas?.ktpOrangTuaUrl);
-    const kipUrl = await saveUploadedFile(formData.get('kipUrl'), user.userId, 'kip', existingBerkas?.kipUrl);
-    const akteUrl = await saveUploadedFile(formData.get('akteUrl'), user.userId, 'akte', existingBerkas?.akteUrl);
-    const ijazahUrl = await saveUploadedFile(formData.get('ijazahUrl'), user.userId, 'ijazah', existingBerkas?.ijazahUrl);
-    const raporUrl = await saveUploadedFile(formData.get('raporUrl'), user.userId, 'rapor', existingBerkas?.raporUrl);
-    const prestasiUrl = await saveUploadedFile(formData.get('prestasiUrl'), user.userId, 'prestasi', existingBerkas?.prestasiUrl);
-    const tampakDepanRumahUrl = await saveUploadedFile(formData.get('tampakDepanRumahUrl'), user.userId, 'rumah-depan', existingBerkas?.tampakDepanRumahUrl);
-    const tampakSampingRumahUrl = await saveUploadedFile(formData.get('tampakSampingRumahUrl'), user.userId, 'rumah-samping', existingBerkas?.tampakSampingRumahUrl);
-    const kamarTidurUrl = await saveUploadedFile(formData.get('kamarTidurUrl'), user.userId, 'kamar-tidur', existingBerkas?.kamarTidurUrl);
-    const ruangTamuUrl = await saveUploadedFile(formData.get('ruangTamuUrl'), user.userId, 'ruang-tamu', existingBerkas?.ruangTamuUrl);
+    const fields = [
+      { key: 'kkUrl', fieldName: 'kk', existingUrl: existingBerkas?.kkUrl },
+      { key: 'ktpOrangTuaUrl', fieldName: 'ktp-orang-tua', existingUrl: existingBerkas?.ktpOrangTuaUrl },
+      { key: 'kipUrl', fieldName: 'kip', existingUrl: existingBerkas?.kipUrl },
+      { key: 'akteUrl', fieldName: 'akte', existingUrl: existingBerkas?.akteUrl },
+      { key: 'ijazahUrl', fieldName: 'ijazah', existingUrl: existingBerkas?.ijazahUrl },
+      { key: 'raporUrl', fieldName: 'rapor', existingUrl: existingBerkas?.raporUrl },
+      { key: 'prestasiUrl', fieldName: 'prestasi', existingUrl: existingBerkas?.prestasiUrl },
+      { key: 'bpjsUrl', fieldName: 'bpjs', existingUrl: existingBerkas?.bpjsUrl },
+      { key: 'tampakDepanRumahUrl', fieldName: 'rumah-depan', existingUrl: existingBerkas?.tampakDepanRumahUrl },
+      { key: 'tampakSampingRumahUrl', fieldName: 'rumah-samping', existingUrl: existingBerkas?.tampakSampingRumahUrl },
+      { key: 'kamarTidurUrl', fieldName: 'kamar-tidur', existingUrl: existingBerkas?.kamarTidurUrl },
+      { key: 'kamarMandiUrl', fieldName: 'kamar-mandi', existingUrl: existingBerkas?.kamarMandiUrl },
+      { key: 'ruangTamuUrl', fieldName: 'ruang-tamu', existingUrl: existingBerkas?.ruangTamuUrl },
+    ] as const;
+    const savedUrls: Record<string, string | null> = {};
+
+    for (let index = 0; index < fields.length; index += 2) {
+      const batch = fields.slice(index, index + 2);
+      const batchResults = await Promise.all(batch.map(async (field) => ({
+        key: field.key,
+        url: await saveUploadedFile(
+          formData.get(field.key),
+          user.userId,
+          field.fieldName,
+          field.existingUrl,
+        ),
+      })));
+      batchResults.forEach(({ key, url }) => {
+        savedUrls[key] = url;
+      });
+    }
+
+    const kkUrl = savedUrls.kkUrl;
+    const ktpOrangTuaUrl = savedUrls.ktpOrangTuaUrl;
+    const kipUrl = savedUrls.kipUrl;
+    const akteUrl = savedUrls.akteUrl;
+    const ijazahUrl = savedUrls.ijazahUrl;
+    const raporUrl = savedUrls.raporUrl;
+    const prestasiUrl = savedUrls.prestasiUrl;
+    const bpjsUrl = savedUrls.bpjsUrl;
+    const tampakDepanRumahUrl = savedUrls.tampakDepanRumahUrl;
+    const tampakSampingRumahUrl = savedUrls.tampakSampingRumahUrl;
+    const kamarTidurUrl = savedUrls.kamarTidurUrl;
+    const kamarMandiUrl = savedUrls.kamarMandiUrl;
+    const ruangTamuUrl = savedUrls.ruangTamuUrl;
 
     const berkas = await prisma.berkasPendaftaran.upsert({
       where: { pendaftaranId: pendaftaran.id },
@@ -448,9 +483,11 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
         ijazahUrl,
         raporUrl,
         prestasiUrl,
+        bpjsUrl,
         tampakDepanRumahUrl,
         tampakSampingRumahUrl,
         kamarTidurUrl,
+        kamarMandiUrl,
         ruangTamuUrl,
       },
       create: {
@@ -462,9 +499,11 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
         ijazahUrl,
         raporUrl,
         prestasiUrl,
+        bpjsUrl,
         tampakDepanRumahUrl,
         tampakSampingRumahUrl,
         kamarTidurUrl,
+        kamarMandiUrl,
         ruangTamuUrl,
       },
     });
@@ -517,13 +556,14 @@ async function saveUploadedFile(
   }
 
   const image = isImageFile(value);
+  const isWebp = image && (value.type === 'image/webp' || path.extname(value.name).toLowerCase() === '.webp');
   const extension = image ? '.webp' : path.extname(value.name).toLowerCase() || '.pdf';
   const fileName = `${fieldName}-${randomUUID()}${extension}`;
   const relativeDirectory = path.join('ppdb', userId);
   const absoluteDirectory = resolveUploadPath(relativeDirectory);
 
   await mkdir(absoluteDirectory, { recursive: true });
-  const contents = image
+  const contents = image && !isWebp
     ? await convertImageToWebp(value)
     : Buffer.from(await value.arrayBuffer());
   await writeFile(path.join(absoluteDirectory, fileName), contents);

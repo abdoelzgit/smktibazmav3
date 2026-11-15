@@ -25,6 +25,7 @@ import {
   getPendaftaranPpdbListAction,
   deletePendaftaranAction,
 } from "@/app/actions/ppdb-admin";
+import { FormStatusAlert } from "@/components/form-status-alert";
 
 const CSV_HEADERS = [
   // 1. Data Registrasi
@@ -348,7 +349,7 @@ export default function DashboardContent() {
   const [pesertaList, setPesertaList] = useState<Peserta[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPending, startTransition] = useTransition();
-  const [notification, setNotification] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null);
 
   const loadDataFromDb = async () => {
     setLoading(true);
@@ -356,7 +357,7 @@ export default function DashboardContent() {
     if (result.success && result.data) {
       setPesertaList(result.data);
     } else {
-      showToast(result.error || "Gagal memuat data dari database");
+      showToast(result.error || "Gagal memuat data dari database", "error");
     }
     setLoading(false);
   };
@@ -370,9 +371,8 @@ export default function DashboardContent() {
   const totalBelumTerverifikasi = totalPeserta - totalTerverifikasi;
   const verifikasiPercentage = totalPeserta > 0 ? Math.round((totalTerverifikasi / totalPeserta) * 100) : 0;
 
-  const showToast = (message: string) => {
-    setNotification(message);
-    setTimeout(() => setNotification(null), 3500);
+  const showToast = (message: string, type: "success" | "error" | "warning" = "success") => {
+    setNotification({ message, type });
   };
 
   const handleDelete = (peserta: Peserta) => {
@@ -385,7 +385,7 @@ export default function DashboardContent() {
           showToast(`Data peserta ${peserta.nama} berhasil dihapus dari database.`);
         } else {
           loadDataFromDb();
-          showToast(res.error || "Gagal menghapus data dari database.");
+          showToast(res.error || "Gagal menghapus data dari database.", "error");
         }
       });
     }
@@ -404,7 +404,7 @@ export default function DashboardContent() {
   // Export seluruh data peserta dengan 2 opsi format: Excel (.xls) dan CSV (Koma)
   const handleExportAll = (formatType: "csv" | "excel") => {
     if (pesertaList.length === 0) {
-      showToast("Tidak ada data untuk diexport.");
+      showToast("Tidak ada data untuk diexport.", "warning");
       return;
     }
 
@@ -422,12 +422,11 @@ export default function DashboardContent() {
 
   return (
     <div className="min-h-screen space-y-6 bg-slate-50/60 p-4 sm:p-6 md:p-8">
-      {/* Toast Notification */}
       {notification && (
-        <div className="fixed bottom-5 right-5 z-50 rounded-lg bg-slate-900 px-4 py-3 text-xs font-semibold text-white shadow-lg flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-          <span>{notification}</span>
-        </div>
+        <FormStatusAlert
+          {...notification}
+          onDismiss={() => setNotification(null)}
+        />
       )}
 
       {/* Header Section */}

@@ -104,10 +104,12 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
         { label: "Ijazah / SKL", url: berkas.ijazahUrl },
         { label: "Rapor Sekolah", url: berkas.raporUrl },
         { label: "KIP / SKTM", url: berkas.kipUrl },
+        { label: "Kartu BPJS", url: berkas.bpjsUrl },
         { label: "Sertifikat Prestasi", url: berkas.prestasiUrl },
         { label: "Foto Tampak Depan Rumah", url: berkas.tampakDepanRumahUrl },
         { label: "Foto Tampak Samping Rumah", url: berkas.tampakSampingRumahUrl },
         { label: "Foto Kamar Tidur", url: berkas.kamarTidurUrl },
+        { label: "Foto Kamar Mandi", url: berkas.kamarMandiUrl },
         { label: "Foto Ruang Tamu", url: berkas.ruangTamuUrl },
       ]
     : [];
