@@ -372,7 +372,7 @@ export default function DashboardContent() {
   const verifikasiPercentage = totalPeserta > 0 ? Math.round((totalTerverifikasi / totalPeserta) * 100) : 0;
 
   const showToast = (message: string, type: "success" | "error" | "warning" = "success") => {
-    notify(message, type);
+    setNotification({ message, type });
   };
 
   const handleDelete = (peserta: Peserta) => {

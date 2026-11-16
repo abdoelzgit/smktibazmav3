@@ -29,7 +29,7 @@ export default function SwipeToast({
   description = '',
   icon,
   actionLabel = '',
-  onAction = undefined,
+  onAction,
   open = true,
   onClose,
   role = 'status',
