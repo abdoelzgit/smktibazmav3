@@ -7,7 +7,8 @@ import DataOrangTuaTab from "@/components/tabs/DataOrangTuaTab";
 import BerkasTab from "@/components/tabs/BerkasTab";
 import SuratRekomendasiTab from "@/components/tabs/SuratRekomendasiTab";
 import DataSekolahAsalTab from "@/components/tabs/DataSekolahAsalTab";
-import { saveDataDiriAction } from "@/app/actions/ppdb-form";
+import RiwayatTab from "@/components/tabs/RiwayatTab";
+import { saveDataDiriAction, saveRiwayatSiswaAction } from "@/app/actions/ppdb-form";
 import { saveDataOrangTuaAction } from "@/app/actions/ppdb-form";
 import { saveDataSekolahAction } from "@/app/actions/ppdb-form";
 import { saveRekomendasiAction } from "@/app/actions/ppdb-form";
@@ -22,6 +23,7 @@ export default function PendaftaranPpdb() {
     const tab = new URLSearchParams(window.location.search).get("tab");
     const allowedTabs = [
       "Data Diri",
+      "Riwayat",
       "Data orang Tua",
       "Berkas",
       "Surat Rekomendasi",
@@ -35,6 +37,7 @@ export default function PendaftaranPpdb() {
 
   const navTabs = [
     "Data Diri",
+    "Riwayat",
     "Data orang Tua",
     "Berkas",
     "Surat Rekomendasi",
@@ -45,6 +48,8 @@ export default function PendaftaranPpdb() {
     switch (activeTab) {
       case "Data Diri":
         return <DataDiriTab action  ={saveDataDiriAction} />;
+      case "Riwayat":
+        return <RiwayatTab action={saveRiwayatSiswaAction} />;
       case "Data orang Tua":
         return <DataOrangTuaTab action={saveDataOrangTuaAction} />;
       case "Berkas":

@@ -15,6 +15,7 @@ import { saveDataDiriAction } from "@/app/actions/ppdb-form";
 import { useForm } from "@/components/form-context";
 import { PhotoCropDialog } from "@/components/ppdb-photo-crop-dialog";
 import { calculateAgeInYears, MAX_APPLICANT_AGE } from "@/lib/calculate-age";
+import Link from "next/link";
 import { FormStatusAlert } from "@/components/form-status-alert";
 import { PhoneInput01 } from "@/components/shadcn-studio/phone-input/phone-input-01";
 import { toPhoneInputValue } from "@/lib/phone-input-value";
@@ -227,6 +228,22 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
           </div>
 
           <div>
+            <label className="block text-sm font-bold text-gray-800 mb-1">Status Dalam Keluarga</label>
+            <Select
+              name="statusKeluarga"
+              value={formData.statusKeluarga ?? "ANAK_KANDUNG"}
+              onValueChange={(value) => updateField("Data Diri", "statusKeluarga", String(value ?? ""))}
+            >
+              <SelectTrigger id="statusKeluarga"><SelectValue>{formData.statusKeluarga === "ANAK_TIRI" ? "Anak Tiri" : formData.statusKeluarga === "ANAK_ANGKAT" ? "Anak Angkat" : "Anak Kandung"}</SelectValue></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ANAK_KANDUNG">Anak Kandung</SelectItem>
+                <SelectItem value="ANAK_TIRI">Anak Tiri</SelectItem>
+                <SelectItem value="ANAK_ANGKAT">Anak Angkat</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
             <label htmlFor="noHpWhatsapp" className="block text-sm font-bold text-gray-800 mb-1">No Hp</label>
             <PhoneInput01
               id="noHpWhatsapp"
@@ -273,6 +290,18 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
           </Field>
 
           <div>
+            <label className="block text-sm font-bold text-gray-800 mb-1">Saat Ini Tinggal Bersama</label>
+            <Input
+              name="tinggalBersama"
+              type="text"
+              value={formData.tinggalBersama ?? ""}
+              onChange={(e) => updateField("Data Diri", "tinggalBersama", e.target.value)}
+              placeholder="Masukkan Tinggal Bersama"
+              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">Kewarganegaraan</label>
             <Input
               name="kewarganegaraan"
@@ -283,6 +312,8 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
               className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
+
 
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">NIK</label>
@@ -318,89 +349,22 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
               name="alamatLengkap"
               type="text"
               value={formData.alamatLengkap ?? ""}
-              onChange={(e) => updateField("Data Diri", "alamatLengkap", e.target.value)}
+              onChange={(e) => {
+                updateField("Data Diri", "alamatLengkap", e.target.value);
+                if (formData.alamatAyahSamaDenganSiswa) {
+                  updateField("Data orang Tua", "alamatDomisiliAyah", e.target.value);
+                }
+              }}
               placeholder="Masukkan alamat saat ini"
               className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Akun Media Sosial</label>
-            <Input
-              name="mediaSosial"
-              type="text"
-              value={formData.mediaSosial ?? ""}
-              onChange={(e) => updateField("Data Diri", "mediaSosial", e.target.value)}
-              placeholder="Masukkan Akun Media Sosial"
-              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Status Dalam Keluarga</label>
-            <Select
-              name="statusKeluarga"
-              value={formData.statusKeluarga ?? "ANAK_KANDUNG"}
-              onValueChange={(value) => updateField("Data Diri", "statusKeluarga", String(value ?? ""))}
-            >
-              <SelectTrigger id="statusKeluarga"><SelectValue>{formData.statusKeluarga === "ANAK_TIRI" ? "Anak Tiri" : formData.statusKeluarga === "ANAK_ANGKAT" ? "Anak Angkat" : "Anak Kandung"}</SelectValue></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ANAK_KANDUNG">Anak Kandung</SelectItem>
-                <SelectItem value="ANAK_TIRI">Anak Tiri</SelectItem>
-                <SelectItem value="ANAK_ANGKAT">Anak Angkat</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Saat Ini Tinggal Bersama</label>
-            <Input
-              name="tinggalBersama"
-              type="text"
-              value={formData.tinggalBersama ?? ""}
-              onChange={(e) => updateField("Data Diri", "tinggalBersama", e.target.value)}
-              placeholder="Masukkan Tinggal Bersama"
-              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Bahasa Asing</label>
-            <Input
-              name="bahasaAsing"
-              type="text"
-              value={formData.bahasaAsing ?? ""}
-              onChange={(e) => updateField("Data Diri", "bahasaAsing", e.target.value)}
-              placeholder="Masukkan Bahasa Asing Yang Dikuasai"
-              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Riwayat Prestasi</label>
-            <p className="text-xs text-gray-500 mb-2">Contoh: Jenis Prestasi-tingkat-nama prestasi-tahun penyelenggaraan</p>
-            <Input
-              name="riwayatPrestasi"
-              type="text"
-              value={formData.riwayatPrestasi ?? ""}
-              onChange={(e) => updateField("Data Diri", "riwayatPrestasi", e.target.value)}
-              placeholder="Masukan Prestasi"
-              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Riwayat Organisasi</label>
-            <p className="text-xs text-gray-500 mb-2">Contoh: bidang organisasi-tingkat-nama organisasi-tahun kepengurusan</p>
-            <Input
-              name="riwayatOrganisasi"
-              type="text"
-              value={formData.riwayatOrganisasi ?? ""}
-              onChange={(e) => updateField("Data Diri", "riwayatOrganisasi", e.target.value)}
-              placeholder="Masukkan Riwayat Organisasi"
-              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-1">Berat Badan (KG)</label>
@@ -465,7 +429,7 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
               <SelectContent><SelectItem value="false">Tidak</SelectItem><SelectItem value="true">Ya</SelectItem></SelectContent>
             </Select>
           </div>
-           <div>
+          <div>
             <label className="block text-sm font-bold text-gray-800 mb-1"> Memiliki Riwayat Penyakit Menular?</label>
             <Select
               name="hasPenyakitMenular"
@@ -477,9 +441,49 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
             </Select>
           </div>
 
+
+          <div>
+            <label className="block text-sm font-bold text-gray-800 mb-1">Akun Media Sosial</label>
+            <Input
+              name="mediaSosial"
+              type="text"
+              value={formData.mediaSosial ?? ""}
+              onChange={(e) => updateField("Data Diri", "mediaSosial", e.target.value)}
+              placeholder="Masukkan Akun Media Sosial"
+              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <div className="flex justify-between">
+
+              <label className="block text-sm font-bold text-gray-800 mb-1">Link Pengumpulan Video</label>
+              <Link target="_blank" href="https://drive.google.com/file/d/1P9VYozQSnMj7KhnUi0VP3ItBtGb7Cdf6/view?usp=sharing" className="block text-sm font-md text-blue-950 mb-1 underline hover:text-blue-800 ">Panduan</Link>
+            </div>
+            <Input
+              name="linkPengumpulanVideo"
+              type="text"
+              value={formData.linkPengumpulanVideo ?? ""}
+              onChange={(e) => updateField("Data Diri", "linkPengumpulanVideo", e.target.value)}
+              placeholder="Masukkan Link Pengumpulan Video"
+              disabled={!formData.setujuPanduanVideo}
+              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <label className="mt-2 flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+              <input
+                type="checkbox"
+                name="setujuPanduanVideo"
+                checked={Boolean(formData.setujuPanduanVideo)}
+                onChange={(event) => updateField("Data Diri", "setujuPanduanVideo", event.target.checked)}
+                className="size-4 accent-[#132b6d] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#132b6d]"
+              />
+              Saya sudah membaca panduan
+            </label>
+          </div>
+
           <div className="md:col-span-2">
             <label className="block text-sm font-bold text-gray-800 mb-1">Pernyataan Calon Siswa</label>
-            <p className="text-xs text-gray-500 mb-2">1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang saya lampirkan dalam berkas SPMB 2026 adalah benar.</p>
+            <p className="text-xs text-gray-500 mb-2">1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang saya lampirkan dalam berkas SPMB SMK TI BAZMA Tahun Ajaran 2027/2028 adalah benar.</p>
             <p className="text-xs text-gray-500 mb-2">2. Apabila diperlukan, saya bersedia memberikan informasi lebih lanjut untuk melengkapi dokumen pendaftaran ini.</p>
             <Select
               name="pernyataanSiswa"
@@ -491,8 +495,8 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
             </Select>
           </div>
 
-         
-          </div>
+
+        </div>
 
         <aside aria-labelledby="formal-photo-heading" className="order-1 min-w-0 xl:order-2 xl:col-span-4">
           <div className="rounded-lg border border-gray-200 bg-white p-4 sm:p-5">
@@ -557,7 +561,7 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
               onChange={handlePhotoChange}
               className="hidden"
             />
-            
+
           </div>
         </aside>
       </div>
@@ -567,7 +571,7 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
           type="submit"
           className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          Simpan Data Diri  
+          Simpan Data Diri
         </button>
       </div>
       {status && <FormStatusAlert {...status} onDismiss={() => setStatus(null)} />}

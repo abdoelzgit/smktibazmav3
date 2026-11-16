@@ -14,6 +14,8 @@ import type { AllFormData, TabName } from '@/lib/validations/ppdb-form';
 const STORAGE_KEY = 'ppdb_form_draft';
 const TAB_ORDER = [
   'Data Diri',
+  'Riwayat',
+  'Finalisasi',
   'Data orang Tua',
   'Berkas',
   'Surat Rekomendasi',
@@ -27,6 +29,7 @@ interface FormContextType {
   activeTab: TabName;
   isSubmitting: Record<TabName, boolean>;
   tabStatus: Record<TabName, 'idle' | 'saving' | 'saved' | 'error'>;
+  savedTabs: Record<TabName, boolean>;
   
   setActiveTab: (tab: TabName) => void;
   updateField: (tab: TabName, field: string, value: unknown) => void;
@@ -57,6 +60,8 @@ const initialFormData: AllFormData = {
   alamatLengkap: '',
   noHpWhatsapp: '',
   mediaSosial: '',
+  linkPengumpulanVideo: '',
+  setujuPanduanVideo: false,
   bahasaAsing: '',
   riwayatPrestasi: '',
   riwayatOrganisasi: '',
@@ -71,6 +76,7 @@ const initialFormData: AllFormData = {
   namaAyah: '',
   pekerjaanAyah: '',
   alamatDomisiliAyah: '',
+  alamatAyahSamaDenganSiswa: false,
   namaIbu: '',
   pekerjaanIbu: '',
   noHpOi: '',
@@ -95,11 +101,18 @@ const initialFormData: AllFormData = {
   raporUrl: '',
   prestasiUrl: '',
   bpjsUrl: '',
+  sktmUrl: '',
+  suratPernyataanWaliUrl: '',
+  suratPernyataanCpdbUrl: '',
+  suratTidakMerokokUrl: '',
   tampakDepanRumahUrl: '',
   tampakSampingRumahUrl: '',
   kamarTidurUrl: '',
   kamarMandiUrl: '',
   ruangTamuUrl: '',
+  riwayatPrestasiItems: [],
+  riwayatOrganisasiItems: [],
+  riwayatBahasaItems: [],
 };
 
 const FormContext = createContext<FormContextType | null>(null);
@@ -107,16 +120,17 @@ const FormContext = createContext<FormContextType | null>(null);
 interface FormProviderProps {
   children: ReactNode;
   initialData?: AllFormData | null;
+  initialSavedTabs?: Partial<Record<TabName, boolean>>;
 }
 
-export function FormProvider({ children, initialData }: FormProviderProps) {
+export function FormProvider({ children, initialData, initialSavedTabs }: FormProviderProps) {
   const [formData, setFormData] = useState<AllFormData>(() => {
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (parsed.formData) return parsed.formData;
+          if (parsed.formData) return { ...initialFormData, ...parsed.formData };
         }
       } catch (e) {
         console.warn('Failed to load form draft:', e);
@@ -144,6 +158,8 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
   });
   const [isSubmitting, setIsSubmitting] = useState<Record<TabName, boolean>>({
     'Data Diri': false,
+    'Riwayat': false,
+    'Finalisasi': false,
     'Data orang Tua': false,
     'Berkas': false,
     'Surat Rekomendasi': false,
@@ -151,10 +167,21 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
   });
   const [tabStatus, setTabStatus] = useState<Record<TabName, 'idle' | 'saving' | 'saved' | 'error'>>({
     'Data Diri': 'idle',
+    'Riwayat': 'idle',
+    'Finalisasi': 'idle',
     'Data orang Tua': 'idle',
     'Berkas': 'idle',
     'Surat Rekomendasi': 'idle',
     'Data sekolah Asal': 'idle',
+  });
+  const [savedTabs, setSavedTabs] = useState<Record<TabName, boolean>>({
+    'Data Diri': Boolean(initialSavedTabs?.['Data Diri']),
+    'Data orang Tua': Boolean(initialSavedTabs?.['Data orang Tua']),
+    'Berkas': Boolean(initialSavedTabs?.Berkas),
+    'Surat Rekomendasi': Boolean(initialSavedTabs?.['Surat Rekomendasi']),
+    'Data sekolah Asal': Boolean(initialSavedTabs?.['Data sekolah Asal']),
+    'Riwayat': Boolean(initialSavedTabs?.Riwayat),
+    'Finalisasi': false,
   });
   const [hydrated, setHydrated] = useState(false);
 
@@ -163,7 +190,7 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.formData) setFormData(parsed.formData);
+        if (parsed.formData) setFormData({ ...initialFormData, ...parsed.formData });
         if (parsed.activeTab && TAB_ORDER.includes(parsed.activeTab)) {
           setActiveTab(parsed.activeTab);
         }
@@ -205,6 +232,7 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
   }, [formData, activeTab, hydrated, saveToStorage]);
 
   const updateField = useCallback((tab: TabName, field: string, value: unknown) => {
+    setSavedTabs((prev) => ({ ...prev, [tab]: false }));
     setFormData((prev) => {
       const next = { ...prev, [field]: value };
       saveToStorage(next, tab);
@@ -213,6 +241,7 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
   }, [saveToStorage]);
 
   const updateFields = useCallback((tab: TabName, fields: Partial<AllFormData>) => {
+    setSavedTabs((prev) => ({ ...prev, [tab]: true }));
     setFormData((prev) => {
       const next = { ...prev, ...fields };
       saveToStorage(next, tab);
@@ -300,6 +329,7 @@ export function FormProvider({ children, initialData }: FormProviderProps) {
         activeTab,
         isSubmitting,
         tabStatus,
+        savedTabs,
         setActiveTab,
         updateField,
         updateFields,

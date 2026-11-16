@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveDataOrangTuaAction } from "@/app/actions/ppdb-form";
 import { useForm } from "@/components/form-context";
@@ -120,32 +121,44 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
 
         <div>
           <label htmlFor="penghasilanOrangTua" className="block text-sm font-bold text-gray-800 mb-1">Penghasilan Ayah/Ibu</label>
-          <Select
-            name="penghasilanOrangTua"
-            value={formData.penghasilanOrangTua ?? ""}
-            onValueChange={(value) => updateField("Data orang Tua", "penghasilanOrangTua", String(value ?? ""))}
-          >
-            <SelectTrigger id="penghasilanOrangTua" className="w-full">
-              <SelectValue placeholder="Pilih rentang penghasilan" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Tidak Berpenghasilan">Tidak Berpenghasilan</SelectItem>
-              <SelectItem value="0-1jt">0-1jt</SelectItem>
-              <SelectItem value="1jt-5jt">1jt-5jt</SelectItem>
-              <SelectItem value="5jt-10jt">5jt-10jt</SelectItem>
-            </SelectContent>
-          </Select>
+          <InputGroup className="h-10 bg-background">
+            <InputGroupAddon aria-hidden="true">Rp</InputGroupAddon>
+            <InputGroupInput
+              id="penghasilanOrangTua"
+              name="penghasilanOrangTua"
+              min="0"
+              placeholder="Masukkan nominal"
+              step="1000"
+              type="number"
+              value={formData.penghasilanOrangTua ?? ""}
+              onChange={(event) => updateField("Data orang Tua", "penghasilanOrangTua", event.target.value)}
+            />
+          </InputGroup>
         </div>
 
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Alamat Domisili Ayah</label>
+          <label className="mb-2 flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+            <input
+              type="checkbox"
+              checked={Boolean(formData.alamatAyahSamaDenganSiswa)}
+              onChange={(event) => {
+                const checked = event.target.checked;
+                updateField("Data orang Tua", "alamatAyahSamaDenganSiswa", checked);
+                if (checked) updateField("Data orang Tua", "alamatDomisiliAyah", formData.alamatLengkap ?? "");
+              }}
+              className="size-4 accent-[#132b6d] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#132b6d]"
+            />
+            Sama dengan alamat saat ini di Data Diri
+          </label>
           <Input
             name="alamatDomisiliAyah"
             type="text"
             value={formData.alamatDomisiliAyah ?? ""}
             onChange={(e) => updateField("Data orang Tua", "alamatDomisiliAyah", e.target.value)}
             placeholder="Alamat Domisili Ayah"
-            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            readOnly={Boolean(formData.alamatAyahSamaDenganSiswa)}
+            className="w-full disable border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -154,10 +167,10 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
             Pernyataan Orang Tua / Wali Calon Siswa
           </label>
           <p className="text-xs text-gray-500 mb-2">
-            1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang dilampirkan dalam berkas pendaftaran PPDB SMK TI BAZMA TA 2021-2022 adalah benar;
+          1. Seluruh pernyataan data dan informasi beserta seluruh dokumen yang saya lampirkan dalam berkas SPMB SMK TI BAZMA Tahun Ajaran 2027/2028 adalah benar.
           </p>
           <p className="text-xs text-gray-500 mb-2">
-            2. Saya mendukung dan memberi izin anak/tanggungan saya dalam mengikuti keseluruhan proses seleksi PPDB SMK TI BAZMA;
+            2. Saya mendukung dan memberi izin anak/tanggungan saya dalam mengikuti keseluruhan proses seleksi SPMB SMK TI BAZMA.
           </p>
           <p className="text-xs text-gray-500 mb-2">
             3. Jika nantinya anak/tanggungan saya dinyatakan lolos seleksi maka saya memberi izin untuknya bertempat tinggal di asrama selama masa pendidikan berlangsung.

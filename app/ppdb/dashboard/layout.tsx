@@ -3,13 +3,8 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { prisma } from '@/lib/prisma';
 import { PpdbSidebar } from '@/components/ppdb-sidebar';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-} from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
+import { PpdbDashboardBreadcrumb } from "@/components/ppdb-dashboard-breadcrumb"
 import {
   SidebarInset,
   SidebarProvider,
@@ -77,15 +72,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               orientation="vertical"
               className="mr-2 data-vertical:h-4 data-vertical:self-auto"
             />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className=" md:block">
-                  <BreadcrumbLink href="/ppdb/dashboard">
-                    MENU
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+            <PpdbDashboardBreadcrumb />
           </div>
         </header>
         <div className="flex min-w-0 w-full flex-1 flex-col gap-4 p-4 pt-0">

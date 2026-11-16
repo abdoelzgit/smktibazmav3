@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Check, Eye, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,13 +13,24 @@ import { FormStatusAlert } from "@/components/form-status-alert";
 const documentFields = [
   ["kkUrl", "Kartu Keluarga (KK)"],
   ["ktpOrangTuaUrl", "KTP Orang Tua / Wali"],
-  ["kipUrl", "KIP/KIS/KPS/PHK/SKTM"],
+  ["kipUrl", "KIP/KIS/KPS/PHK"],
   ["akteUrl", "Akta Kelahiran / Surat Keterangan Lahir"],
   ["ijazahUrl", "Ijazah / SKL"],
   ["raporUrl", "Rapor Semester 3–6"],
   ["prestasiUrl", "Piagam Prestasi (jika ada)"],
   ["bpjsUrl", "Kartu BPJS"],
+  ["sktmUrl", "Surat Keterangan Tidak Mampu (SKTM)"],
+  ["suratPernyataanWaliUrl", "Surat Pernyataan Wali"],
+  ["suratPernyataanCpdbUrl", "Surat Pernyataan CPDB"],
+  ["suratTidakMerokokUrl", "Surat Pernyataan Tidak Merokok"],
 ] as const;
+
+const documentTemplateLinks: Record<string, string> = {
+  sktmUrl: "https://drive.google.com/file/d/1YSb-ZQtKtEE6h6NoKxDJI2b5x4tk5Guy/view?usp=sharing",
+  suratPernyataanWaliUrl: "https://drive.google.com/file/d/1aa3HOOsNoJCtpQjK9nn7cmppETE3YgZR/view?usp=sharing",
+  suratPernyataanCpdbUrl: "https://drive.google.com/file/d/14ERi2f9a3E6hLrv3V12MS0eM1Tl2KJpv/view?usp=sharing",
+  suratTidakMerokokUrl: "https://drive.google.com/file/d/1Is7cUnbV7SjEIOlvfTaGAJFpGK1Pyghl/view?usp=sharing",
+};
 
 const homePhotoFields = [
   ["tampakDepanRumahUrl", "Tampak Depan Rumah"],
@@ -67,7 +79,14 @@ export default function BerkasTab({ action }: { action?: unknown } = {}) {
         <div className="flex min-w-0 items-start gap-2">
           <div className="min-w-0 flex-1">
             <label htmlFor={inputId} className="block text-[13px] font-semibold leading-5 text-gray-900">{label}</label>
-            <p className="mt-0.5 text-[11px] text-gray-500">PDF atau gambar</p>
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-gray-500">
+              <span>PDF atau gambar</span>
+              {documentTemplateLinks[key] && (
+                <Link href={documentTemplateLinks[key]} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-800 underline underline-offset-2 hover:text-blue-950">
+                  Unduh template
+                </Link>
+              )}
+            </div>
           </div>
           {existingUrl && !selectedFile && (
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-800">

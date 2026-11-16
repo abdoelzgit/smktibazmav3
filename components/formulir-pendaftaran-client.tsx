@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useSyncExternalStore } from "react";
-import { FileText, Files, School, UserRound, UsersRound } from "lucide-react";
+import { FileText, Files, School, Trophy, UserRound, UsersRound, BadgeCheck } from "lucide-react";
 import { FormProvider } from "@/components/form-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DataDiriTab from "@/components/tabs/DataDiriTab";
@@ -9,26 +9,33 @@ import DataOrangTuaTab from "@/components/tabs/DataOrangTuaTab";
 import BerkasTab from "@/components/tabs/BerkasTab";
 import SuratRekomendasiTab from "@/components/tabs/SuratRekomendasiTab";
 import DataSekolahAsalTab from "@/components/tabs/DataSekolahAsalTab";
-import { saveDataDiriAction, saveDataOrangTuaAction, saveDataSekolahAction, saveRekomendasiAction } from "@/app/actions/ppdb-form";
+import RiwayatTab from "@/components/tabs/RiwayatTab";
+import FinalisasiTab from "@/components/tabs/FinalisasiTab";
+import { saveDataDiriAction, saveDataOrangTuaAction, saveDataSekolahAction, saveRekomendasiAction, saveRiwayatSiswaAction, submitPendaftaranAction } from "@/app/actions/ppdb-form";
 import type { AllFormData, TabName } from "@/lib/validations/ppdb-form";
 
 interface PendaftaranPpdbClientProps {
   initialData: AllFormData | null;
+  isFinalized: boolean;
+  savedTabs: Partial<Record<TabName, boolean>>;
 }
 
 const steps: { id: TabName; title: string; description: string; icon: typeof UserRound }[] = [
   { id: "Data Diri", title: "Data Diri", description: "Identitas dan informasi pribadi", icon: UserRound },
+  { id: "Riwayat", title: "Riwayat", description: "Prestasi, organisasi, dan bahasa", icon: Trophy },
   { id: "Data orang Tua", title: "Data Orang Tua", description: "Informasi orang tua atau wali", icon: UsersRound },
   { id: "Data sekolah Asal", title: "Sekolah Asal", description: "Informasi pendidikan sebelumnya", icon: School },
   { id: "Berkas", title: "Dokumen", description: "Berkas pendukung pendaftaran", icon: Files },
   { id: "Surat Rekomendasi", title: "Surat Rekomendasi", description: "Informasi pemberi rekomendasi", icon: FileText },
+  { id: "Finalisasi", title: "Finalisasi", description: "Periksa dan kunci formulir", icon: BadgeCheck },
 ];
 
 const subscribeToHydration = () => () => {};
 const getHydrationSnapshot = () => true;
 const getServerHydrationSnapshot = () => false;
 
-export function PendaftaranPpdbClient({ initialData }: PendaftaranPpdbClientProps) {
+export function PendaftaranPpdbClient({ initialData, isFinalized, savedTabs }: PendaftaranPpdbClientProps) {
+  const [isLocked, setIsLocked] = useState(isFinalized);
   const [activeTab, setActiveTab] = useState<TabName>(() => {
     if (typeof window === "undefined") return "Data Diri";
     const tab = new URLSearchParams(window.location.search).get("tab");
@@ -42,6 +49,10 @@ export function PendaftaranPpdbClient({ initialData }: PendaftaranPpdbClientProp
     switch (activeTab) {
       case "Data Diri":
         return <DataDiriTab action={saveDataDiriAction} />;
+      case "Riwayat":
+        return <RiwayatTab action={saveRiwayatSiswaAction} />;
+      case "Finalisasi":
+        return <FinalisasiTab isFinalized={isLocked} onFinalized={() => setIsLocked(true)} action={submitPendaftaranAction} />;
       case "Data orang Tua":
         return <DataOrangTuaTab action={saveDataOrangTuaAction} />;
       case "Berkas":
@@ -69,7 +80,7 @@ export function PendaftaranPpdbClient({ initialData }: PendaftaranPpdbClientProp
   }
 
   return (
-    <FormProvider initialData={initialData}>
+    <FormProvider initialData={initialData} initialSavedTabs={savedTabs}>
       <div className="ppdb-form-layout flex min-h-[calc(100dvh-8rem)]  flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white">
         <nav aria-label="Langkah formulir pendaftaran" className="border-b border-gray-200 bg-white px-3 sm:px-5 lg:px-7">
           <div className="py-3 md:hidden">
@@ -135,7 +146,7 @@ export function PendaftaranPpdbClient({ initialData }: PendaftaranPpdbClientProp
 
           <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
             
-            {renderTabContent()}
+            <fieldset disabled={isLocked} className="contents">{renderTabContent()}</fieldset>
           </div>
         </section>
       </div>

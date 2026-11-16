@@ -20,10 +20,12 @@ import React from "react";
  * Contoh: "jejak-karya" -> "Jejak Karya", "alumni-sekolah" -> "Alumni Sekolah"
  */
 const CUSTOM_OVERRIDE_LABELS: Record<string, string> = {
-  admin: "Admin",
+  admin: "Dashboard",
   berita: "Kelola Berita",
   new: "Buat Berita Baru",
   edit: "Edit Berita",
+  "data-ppdb": "Data PPDB",
+  "jejak-karya": "Jejak Karya",
 };
 
 /**
@@ -45,13 +47,6 @@ export function AdminHeader() {
   const getBreadcrumbs = () => {
     const parts = pathname.split("/").filter(Boolean);
 
-    if (parts.length === 1 && parts[0] === "admin") {
-      return [
-        { label: "Admin", href: "/admin" },
-        { label: "Dashboard", href: "/admin" },
-      ];
-    }
-
     const items: { label: string; href: string }[] = [];
     let accumulatedPath = "";
 
@@ -65,7 +60,14 @@ export function AdminHeader() {
         /^[0-9a-f-]{10,}$/i.test(part) ||
         /^\d+$/.test(part);
 
-      if (isId) continue;
+      if (isId) {
+        if (i === parts.length - 1) {
+          const parent = parts[i - 1];
+          const label = parent === "data-ppdb" ? "Detail Pendaftar" : "Detail";
+          items.push({ label, href: accumulatedPath });
+        }
+        continue;
+      }
 
       const label = autoFormatSegment(part);
 

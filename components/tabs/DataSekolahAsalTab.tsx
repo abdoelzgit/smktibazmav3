@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { saveDataSekolahAction } from "@/app/actions/ppdb-form";
 import { useForm } from "@/components/form-context";
 import { FormStatusAlert } from "@/components/form-status-alert";
+import Link from "next/link";
 
 export default function DataSekolahAsalTab({ action }: { action?: unknown } = {}) {
   const { formData, updateField, updateFields } = useForm();
@@ -57,15 +58,15 @@ export default function DataSekolahAsalTab({ action }: { action?: unknown } = {}
         <div>
           <div className="mb-1.5 flex h-5 items-center justify-between gap-3">
             <label htmlFor="npsnSekolah" className="block text-sm font-semibold leading-5 text-gray-800">NPSN Sekolah</label>
-            <a
-              href="https://sekolah.data.kemendikdasmen.go.id/"
+            <Link
+              href="https://sekolLinkh.data.kemendikdasmen.go.id/sekolah"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Cari NPSN di situs Data Sekolah"
               className="inline-flex shrink-0 items-center gap-1 rounded text-xs leading-5 font-medium text-[#132b6d] underline underline-offset-2 hover:text-[#0f2257] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#132b6d]"
             >
               Cari NPSN <ExternalLink className="size-3" aria-hidden="true" />
-            </a>
+            </Link>
           </div>
 
           <Input

@@ -75,6 +75,7 @@ model Pendaftaran {
   sekolahAsal      DataSekolahAsal?
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   rekomendasi      SuratRekomendasi?
+  riwayat          RiwayatPendaftar?
 
   @@map("pendaftaran_ppdb")
 }
@@ -96,6 +97,8 @@ model BiodataSiswa {
   alamatLengkap      String?
   noHpWhatsapp       String?
   mediaSosial        String?
+  linkPengumpulanVideo String?
+  setujuPanduanVideo Boolean? @default(false)
   bahasaAsing        String?
   riwayatPrestasi    String?
   riwayatOrganisasi  String?
@@ -174,6 +177,10 @@ model BerkasPendaftaran {
   raporUrl              String?
   prestasiUrl           String?
   bpjsUrl               String?
+  sktmUrl               String?
+  suratPernyataanWaliUrl String?
+  suratPernyataanCpdbUrl String?
+  suratTidakMerokokUrl  String?
   tampakDepanRumahUrl   String?
   tampakSampingRumahUrl String?
   kamarTidurUrl         String?
@@ -184,6 +191,19 @@ model BerkasPendaftaran {
   pendaftaran           Pendaftaran @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
 
   @@map("berkas_pendaftaran")
+}
+
+model RiwayatPendaftar {
+  id             String      @id @default(cuid())
+  pendaftaranId  String      @unique
+  prestasiData   Json?       @db.JsonB
+  organisasiData Json?       @db.JsonB
+  bahasaData     Json?       @db.JsonB
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  pendaftaran   Pendaftaran @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+
+  @@map("riwayat_pendaftar")
 }
 
 enum Role {

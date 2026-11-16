@@ -37,6 +37,8 @@ export interface Siswa {
 
 export interface ProgressItem {
   title: string;
+  tab: string;
+  saved: boolean;
   verified: boolean;
 }
 
@@ -61,11 +63,13 @@ const STEPS: Step[] = [
 ];
 
 const PROGRESS_CARDS: ProgressItem[] = [
-  { title: "Biodata Diri", verified: true },
-  { title: "Data Orang Tua", verified: true },
-  { title: "Unggah Berkas", verified: false },
-  { title: "Surat Rekomendasi", verified: false },
-  { title: "Asal Sekolah", verified: true },
+  { title: "Data Diri", tab: "Data Diri", saved: false, verified: false },
+  { title: "Riwayat", tab: "Riwayat", saved: false, verified: false },
+  { title: "Data Orang Tua", tab: "Data orang Tua", saved: false, verified: false },
+  { title: "Sekolah Asal", tab: "Data sekolah Asal", saved: false, verified: false },
+  { title: "Dokumen", tab: "Berkas", saved: false, verified: false },
+  { title: "Surat Rekomendasi", tab: "Surat Rekomendasi", saved: false, verified: false },
+  { title: "Finalisasi", tab: "Finalisasi", saved: false, verified: false },
 ];
 
 /**
@@ -148,25 +152,15 @@ function Field({
  * ------------------------------------------------------------------
  */
 function ProgressPendaftaran({ items }: { items: ProgressItem[] }) {
-  const tabByTitle: Record<string, string> = {
-    "Biodata Diri": "Data Diri",
-    "Data Orang Tua": "Data orang Tua",
-    "Unggah Berkas": "Berkas",
-    "Surat Rekomendasi": "Surat Rekomendasi",
-    "Asal Sekolah": "Data sekolah Asal",
-  };
-
   return (
     <section>
-      <h2 className="mb-4 text-lg font-semibold text-slate-900">
-        Progress Pendaftaran
-      </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <h2 className="mb-4 text-lg font-semibold text-slate-900">Progress Pendaftaran</h2>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {items.map((item, i) => (
           <Link
             key={`${item.title}-${i}`}
-            href={`/ppdb/dashboard/pendaftaran?tab=${encodeURIComponent(tabByTitle[item.title] ?? "Data Diri")}`}
-              className="group flex min-h-12 flex-col items-start justify-between gap-4 rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:ring-slate-300"
+            href={`/ppdb/dashboard/pendaftaran?tab=${encodeURIComponent(item.tab)}`}
+            className="group flex min-h-32 flex-col items-start justify-between gap-4 rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-100 transition hover:ring-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#132b6d]"
           >
             <div className="flex w-full items-center justify-between">
               <span className="text-sm font-semibold text-slate-900">
@@ -178,12 +172,12 @@ function ProgressPendaftaran({ items }: { items: ProgressItem[] }) {
             {item.verified ? (
               <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                Sudah diverifikasi
+                Tersimpan &amp; lengkap
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-500">
-                <XCircle className="h-3.5 w-3.5" />
-                Belum diverifikasi
+              <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${item.saved ? "text-amber-700" : "text-rose-500"}`}>
+                {item.saved ? <XCircle className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                {item.saved ? "Belum lengkap" : "Belum disimpan"}
               </span>
             )}
           </Link>

@@ -11,6 +11,7 @@ import { verifyToken } from '@/app/actions/auth';
 import { revalidatePath } from 'next/cache';
 import { convertImageToWebp, isAllowedDocument, isImageFile } from '@/lib/image.utils';
 import { getRelativeUploadPath, resolveUploadPath, toUploadUrl } from '@/lib/upload-storage';
+import { riwayatSiswaSchema } from '@/lib/validations/ppdb-form';
 
 const COOKIE_NAME = 'auth_session';
 const LEGACY_COOKIE_NAME = 'admin_session';
@@ -107,6 +108,10 @@ async function getOrCreatePendaftaran(userId: string) {
     where: { userId },
   });
 
+  if (pendaftaran && ['SUBMITTED', 'VERIFIED', 'ACCEPTED'].includes(pendaftaran.status)) {
+    throw new Error('Pendaftaran sudah difinalisasi dan tidak dapat diubah.');
+  }
+
   if (!pendaftaran) {
     pendaftaran = await prisma.pendaftaran.create({
       data: {
@@ -132,7 +137,12 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
     const email = asString(formData.get('email'));
     const existingBiodata = await prisma.biodataSiswa.findUnique({
       where: { pendaftaranId: pendaftaran.id },
-      select: { fotoFormalUrl: true },
+      select: {
+        fotoFormalUrl: true,
+        bahasaAsing: true,
+        riwayatPrestasi: true,
+        riwayatOrganisasi: true,
+      },
     });
 
     const fotoFormalUrl = await saveUploadedFile(
@@ -173,9 +183,17 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
     const alamatLengkap = asString(formData.get('alamatLengkap'));
     const noHpWhatsapp = asString(formData.get('noHpWhatsapp'));
     const mediaSosial = asString(formData.get('mediaSosial'));
-    const bahasaAsing = asString(formData.get('bahasaAsing'));
-    const riwayatPrestasi = asString(formData.get('riwayatPrestasi'));
-    const riwayatOrganisasi = asString(formData.get('riwayatOrganisasi'));
+    const linkPengumpulanVideo = asString(formData.get('linkPengumpulanVideo'));
+    const setujuPanduanVideo = asBoolean(formData.get('setujuPanduanVideo'));
+    const bahasaAsing = formData.has('bahasaAsing')
+      ? asString(formData.get('bahasaAsing'))
+      : existingBiodata?.bahasaAsing ?? '';
+    const riwayatPrestasi = formData.has('riwayatPrestasi')
+      ? asString(formData.get('riwayatPrestasi'))
+      : existingBiodata?.riwayatPrestasi ?? '';
+    const riwayatOrganisasi = formData.has('riwayatOrganisasi')
+      ? asString(formData.get('riwayatOrganisasi'))
+      : existingBiodata?.riwayatOrganisasi ?? '';
     const beratBadanStr = asString(formData.get('beratBadan'));
     const tinggiBadanStr = asString(formData.get('tinggiBadan'));
     const riwayatPenyakit = asString(formData.get('riwayatPenyakit'));
@@ -208,6 +226,8 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
         alamatLengkap,
         noHpWhatsapp,
         mediaSosial,
+        linkPengumpulanVideo,
+        setujuPanduanVideo,
         bahasaAsing,
         riwayatPrestasi,
         riwayatOrganisasi,
@@ -236,6 +256,8 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
         alamatLengkap,
         noHpWhatsapp,
         mediaSosial,
+        linkPengumpulanVideo,
+        setujuPanduanVideo,
         bahasaAsing,
         riwayatPrestasi,
         riwayatOrganisasi,
@@ -255,6 +277,40 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
   } catch (error) {
     console.error('saveDataDiriAction error:', error);
     return { success: false, error: 'Gagal menyimpan data diri' };
+  }
+}
+
+export async function saveRiwayatSiswaAction(formData: FormData): Promise<FormResult> {
+  try {
+    const user = await getUserFromToken();
+    if (!user) return { success: false, error: 'Tidak terautentikasi' };
+    const pendaftaran = await getOrCreatePendaftaran(user.userId);
+    const parsed = riwayatSiswaSchema.safeParse({
+      riwayatPrestasiItems: JSON.parse(asString(formData.get('riwayatPrestasiItems')) || '[]'),
+      riwayatOrganisasiItems: JSON.parse(asString(formData.get('riwayatOrganisasiItems')) || '[]'),
+      riwayatBahasaItems: JSON.parse(asString(formData.get('riwayatBahasaItems')) || '[]'),
+    });
+    if (!parsed.success) return { success: false, error: 'Periksa kembali data riwayat yang diisi.' };
+
+    const previous = await prisma.riwayatPendaftar.findUnique({ where: { pendaftaranId: pendaftaran.id } });
+    const prestasiItems = await Promise.all(parsed.data.riwayatPrestasiItems.map(async (item, index) => ({
+      ...item,
+      buktiUrl: await saveUploadedFile(formData.get(`bukti-${item.id}`), user.userId, `bukti-prestasi-${index + 1}`, item.buktiUrl),
+    })));
+    const saved = await prisma.riwayatPendaftar.upsert({
+      where: { pendaftaranId: pendaftaran.id },
+      create: { pendaftaranId: pendaftaran.id, prestasiData: prestasiItems, organisasiData: parsed.data.riwayatOrganisasiItems, bahasaData: parsed.data.riwayatBahasaItems },
+      update: { prestasiData: prestasiItems, organisasiData: parsed.data.riwayatOrganisasiItems, bahasaData: parsed.data.riwayatBahasaItems },
+    });
+    const retained = new Set(prestasiItems.map((item) => item.buktiUrl).filter(Boolean));
+    if (Array.isArray(previous?.prestasiData)) {
+      const oldItems = previous.prestasiData as { buktiUrl?: string }[];
+      await Promise.all(oldItems.map((item) => item.buktiUrl && !retained.has(item.buktiUrl) ? deleteFileSilently(item.buktiUrl) : undefined));
+    }
+    revalidatePath('/ppdb/dashboard/pendaftaran');
+    return { success: true, data: { ...saved, ...parsed.data, riwayatPrestasiItems: prestasiItems } };
+  } catch {
+    return { success: false, error: 'Gagal menyimpan riwayat.' };
   }
 }
 
@@ -435,6 +491,10 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
       { key: 'raporUrl', fieldName: 'rapor', existingUrl: existingBerkas?.raporUrl },
       { key: 'prestasiUrl', fieldName: 'prestasi', existingUrl: existingBerkas?.prestasiUrl },
       { key: 'bpjsUrl', fieldName: 'bpjs', existingUrl: existingBerkas?.bpjsUrl },
+      { key: 'sktmUrl', fieldName: 'sktm', existingUrl: existingBerkas?.sktmUrl },
+      { key: 'suratPernyataanWaliUrl', fieldName: 'pernyataan-wali', existingUrl: existingBerkas?.suratPernyataanWaliUrl },
+      { key: 'suratPernyataanCpdbUrl', fieldName: 'pernyataan-cpdb', existingUrl: existingBerkas?.suratPernyataanCpdbUrl },
+      { key: 'suratTidakMerokokUrl', fieldName: 'pernyataan-tidak-merokok', existingUrl: existingBerkas?.suratTidakMerokokUrl },
       { key: 'tampakDepanRumahUrl', fieldName: 'rumah-depan', existingUrl: existingBerkas?.tampakDepanRumahUrl },
       { key: 'tampakSampingRumahUrl', fieldName: 'rumah-samping', existingUrl: existingBerkas?.tampakSampingRumahUrl },
       { key: 'kamarTidurUrl', fieldName: 'kamar-tidur', existingUrl: existingBerkas?.kamarTidurUrl },
@@ -467,6 +527,10 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
     const raporUrl = savedUrls.raporUrl;
     const prestasiUrl = savedUrls.prestasiUrl;
     const bpjsUrl = savedUrls.bpjsUrl;
+    const sktmUrl = savedUrls.sktmUrl;
+    const suratPernyataanWaliUrl = savedUrls.suratPernyataanWaliUrl;
+    const suratPernyataanCpdbUrl = savedUrls.suratPernyataanCpdbUrl;
+    const suratTidakMerokokUrl = savedUrls.suratTidakMerokokUrl;
     const tampakDepanRumahUrl = savedUrls.tampakDepanRumahUrl;
     const tampakSampingRumahUrl = savedUrls.tampakSampingRumahUrl;
     const kamarTidurUrl = savedUrls.kamarTidurUrl;
@@ -484,6 +548,10 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
         raporUrl,
         prestasiUrl,
         bpjsUrl,
+        sktmUrl,
+        suratPernyataanWaliUrl,
+        suratPernyataanCpdbUrl,
+        suratTidakMerokokUrl,
         tampakDepanRumahUrl,
         tampakSampingRumahUrl,
         kamarTidurUrl,
@@ -500,6 +568,10 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
         raporUrl,
         prestasiUrl,
         bpjsUrl,
+        sktmUrl,
+        suratPernyataanWaliUrl,
+        suratPernyataanCpdbUrl,
+        suratTidakMerokokUrl,
         tampakDepanRumahUrl,
         tampakSampingRumahUrl,
         kamarTidurUrl,
@@ -592,6 +664,7 @@ export async function submitPendaftaranAction(): Promise<FormResult> {
         sekolahAsal: true,
         rekomendasi: true,
         berkas: true,
+        riwayat: true,
       },
     });
 
@@ -599,8 +672,18 @@ export async function submitPendaftaranAction(): Promise<FormResult> {
       return { success: false, error: 'Data pendaftaran tidak ditemukan' };
     }
 
-    if (!pendaftaran.biodata) {
-      return { success: false, error: 'Data diri belum dilengkapi' };
+    if (['SUBMITTED', 'VERIFIED', 'ACCEPTED'].includes(pendaftaran.status)) {
+      return { success: false, error: 'Pendaftaran sudah difinalisasi.' };
+    }
+
+    if (!pendaftaran.biodata?.namaLengkap || !pendaftaran.biodata.tempatLahir || !pendaftaran.biodata.alamatLengkap) {
+      return { success: false, error: 'Lengkapi nama, tempat lahir, dan alamat di tab Data Diri sebelum finalisasi.' };
+    }
+    if (!pendaftaran.rekomendasi?.namaPemberiRekomendasi) {
+      return { success: false, error: 'Lengkapi Surat Rekomendasi sebelum finalisasi.' };
+    }
+    if (!pendaftaran.orangTua || !pendaftaran.sekolahAsal || !pendaftaran.berkas || !pendaftaran.riwayat) {
+      return { success: false, error: 'Simpan semua tab formulir sebelum finalisasi.' };
     }
 
     const nomorPendaftaran = `PPDB-${Date.now()}-${user.userId.slice(0, 6)}`;
