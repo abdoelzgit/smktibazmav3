@@ -129,7 +129,7 @@ const PREPARATION_ITEMS: PreparationItem[] = [
           </h4>
           <p className="mt-3 whitespace-pre-line break-words rounded-md border border-[#CFCFCF] bg-[#FAFAFA] p-4 text-sm leading-relaxed text-[#4A4A4A]">
             {
-              '"Saya sudah mendaftar SPMB SMK TI BAZMA! SMK Berasrama Bebas Biaya dengan jurusan SIJA (Sistem Informasi, Jaringan dan Aplikasi) Pendaftaran ditutup sampai 28 Desember 2025 daftar melalui spmb.smktibazma.sch.id @smktibazma #SPMBSMKTIBAZMA2026 #SMKTIBAZMA #BAZMA"'
+              '"Saya sudah mendaftar SPMB SMK TI BAZMA! SMK Berasrama Bebas Biaya dengan jurusan SIJA (Sistem Informasi, Jaringan dan Aplikasi) Pendaftaran ditutup sampai 28 Desember 2025 daftar melalui smktibazma.sch.id/spmb @smktibazma #SPMBSMKTIBAZMA2026 #SMKTIBAZMA #BAZMA"'
             }
           </p>
         </div>
