@@ -15,7 +15,7 @@ import {
   ChevronRight,
   Clock,
 } from "lucide-react";
-
+import { PortalLink } from "@/components/portal-transition";
 /* -------------------------------------------------------------------------- */
 /*  Types & mock data                                                         */
 /* -------------------------------------------------------------------------- */
@@ -490,13 +490,14 @@ export default function TimelineSection({
               </p>
 
               <div className="mt-4 sm:mt-8">
-                <Link
+                <PortalLink
                   href={ctaHref}
+                  label={"DASHBOARD"}
                   className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-[#132B6D] transition-colors hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 shadow-sm"
                 >
                   {ctaLabel}
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
+                </PortalLink>
               </div>
             </div>
 

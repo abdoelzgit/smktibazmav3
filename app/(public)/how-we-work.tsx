@@ -55,22 +55,21 @@ const stepsData: StepItem[] = [
   },
 ]
 
-// Scroll range untuk setiap step — masing-masing muncul di titik scroll berbeda,
-// dan TETAP terlihat (opacity 1) sampai akhir progress (1.0)
+// Scroll range untuk setiap step di desktop
 const stepRanges: Array<{
   range: number[]
   opacity: number[]
   y: number[]
 }> = [
-    { range: [0.0, 0.08, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-    { range: [0.12, 0.20, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-    { range: [0.24, 0.32, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-    { range: [0.36, 0.44, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-    { range: [0.48, 0.56, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-    { range: [0.60, 0.68, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
-  ]
+  { range: [0.0, 0.08, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.12, 0.20, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.24, 0.32, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.36, 0.44, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.48, 0.56, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+  { range: [0.60, 0.68, 1.0], opacity: [0, 1, 1], y: [20, 0, 0] },
+]
 
-// ── StepCard: komponen terpisah ───────────────────────────────────────────────
+// ── StepCard: komponen terpisah untuk desktop/tablet ───────────────────────────
 type StepCardProps = {
   step: StepItem
   rangeIndex: number
@@ -129,42 +128,90 @@ export default function HowWeWork() {
     <section
       data-nav-theme="dark"
       ref={containerRef}
-      className="relative w-full h-[300vh] bg-[#132B6D] text-white"
+      className="relative w-full bg-[#132B6D] text-white"
       aria-label="Proses kerja kami"
     >
-      {/* Sticky viewport frame */}
-      <div className="sticky top-0 flex h-screen w-full flex-col justify-between px-5 sm:px-8 md:px-10 lg:px-16 xl:px-24 pt-16 sm:pt-20 pb-6 sm:pb-8 md:pb-10 overflow-hidden">
-        <div className="flex flex-col justify-between h-full mx-auto w-full">
-          {/* Header */}
-          <div className="pt-4 sm:pt-8 md:pt-14 lg:pt-18">
-            <h2 className="text-2xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-white mb-2 sm:mb-4">
-              Mengapa memilih SMK TI BAZMA?
-            </h2>
-          </div>
+      {/* ── VIEW MOBILE (HP: < sm) ── */}
+      <div className="block sm:hidden px-5 py-14">
+        <h2 className="text-2xl font-bold tracking-tight text-white mb-6">
+          Mengapa memilih SMK TI BAZMA?
+        </h2>
 
-          {/* Step Cards Grid */}
-          <div
-            className="my-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 sm:gap-x-8 lg:gap-x-12 gap-y-2.5 sm:gap-y-5 lg:gap-y-6"
-            role="list"
-          >
-            {stepsData.map((step, index) => (
-              <div key={step.id} role="listitem">
-                <StepCard
-                  step={step}
-                  rangeIndex={index}
-                  scrollYProgress={scrollYProgress}
+        <div className="flex flex-col gap-5">
+          {stepsData.map((step) => (
+            <motion.div
+              key={step.id}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-20px" }}
+              transition={{ duration: 0.35 }}
+              className="relative flex flex-col justify-between py-1.5"
+            >
+              <div>
+                <span
+                  className="text-xs font-mono tracking-widest text-sky-300 font-semibold"
+                  aria-hidden="true"
+                >
+                  {step.stepNumber}
+                </span>
+                <h3 className="mt-1 text-base font-semibold text-white">
+                  {step.title}
+                </h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-neutral-300">
+                  {step.description}
+                </p>
+              </div>
+
+              {/* Garis bawah dekoratif */}
+              <div className="relative mt-3 w-full border-t border-neutral-800" aria-hidden="true">
+                <span className="absolute -top-[7px] -left-1 text-xs text-neutral-600 font-mono select-none">
+                  +
+                </span>
+                <span className="absolute -top-[7px] -right-1 text-xs text-neutral-600 font-mono select-none">
+                  +
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── VIEW TABLET & DESKTOP (>= sm) ── */}
+      <div className="hidden sm:block relative w-full h-[300vh]">
+        {/* Sticky viewport frame */}
+        <div className="sticky top-0 flex h-screen min-h-[100dvh] w-full flex-col justify-between px-8 md:px-10 lg:px-16 xl:px-24 pt-20 pb-8 md:pb-10 overflow-hidden">
+          <div className="flex flex-col justify-between h-full mx-auto w-full">
+            {/* Header */}
+            <div className="pt-8 md:pt-14 lg:pt-18">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-white mb-4">
+                Mengapa memilih SMK TI BAZMA?
+              </h2>
+            </div>
+
+            {/* Step Cards Grid */}
+            <div
+              className="my-auto grid grid-cols-2 lg:grid-cols-3 gap-x-8 lg:gap-x-12 gap-y-5 lg:gap-y-6"
+              role="list"
+            >
+              {stepsData.map((step, index) => (
+                <div key={step.id} role="listitem">
+                  <StepCard
+                    step={step}
+                    rangeIndex={index}
+                    scrollYProgress={scrollYProgress}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Scroll Progress Bar */}
+            <div className="relative w-full pb-2" aria-hidden="true">
+              <div className="mt-2 h-[1px] w-full bg-neutral-900 rounded-full overflow-hidden">
+                <motion.div
+                  style={{ scaleX: scrollYProgress, transformOrigin: "left" }}
+                  className="h-full bg-white"
                 />
               </div>
-            ))}
-          </div>
-
-          {/* Scroll Progress Bar */}
-          <div className="relative w-full pb-2" aria-hidden="true">
-            <div className="mt-2 h-[1px] w-full bg-neutral-900 rounded-full overflow-hidden">
-              <motion.div
-                style={{ scaleX: scrollYProgress, transformOrigin: "left" }}
-                className="h-full bg-white"
-              />
             </div>
           </div>
         </div>

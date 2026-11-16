@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowRight, Megaphone } from "lucide-react"
 import { AsciiArt } from "@/components/ui/creation-of-adam"
+import { PortalLink } from "@/components/portal-transition";
 
 export function DaftarSpmbSection() {
   return (
@@ -49,16 +50,16 @@ export function DaftarSpmbSection() {
 
         {/* CTA */}
         <div className="mt-8 sm:mt-10">
-          <Link
+          <PortalLink
             href="/login"
-            className="group inline-flex items-center gap-2 rounded-xl bg-[#132B6D] px-6 py-3 sm:px-7 sm:py-3.5 text-xs sm:text-sm font-semibold text-white transition-all hover:bg-[#0e2159] shadow-md shadow-blue-950/15 hover:shadow-lg hover:shadow-blue-950/20"
-          >
+            label={'DASHBOARD'}
+            className="group inline-flex items-center gap-2 rounded-xl bg-[#132B6D] px-6 py-3 sm:px-7 sm:py-3.5 text-xs sm:text-sm font-semibold text-white transition-all hover:bg-[#0e2159] shadow-md shadow-blue-950/15 hover:shadow-lg hover:shadow-blue-950/20">
             Daftar Sekarang
             <ArrowRight
               className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
               strokeWidth={2}
             />
-          </Link>
+          </PortalLink>
         </div>
       </div>
 
