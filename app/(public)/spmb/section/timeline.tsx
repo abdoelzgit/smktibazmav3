@@ -41,7 +41,7 @@ export type TimelineSectionProps = {
 const MOCK_TIMELINE: TimelineItem[] = [
   {
     id: "pendaftaran-online",
-    date: "15 Nov – 28 Des 2025",
+    date: "16 Nov – 31 Des 2026",
     title: "Pendaftaran Online",
     description:
       "Pendaftaran calon peserta didik secara online melalui portal resmi.",
@@ -49,57 +49,50 @@ const MOCK_TIMELINE: TimelineItem[] = [
   },
   {
     id: "seleksi-administrasi",
-    date: "10 – 11 Jan 2026",
-    title: "Pengumuman Seleksi Administrasi",
+    date: "10 Jan 2027",
+    title: "Pengumuman Verifikasi Berkas",
     description: "Pengumuman hasil seleksi administrasi calon peserta didik.",
     status: "future",
   },
   {
     id: "tes-akademik",
-    date: "24 – 25 Jan 2026",
-    title: "Tes Akademik",
+    date: "16 – 17 Jan 2027",
+    title: "Tes Kemampuan Akademik",
     description:
       "Pelaksanaan tes akademik bagi calon peserta didik yang lolos seleksi administrasi.",
     status: "future",
   },
   {
     id: "pengumuman-akademik",
-    date: "7 – 8 Feb 2026",
+    date: "25 Jan 2027",
     title: "Pengumuman Tes Akademik",
     description: "Pengumuman hasil tes akademik calon peserta didik.",
     status: "future",
   },
   {
     id: "tes-bacaan-quran",
-    date: "14 – 17 Feb 2026",
-    title: "Tes Bacaan Al-Qur’an",
-    description: "Pelaksanaan tes bacaan Al-Qur’an bagi calon peserta didik.",
+    date: "1 - 7 Feb 2027",
+    title: "Wawancara Murid & Wali Murid serta Tes Bacaan Al-Qur’an",
+    description: "Pelaksanaan tes bacaan Al-Qur’an bagi calon peserta didik disertai dengan wawancara.",
     status: "future",
   },
   {
     id: "pengumuman-wawancara",
-    date: "22 Feb – 14 Mar 2026",
-    title: "Pengumuman Jadwal Wawancara",
+    date: "15 Feb 2027",
+    title: "Pengumuman Hasil Wawancara & Tes Bacaan Al-Qur'an",
     description: "Informasi jadwal wawancara bagi calon peserta didik.",
     status: "future",
   },
   {
-    id: "interview",
-    date: "6 – 11 Apr 2026",
-    title: "Interview",
-    description: "Pelaksanaan wawancara calon peserta didik.",
-    status: "future",
-  },
-  {
     id: "psikotes",
-    date: "18 – 19 Apr 2026",
+    date: "22 – 23 Mar 2027",
     title: "Psikotes Online & Offline",
     description: "Pelaksanaan psikotes secara online maupun offline.",
     status: "future",
   },
   {
     id: "home-visit",
-    date: "4 – 9 Mei 2026",
+    date: "12 – 16 Apr 2027",
     title: "Home Visit",
     description:
       "Kunjungan ke rumah calon peserta didik sebagai bagian dari tahapan seleksi.",
@@ -107,7 +100,7 @@ const MOCK_TIMELINE: TimelineItem[] = [
   },
   {
     id: "pengumuman-akhir",
-    date: "22 – 23 Mei 2026",
+    date: "2 Mei 2027",
     title: "Pengumuman Akhir",
     description:
       "Pengumuman hasil akhir seleksi penerimaan peserta didik baru.",

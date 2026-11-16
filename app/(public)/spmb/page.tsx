@@ -17,7 +17,7 @@ export default function SpmbPage() {
         <main className="flex min-h-full flex-col items-center">
             <Hero
                 title="SPMB"
-                backgroundImage="/images/ppdb.webp"
+                backgroundImage="/images/Banner.webp"
             />
             <Sambutan />
 
