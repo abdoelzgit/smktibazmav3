@@ -16,6 +16,11 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (formData.pernyataanOrangTua !== true) {
+      setStatus({ message: "Pilih Ya pada pernyataan orang tua/wali sebelum menyimpan.", type: "error" });
+      return;
+    }
+
     setStatus({ message: "Menyimpan data orang tua...", type: "info" });
     const formElement = e.currentTarget;
     const data = new FormData(formElement);
@@ -120,7 +125,7 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
         </div>
 
         <div>
-          <label htmlFor="penghasilanOrangTua" className="block text-sm font-bold text-gray-800 mb-1">Penghasilan Ayah/Ibu</label>
+          <label htmlFor="penghasilanOrangTua" className="block text-sm font-bold text-gray-800 mb-1">Jumlah Penghasilan Ayah/Orang Tua</label>
           <InputGroup className="h-10 bg-background">
             <InputGroupAddon aria-hidden="true">Rp</InputGroupAddon>
             <InputGroupInput
@@ -138,7 +143,17 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
 
         <div>
           <label className="block text-sm font-bold text-gray-800 mb-1">Alamat Domisili Ayah</label>
-          <label className="mb-2 flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+         
+          <Input
+            name="alamatDomisiliAyah"
+            type="text"
+            value={formData.alamatDomisiliAyah ?? ""}
+            onChange={(e) => updateField("Data orang Tua", "alamatDomisiliAyah", e.target.value)}
+            placeholder="Alamat Domisili Ayah"
+            readOnly={Boolean(formData.alamatAyahSamaDenganSiswa)}
+            className="w-full disable border border-gray-400 rounded-lg px-3 mb-2 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+           <label className="mb-2 flex cursor-pointer items-center gap-2 text-xs text-gray-700">
             <input
               type="checkbox"
               checked={Boolean(formData.alamatAyahSamaDenganSiswa)}
@@ -151,15 +166,6 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
             />
             Sama dengan alamat saat ini di Data Diri
           </label>
-          <Input
-            name="alamatDomisiliAyah"
-            type="text"
-            value={formData.alamatDomisiliAyah ?? ""}
-            onChange={(e) => updateField("Data orang Tua", "alamatDomisiliAyah", e.target.value)}
-            placeholder="Alamat Domisili Ayah"
-            readOnly={Boolean(formData.alamatAyahSamaDenganSiswa)}
-            className="w-full disable border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
         </div>
 
         <div className="md:col-span-2">
@@ -180,9 +186,14 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
             value={String(Boolean(formData.pernyataanOrangTua))}
             onValueChange={(value) => updateField("Data orang Tua", "pernyataanOrangTua", value === "true")}
           >
-            <SelectTrigger id="pernyataanOrangTua"><SelectValue>{formData.pernyataanOrangTua ? "Ya" : "Tidak"}</SelectValue></SelectTrigger>
+            <SelectTrigger id="pernyataanOrangTua" aria-describedby={formData.pernyataanOrangTua !== true ? "pernyataan-orang-tua-hint" : undefined}><SelectValue>{formData.pernyataanOrangTua ? "Ya" : "Tidak"}</SelectValue></SelectTrigger>
             <SelectContent><SelectItem value="true">Ya</SelectItem><SelectItem value="false">Tidak</SelectItem></SelectContent>
           </Select>
+          {formData.pernyataanOrangTua !== true && (
+            <p id="pernyataan-orang-tua-hint" className="mt-2 text-xs text-amber-800" role="status">
+              Pilih Ya untuk mengaktifkan tombol simpan.
+            </p>
+          )}
         </div>
       </div>
 
@@ -190,7 +201,9 @@ export default function DataOrangTuaTab({ action }: { action?: unknown } = {}) {
         {status && <FormStatusAlert {...status} onDismiss={() => setStatus(null)} />}
         <button
           type="submit"
-          className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          disabled={formData.pernyataanOrangTua !== true}
+          aria-describedby={formData.pernyataanOrangTua !== true ? "pernyataan-orang-tua-hint" : undefined}
+          className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Simpan Data Orang Tua
         </button>

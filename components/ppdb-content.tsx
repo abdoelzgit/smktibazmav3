@@ -5,7 +5,9 @@ import {
   SlidersHorizontal,
   FileText,
   BrainCircuit,
-  Mic,
+  MessagesSquare,
+  Sparkles,
+  House,
   Megaphone,
   ArrowUpRight,
   CheckCircle2,
@@ -57,9 +59,11 @@ const STEPS: Step[] = [
   { id: 1, label: "Pendaftaran", icon: ClipboardList },
   { id: 2, label: "Seleksi Berkas", icon: SlidersHorizontal },
   { id: 3, label: "Tes Akademik", icon: FileText },
-  { id: 4, label: "Tes Psikotest", icon: BrainCircuit },
-  { id: 5, label: "Wawancara", icon: Mic },
-  { id: 6, label: "Pengumuman", icon: Megaphone },
+  { id: 6, label: "Wawancara", icon: MessagesSquare },
+  { id: 5, label: "Tes Psikotest", icon: BrainCircuit },
+  { id: 5, label: "Tes Minat & Bakat", icon: Sparkles },
+  { id: 5, label: "Home Visit", icon: House },
+  { id: 7, label: "Pengumuman", icon: Megaphone },
 ];
 
 const PROGRESS_CARDS: ProgressItem[] = [
@@ -159,7 +163,7 @@ function ProgressPendaftaran({ items }: { items: ProgressItem[] }) {
         {items.map((item, i) => (
           <Link
             key={`${item.title}-${i}`}
-            href={`/ppdb/dashboard/pendaftaran?tab=${encodeURIComponent(item.tab)}`}
+            href={`/spmb/form?tab=${encodeURIComponent(item.tab)}`}
             className="group flex min-h-32 flex-col items-start justify-between gap-4 rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-100 transition hover:ring-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#132b6d]"
           >
             <div className="flex w-full items-center justify-between">

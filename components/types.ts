@@ -33,6 +33,8 @@ export interface Peserta {
   statusKeluarga?: string | null;
   tinggalBersama?: string | null;
   mediaSosial?: string | null;
+  linkPengumpulanVideo?: string | null;
+  setujuPanduanVideo?: boolean | null;
   bahasaAsing?: string | null;
   riwayatPrestasi?: string | null;
   riwayatOrganisasi?: string | null;
@@ -43,6 +45,9 @@ export interface Peserta {
   isButaWarna?: boolean | null;
   hasPenyakitMenular?: boolean | null;
   pernyataanSiswa?: boolean | null;
+  riwayatPrestasiItems?: Array<Record<string, unknown>>;
+  riwayatOrganisasiItems?: Array<Record<string, unknown>>;
+  riwayatBahasaItems?: Array<Record<string, unknown>>;
 
   // Data Orang Tua Lengkap
   keadaanOrangTua?: string | null;
@@ -73,6 +78,9 @@ export interface Peserta {
   raporUrl?: string | null;
   prestasiUrl?: string | null;
   bpjsUrl?: string | null;
+  sktmUrl?: string | null;
+  suratPernyataanCpdbUrl?: string | null;
+  suratTidakMerokokUrl?: string | null;
   tampakDepanRumahUrl?: string | null;
   tampakSampingRumahUrl?: string | null;
   kamarTidurUrl?: string | null;

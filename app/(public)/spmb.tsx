@@ -41,7 +41,7 @@ export function SpmbSection() {
               Batas Akhir
             </p>
             <p className="mt-1 text-base sm:text-lg font-bold text-[#132B6D]">
-              ---
+              31 Desember 2026
             </p>
           </div>
 

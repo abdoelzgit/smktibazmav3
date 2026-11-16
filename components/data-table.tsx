@@ -66,7 +66,7 @@ export default function DataTable({ data, onDownload, onDelete }: DataTableProps
       {/* Header & Controls Toolbar */}
       <div className="flex flex-col gap-3.5 p-4 sm:p-5 border-b border-slate-100 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-2.5">
-          <h2 className="text-base font-bold text-slate-900">Daftar Peserta PPDB</h2>
+          <h2 className="text-base font-bold text-slate-900">Daftar Pendaftar SPMB</h2>
           <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
             {filtered.length} Peserta
           </span>

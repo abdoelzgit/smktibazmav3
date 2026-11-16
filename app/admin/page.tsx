@@ -18,13 +18,13 @@ export default async function AdminDashboardPage() {
 
   const quickModules = [
     {
-      title: "Data PPDB",
+      title: "Data SPMB",
       description: "Kelola berkas calon santri baru, verifikasi data pendaftar, dan export ke CSV.",
       href: "/admin/data-ppdb",
       icon: DatabaseSearch,
       accentColor: "bg-blue-600",
  
-      buttonText: "Buka Data PPDB",
+      buttonText: "Buka Data SPMB",
     },
     {
       title: "Kelola Berita",
@@ -58,7 +58,7 @@ export default async function AdminDashboardPage() {
               Selamat Datang di Admin SMK TI Bazma
             </h1>
             <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed">
-              Kelola data pendaftaran PPDB, publikasi berita, dan showcase karya siswa dalam satu tempat yang terintegrasi.
+              Kelola data pendaftaran SPMB, publikasi berita, dan showcase karya siswa dalam satu tempat yang terintegrasi.
             </p>
           </div>
           <div className="flex items-center gap-3 pt-2 md:pt-0">
@@ -66,7 +66,7 @@ export default async function AdminDashboardPage() {
               href="/admin/data-ppdb"
               className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-blue-900 shadow-sm transition hover:bg-blue-50 active:scale-98"
             >
-              <span>Lihat Data PPDB</span>
+              <span>Lihat Data SPMB</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

@@ -45,6 +45,15 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (formData.setujuPanduanVideo !== true) {
+      setStatus({ message: "Centang persetujuan bahwa Anda sudah membaca panduan video.", type: "error" });
+      return;
+    }
+    if (formData.pernyataanSiswa !== true) {
+      setStatus({ message: "Pilih Ya pada pernyataan calon siswa sebelum menyimpan.", type: "error" });
+      return;
+    }
+
     const age = calculateAgeInYears(dateOfBirthValue);
     if (!dateOfBirthValue || age === null) {
       setStatus({ message: "Masukkan tanggal lahir yang valid.", type: "error" });
@@ -475,10 +484,12 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
                 name="setujuPanduanVideo"
                 checked={Boolean(formData.setujuPanduanVideo)}
                 onChange={(event) => updateField("Data Diri", "setujuPanduanVideo", event.target.checked)}
+                aria-describedby={formData.setujuPanduanVideo !== true ? "panduan-video-hint" : undefined}
                 className="size-4 accent-[#132b6d] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#132b6d]"
               />
               Saya sudah membaca panduan
             </label>
+        
           </div>
 
           <div className="md:col-span-2">
@@ -490,9 +501,10 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
               value={String(Boolean(formData.pernyataanSiswa))}
               onValueChange={(value) => updateField("Data Diri", "pernyataanSiswa", value === "true")}
             >
-              <SelectTrigger id="pernyataanSiswa"><SelectValue>{formData.pernyataanSiswa ? "Ya" : "Tidak"}</SelectValue></SelectTrigger>
+              <SelectTrigger id="pernyataanSiswa" aria-describedby={formData.pernyataanSiswa !== true ? "pernyataan-siswa-hint" : undefined}><SelectValue>{formData.pernyataanSiswa ? "Ya" : "Tidak"}</SelectValue></SelectTrigger>
               <SelectContent><SelectItem value="true">Ya</SelectItem><SelectItem value="false">Tidak</SelectItem></SelectContent>
             </Select>
+            
           </div>
 
 
@@ -569,7 +581,9 @@ export default function DataDiriTab({ action }: { action?: unknown } = {}) {
       <div className="flex justify-end">
         <button
           type="submit"
-          className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          disabled={formData.setujuPanduanVideo !== true || formData.pernyataanSiswa !== true}
+          aria-describedby={formData.setujuPanduanVideo !== true && formData.pernyataanSiswa !== true ? "panduan-video-hint pernyataan-siswa-hint" : formData.setujuPanduanVideo !== true ? "panduan-video-hint" : formData.pernyataanSiswa !== true ? "pernyataan-siswa-hint" : undefined}
+          className="inline-flex items-center justify-center rounded-xl bg-[#1e3a8a] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#172d6e] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Simpan Data Diri
         </button>

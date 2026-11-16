@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BadgeCheck, CircleAlert } from "lucide-react";
 import { useForm } from "@/components/form-context";
 import { FormStatusAlert } from "@/components/form-status-alert";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 type FinalisasiAction = () => Promise<{ success: boolean; error?: string }>;
 
@@ -11,8 +12,13 @@ export default function FinalisasiTab({ isFinalized, onFinalized, action }: { is
   const { formData, savedTabs, setActiveTab } = useForm();
   const [confirmed, setConfirmed] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [status, setStatus] = useState<{ message: string; type: "info" | "success" | "error" } | null>(null);
-  const filled = (...values: (string | boolean | null | undefined)[]) => values.every((value) => typeof value === "boolean" || (typeof value === "string" && value.trim().length > 0));
+  const filled = (...values: unknown[]) => values.every((value) =>
+    typeof value === "boolean"
+    || (typeof value === "number" && Number.isFinite(value))
+    || (typeof value === "string" && value.trim().length > 0)
+  );
   const completeHistory =
     (formData.riwayatPrestasiItems ?? []).every((item) => filled(item.nama, item.tingkat, item.tanggal, item.buktiUrl)) &&
     (formData.riwayatOrganisasiItems ?? []).every((item) => filled(item.nama, item.jabatan, item.periode)) &&
@@ -22,17 +28,25 @@ export default function FinalisasiTab({ isFinalized, onFinalized, action }: { is
     { label: "Riwayat", tab: "Riwayat", saved: savedTabs.Riwayat, complete: completeHistory },
     { label: "Data Orang Tua", tab: "Data orang Tua", saved: savedTabs["Data orang Tua"], complete: filled(formData.namaAyah, formData.pekerjaanAyah, formData.namaIbu, formData.pekerjaanIbu, formData.noHpOi, formData.keadaanOrangTua, formData.penghasilanOrangTua, formData.alamatDomisiliAyah, formData.pernyataanOrangTua) },
     { label: "Sekolah Asal", tab: "Data sekolah Asal", saved: savedTabs["Data sekolah Asal"], complete: filled(formData.namaSekolahAsal, formData.npsnSekolah, formData.statusSekolah, formData.tahunLulus, formData.alamatSekolah) },
-    { label: "Dokumen", tab: "Berkas", saved: savedTabs.Berkas, complete: filled(formData.kkUrl, formData.ktpOrangTuaUrl, formData.kipUrl, formData.akteUrl, formData.ijazahUrl, formData.raporUrl, formData.bpjsUrl, formData.sktmUrl, formData.suratPernyataanWaliUrl, formData.suratPernyataanCpdbUrl, formData.suratTidakMerokokUrl, formData.tampakDepanRumahUrl, formData.tampakSampingRumahUrl, formData.kamarTidurUrl, formData.kamarMandiUrl, formData.ruangTamuUrl) },
+    { label: "Dokumen", tab: "Berkas", saved: savedTabs.Berkas, complete: filled(formData.kkUrl, formData.ktpOrangTuaUrl, formData.kipUrl, formData.akteUrl, formData.ijazahUrl, formData.raporUrl, formData.sktmUrl, formData.suratPernyataanCpdbUrl, formData.suratTidakMerokokUrl, formData.tampakDepanRumahUrl, formData.tampakSampingRumahUrl, formData.kamarTidurUrl, formData.kamarMandiUrl, formData.ruangTamuUrl) },
     { label: "Surat Rekomendasi", tab: "Surat Rekomendasi", saved: savedTabs["Surat Rekomendasi"], complete: filled(formData.namaPemberiRekomendasi, formData.jabatanInstansi, formData.noHpPemberiRekomendasi, formData.suratRekomendasiUrl, formData.catatanRekomendasi) },
   ];
   const allVerified = rows.every((row) => row.saved && row.complete);
   const finalize = async () => {
     setSaving(true);
     setStatus({ message: "Memfinalisasi pendaftaran…", type: "info" });
-    const result = await action();
-    if (result.success) onFinalized();
-    setStatus(result.success ? { message: "Pendaftaran berhasil difinalisasi.", type: "success" } : { message: result.error ?? "Pendaftaran gagal difinalisasi.", type: "error" });
-    setSaving(false);
+    try {
+      const result = await action();
+      if (result.success) {
+        setConfirmOpen(false);
+        onFinalized();
+      }
+      setStatus(result.success ? { message: "Pendaftaran berhasil difinalisasi.", type: "success" } : { message: result.error ?? "Pendaftaran gagal difinalisasi.", type: "error" });
+    } catch {
+      setStatus({ message: "Pendaftaran gagal difinalisasi. Silakan coba lagi.", type: "error" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return <section className="mx-auto max-w-3xl space-y-6">
@@ -47,8 +61,18 @@ export default function FinalisasiTab({ isFinalized, onFinalized, action }: { is
     </ul>
     {isFinalized ? <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">Formulir sudah difinalisasi dan dikunci. Semua tab tetap dapat dibuka untuk ditinjau.</p> : <>
       <label className="flex cursor-pointer items-start gap-3 text-sm text-gray-700"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} className="mt-0.5 size-4 accent-[#132b6d]" />Saya sudah memeriksa data dan dokumen. Setelah difinalisasi, formulir tidak dapat diubah lagi.</label>
-      <div className="flex justify-end"><button type="button" disabled={!confirmed || !allVerified || saving} onClick={finalize} className="min-h-10 rounded-md bg-[#132b6d] px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{saving ? "Memfinalisasi…" : "Finalisasi dan kunci formulir"}</button></div>
+      <div className="flex justify-end"><button type="button" disabled={!confirmed || !allVerified || saving} onClick={() => setConfirmOpen(true)} className="min-h-10 rounded-md bg-[#132b6d] px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">Finalisasi dan kunci formulir</button></div>
     </>}
+    <Dialog open={confirmOpen} onOpenChange={(open) => { if (!saving) setConfirmOpen(open); }}>
+      <DialogContent>
+        <DialogTitle>Finalisasi formulir?</DialogTitle>
+        <DialogDescription>Setelah dikonfirmasi, formulir CPDB akan dikunci dan tidak dapat diubah. Jika ada data yang perlu diganti, peserta harus meminta admin membuka kunci formulir.</DialogDescription>
+        <div className="flex justify-end gap-2">
+          <button type="button" disabled={saving} onClick={() => setConfirmOpen(false)} className="min-h-10 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-50">Periksa kembali</button>
+          <button type="button" disabled={saving} onClick={finalize} className="min-h-10 rounded-md bg-[#132b6d] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{saving ? "Memfinalisasi…" : "Ya, finalisasi"}</button>
+        </div>
+      </DialogContent>
+    </Dialog>
     {status && <FormStatusAlert {...status} onDismiss={() => setStatus(null)} />}
   </section>;
 }

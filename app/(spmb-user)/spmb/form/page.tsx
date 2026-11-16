@@ -88,7 +88,8 @@ async function getInitialFormData(): Promise<{ formData: Record<string, unknown>
 
     return {
       formData,
-      isFinalized: ['SUBMITTED', 'VERIFIED', 'ACCEPTED'].includes(pendaftaran.status),
+      isFinalized: Boolean(pendaftaran.nomorPendaftaran)
+        && ['SUBMITTED', 'VERIFIED', 'ACCEPTED'].includes(pendaftaran.status),
       savedTabs: {
         'Data Diri': Boolean(pendaftaran.biodata),
         'Data orang Tua': Boolean(pendaftaran.orangTua),

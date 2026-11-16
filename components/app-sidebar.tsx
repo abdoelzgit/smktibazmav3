@@ -46,7 +46,7 @@ const data = {
         <AppWindow/>
       )
     },{
-      title: "Data PPDB",
+      title: "Data SPMB",
       url: "/admin/data-ppdb",
       icon: (
         <DatabaseSearch />

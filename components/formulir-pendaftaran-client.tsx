@@ -50,13 +50,13 @@ export function PendaftaranPpdbClient({ initialData, isFinalized, savedTabs }: P
       case "Data Diri":
         return <DataDiriTab action={saveDataDiriAction} />;
       case "Riwayat":
-        return <RiwayatTab action={saveRiwayatSiswaAction} />;
+        return <RiwayatTab action={saveRiwayatSiswaAction} isLocked={isLocked} />;
       case "Finalisasi":
         return <FinalisasiTab isFinalized={isLocked} onFinalized={() => setIsLocked(true)} action={submitPendaftaranAction} />;
       case "Data orang Tua":
         return <DataOrangTuaTab action={saveDataOrangTuaAction} />;
       case "Berkas":
-        return <BerkasTab />;
+        return <BerkasTab isLocked={isLocked} />;
       case "Surat Rekomendasi":
         return <SuratRekomendasiTab action={saveRekomendasiAction} />;
       case "Data sekolah Asal":

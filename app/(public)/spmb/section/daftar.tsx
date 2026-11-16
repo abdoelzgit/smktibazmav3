@@ -41,7 +41,7 @@ export function DaftarSpmbSection() {
               Batas Akhir
             </p>
             <p className="mt-1 text-base sm:text-lg font-bold text-[#132B6D]">
-              ---
+              31 Desember 2026
             </p>
           </div>
 
@@ -50,7 +50,7 @@ export function DaftarSpmbSection() {
         {/* CTA */}
         <div className="mt-8 sm:mt-10">
           <Link
-            href="/login"
+            href="/spmb/form"
             className="group inline-flex items-center gap-2 rounded-xl bg-[#132B6D] px-6 py-3 sm:px-7 sm:py-3.5 text-xs sm:text-sm font-semibold text-white transition-all hover:bg-[#0e2159] shadow-md shadow-blue-950/15 hover:shadow-lg hover:shadow-blue-950/20"
           >
             Daftar Sekarang

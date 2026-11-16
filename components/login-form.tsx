@@ -17,6 +17,10 @@ export function LoginForm({
 }: React.ComponentProps<"form"> & { onSwitchToRegister?: () => void }) {
   const searchParams = useSearchParams();
   const reason = searchParams.get("reason");
+  const callbackUrl = searchParams.get("callbackUrl");
+  const safeCallbackUrl = callbackUrl?.startsWith("/spmb/") || callbackUrl?.startsWith("/ppdb/dashboard")
+    ? callbackUrl
+    : null;
 
   const [state, action, isPending] = useActionState(loginAction, {
     success: false,
@@ -25,9 +29,11 @@ export function LoginForm({
 
   useEffect(() => {
     if (state?.success && state.redirectTo) {
-      window.location.href = state.redirectTo;
+      window.location.href = state.role === "USER" && safeCallbackUrl
+        ? safeCallbackUrl
+        : state.redirectTo;
     }
-  }, [state?.success, state?.redirectTo]);
+  }, [state?.success, state?.redirectTo, state?.role, safeCallbackUrl]);
 
   const errorMessage =
     state?.error ||
@@ -103,7 +109,7 @@ export function LoginForm({
         type="button"
         variant="outline"
         className="w-full font-semibold"
-        onClick={() => signIn("google", { callbackUrl: "/ppdb/dashboard" })}
+        onClick={() => signIn("google", { callbackUrl: safeCallbackUrl ?? "/spmb/dashboard" })}
       >
         <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
           <path

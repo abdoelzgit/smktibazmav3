@@ -4,6 +4,10 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { StatusPendaftaran } from '@prisma/client';
 import { Peserta } from '@/components/types';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/app/actions/auth';
+
+const AUTH_COOKIE_NAME = 'auth_session';
 
 export type ActionResult<T = unknown> = {
   success: boolean;
@@ -15,6 +19,70 @@ export type PesertaAdminData = Peserta & {
   rawStatus: StatusPendaftaran;
 };
 
+export async function unlockPendaftaranAction(id: string): Promise<ActionResult> {
+  try {
+    const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
+    const session = token ? await verifyToken(token) : null;
+    if (session?.role !== 'ADMIN') {
+      return { success: false, error: 'Hanya admin yang dapat membuka kunci formulir.' };
+    }
+
+    const pendaftaran = await prisma.pendaftaran.findUnique({
+      where: { id },
+      select: { id: true, status: true, nomorPendaftaran: true },
+    });
+    if (!pendaftaran) return { success: false, error: 'Data pendaftaran tidak ditemukan.' };
+    if (!pendaftaran.nomorPendaftaran || ![StatusPendaftaran.SUBMITTED, StatusPendaftaran.VERIFIED, StatusPendaftaran.ACCEPTED].includes(pendaftaran.status)) {
+      return { success: false, error: 'Formulir ini tidak sedang terkunci.' };
+    }
+
+    await prisma.pendaftaran.update({
+      where: { id },
+      data: { status: StatusPendaftaran.DRAFT },
+    });
+
+    revalidatePath('/admin/data-ppdb');
+    revalidatePath(`/admin/data-ppdb/${id}`);
+    revalidatePath('/spmb/form');
+    revalidatePath('/spmb/dashboard');
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Gagal membuka kunci formulir';
+    return { success: false, error: msg };
+  }
+}
+
+function parseJsonRecords(value: unknown): Array<Record<string, unknown>> {
+  let records = value;
+  if (typeof records === 'string') {
+    try {
+      records = JSON.parse(records);
+    } catch {
+      return [];
+    }
+  }
+
+  if (!Array.isArray(records)) return [];
+  return records.filter((record): record is Record<string, unknown> =>
+    typeof record === 'object' && record !== null && !Array.isArray(record)
+  );
+}
+
+function hasRequiredValues(...values: unknown[]): boolean {
+  return values.every((value) =>
+    typeof value === 'boolean'
+    || (typeof value === 'number' && Number.isFinite(value))
+    || (typeof value === 'string' && value.trim().length > 0)
+    || (value instanceof Date && !Number.isNaN(value.getTime()))
+  );
+}
+
+function historyIsComplete(records: Array<Record<string, unknown>>, requiredFields: string[]): boolean {
+  return records.every((record) => requiredFields.every((field) =>
+    typeof record[field] === 'string' && (record[field] as string).trim().length > 0
+  ));
+}
+
 export async function getPendaftaranPpdbListAction(): Promise<ActionResult<PesertaAdminData[]>> {
   try {
     const list = await prisma.pendaftaran.findMany({
@@ -25,33 +93,15 @@ export async function getPendaftaranPpdbListAction(): Promise<ActionResult<Peser
         orangTua: true,
         berkas: true,
         rekomendasi: true,
+        riwayat: true,
       },
       orderBy: { createdAt: 'desc' },
     });
 
     const formattedList: PesertaAdminData[] = await Promise.all(
       list.map(async (item) => {
-        const isAllTabsComplete = Boolean(
-          item.biodata && item.orangTua && item.sekolahAsal && item.rekomendasi && item.berkas
-        );
-
-        if (isAllTabsComplete) {
-          if (item.status !== StatusPendaftaran.VERIFIED && item.status !== StatusPendaftaran.ACCEPTED) {
-            await prisma.pendaftaran.update({
-              where: { id: item.id },
-              data: { status: StatusPendaftaran.VERIFIED },
-            });
-          }
-        } else {
-          if (item.status === StatusPendaftaran.VERIFIED) {
-            await prisma.pendaftaran.update({
-              where: { id: item.id },
-              data: { status: StatusPendaftaran.SUBMITTED },
-            });
-          }
-        }
-
-        const isVerified = isAllTabsComplete || item.status === StatusPendaftaran.VERIFIED || item.status === StatusPendaftaran.ACCEPTED;
+        const isVerified = Boolean(item.nomorPendaftaran)
+          && (item.status === StatusPendaftaran.VERIFIED || item.status === StatusPendaftaran.ACCEPTED);
         const berkasUploaded = item.berkas
           ? Object.values(item.berkas).filter((v) => typeof v === 'string' && v.startsWith('http')).length
           : 0;
@@ -69,7 +119,7 @@ export async function getPendaftaranPpdbListAction(): Promise<ActionResult<Peser
           npsnSekolah: item.sekolahAsal?.npsnSekolah || '-',
           tanggalDaftar: new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(item.createdAt),
           status: isVerified ? 'Sudah Diverifikasi' : 'Belum Diverifikasi',
-          rawStatus: isVerified ? StatusPendaftaran.VERIFIED : item.status,
+          rawStatus: item.status,
           fotoFormalUrl: item.biodata?.fotoFormalUrl,
           namaAyah: item.orangTua?.namaAyah,
           namaIbu: item.orangTua?.namaIbu,
@@ -91,6 +141,8 @@ export async function getPendaftaranPpdbListAction(): Promise<ActionResult<Peser
           statusKeluarga: item.biodata?.statusKeluarga,
           tinggalBersama: item.biodata?.tinggalBersama,
           mediaSosial: item.biodata?.mediaSosial,
+          linkPengumpulanVideo: item.biodata?.linkPengumpulanVideo,
+          setujuPanduanVideo: item.biodata?.setujuPanduanVideo,
           bahasaAsing: item.biodata?.bahasaAsing,
           riwayatPrestasi: item.biodata?.riwayatPrestasi,
           riwayatOrganisasi: item.biodata?.riwayatOrganisasi,
@@ -101,6 +153,9 @@ export async function getPendaftaranPpdbListAction(): Promise<ActionResult<Peser
           isButaWarna: item.biodata?.isButaWarna,
           hasPenyakitMenular: item.biodata?.hasPenyakitMenular,
           pernyataanSiswa: item.biodata?.pernyataanSiswa,
+          riwayatPrestasiItems: parseJsonRecords(item.riwayat?.prestasiData),
+          riwayatOrganisasiItems: parseJsonRecords(item.riwayat?.organisasiData),
+          riwayatBahasaItems: parseJsonRecords(item.riwayat?.bahasaData),
 
           // Data Orang Tua Lengkap
           keadaanOrangTua: item.orangTua?.keadaanOrangTua,
@@ -131,6 +186,9 @@ export async function getPendaftaranPpdbListAction(): Promise<ActionResult<Peser
           raporUrl: item.berkas?.raporUrl,
           prestasiUrl: item.berkas?.prestasiUrl,
           bpjsUrl: item.berkas?.bpjsUrl,
+          sktmUrl: item.berkas?.sktmUrl,
+          suratPernyataanCpdbUrl: item.berkas?.suratPernyataanCpdbUrl,
+          suratTidakMerokokUrl: item.berkas?.suratTidakMerokokUrl,
           tampakDepanRumahUrl: item.berkas?.tampakDepanRumahUrl,
           tampakSampingRumahUrl: item.berkas?.tampakSampingRumahUrl,
           kamarTidurUrl: item.berkas?.kamarTidurUrl,
@@ -193,6 +251,7 @@ export async function getPendaftaranDetailAction(id: string) {
         orangTua: true,
         berkas: true,
         rekomendasi: true,
+        riwayat: true,
       },
     });
 
@@ -200,13 +259,49 @@ export async function getPendaftaranDetailAction(id: string) {
       return { success: false, error: 'Data pendaftaran tidak ditemukan' };
     }
 
-    const isAllTabsComplete = Boolean(
-      item.biodata && item.orangTua && item.sekolahAsal && item.rekomendasi && item.berkas
-    );
-    const isVerified =
-      isAllTabsComplete ||
-      item.status === StatusPendaftaran.VERIFIED ||
-      item.status === StatusPendaftaran.ACCEPTED;
+    const prestasiItems = parseJsonRecords(item.riwayat?.prestasiData);
+    const organisasiItems = parseJsonRecords(item.riwayat?.organisasiData);
+    const bahasaItems = parseJsonRecords(item.riwayat?.bahasaData);
+    const tabCompletion = {
+      biodata: Boolean(item.biodata && hasRequiredValues(
+        item.biodata.namaLengkap, item.biodata.email, item.biodata.tempatLahir, item.biodata.tanggalLahir,
+        item.biodata.nik, item.biodata.nisn, item.biodata.kewarganegaraan, item.biodata.anakKe,
+        item.biodata.jumlahSaudara, item.biodata.statusKeluarga, item.biodata.tinggalBersama,
+        item.biodata.alamatLengkap, item.biodata.noHpWhatsapp, item.biodata.mediaSosial,
+        item.biodata.linkPengumpulanVideo, item.biodata.beratBadan, item.biodata.tinggiBadan,
+        item.biodata.riwayatPenyakit, item.biodata.isMerokok, item.biodata.isButaWarna,
+        item.biodata.hasPenyakitMenular, item.biodata.pernyataanSiswa, item.biodata.fotoFormalUrl
+      )),
+      riwayat: Boolean(item.riwayat
+        && historyIsComplete(prestasiItems, ['nama', 'tingkat', 'tanggal', 'buktiUrl'])
+        && historyIsComplete(organisasiItems, ['nama', 'jabatan', 'periode'])
+        && historyIsComplete(bahasaItems, ['nama', 'tingkat'])),
+      orangTua: Boolean(item.orangTua && hasRequiredValues(
+        item.orangTua.namaAyah, item.orangTua.pekerjaanAyah, item.orangTua.namaIbu,
+        item.orangTua.pekerjaanIbu, item.orangTua.noHpOi, item.orangTua.keadaanOrangTua,
+        item.orangTua.penghasilanOrangTua, item.orangTua.alamatDomisiliAyah, item.orangTua.pernyataanOrangTua
+      )),
+      sekolah: Boolean(item.sekolahAsal && hasRequiredValues(
+        item.sekolahAsal.namaSekolahAsal, item.sekolahAsal.npsnSekolah, item.sekolahAsal.statusSekolah,
+        item.sekolahAsal.tahunLulus, item.sekolahAsal.alamatSekolah
+      )),
+      berkas: Boolean(item.berkas && hasRequiredValues(
+        item.berkas.kkUrl, item.berkas.ktpOrangTuaUrl, item.berkas.kipUrl, item.berkas.akteUrl,
+        item.berkas.ijazahUrl, item.berkas.raporUrl, item.berkas.sktmUrl,
+        item.berkas.suratPernyataanCpdbUrl,
+        item.berkas.suratTidakMerokokUrl, item.berkas.tampakDepanRumahUrl,
+        item.berkas.tampakSampingRumahUrl, item.berkas.kamarTidurUrl,
+        item.berkas.kamarMandiUrl, item.berkas.ruangTamuUrl
+      )),
+      rekomendasi: Boolean(item.rekomendasi && hasRequiredValues(
+        item.rekomendasi.namaPemberiRekomendasi, item.rekomendasi.jabatanInstansi,
+        item.rekomendasi.noHpPemberiRekomendasi, item.rekomendasi.suratRekomendasiUrl,
+        item.rekomendasi.catatanRekomendasi
+      )),
+    };
+    const isAllTabsComplete = Object.values(tabCompletion).every(Boolean);
+    const isVerified = Boolean(item.nomorPendaftaran)
+      && (item.status === StatusPendaftaran.VERIFIED || item.status === StatusPendaftaran.ACCEPTED);
 
     return {
       success: true,
@@ -216,6 +311,10 @@ export async function getPendaftaranDetailAction(id: string) {
           ? ('Sudah Diverifikasi' as const)
           : ('Belum Diverifikasi' as const),
         isAllTabsComplete,
+        tabCompletion,
+        riwayatPrestasiItems: prestasiItems,
+        riwayatOrganisasiItems: organisasiItems,
+        riwayatBahasaItems: bahasaItems,
       },
     };
   } catch (err: unknown) {

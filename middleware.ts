@@ -10,5 +10,6 @@ export const config = {
     '/admin/:path*',
     '/login',
     '/ppdb/:path*',
+    '/spmb/:path*',
   ],
 };

@@ -71,7 +71,6 @@ export const berkasSchema = z.object({
   prestasiUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   bpjsUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   sktmUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
-  suratPernyataanWaliUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   suratPernyataanCpdbUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   suratTidakMerokokUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),
   tampakDepanRumahUrl: z.string().url('URL tidak valid').optional().or(z.literal('')),

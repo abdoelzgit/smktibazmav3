@@ -102,7 +102,6 @@ const initialFormData: AllFormData = {
   prestasiUrl: '',
   bpjsUrl: '',
   sktmUrl: '',
-  suratPernyataanWaliUrl: '',
   suratPernyataanCpdbUrl: '',
   suratTidakMerokokUrl: '',
   tampakDepanRumahUrl: '',

@@ -12,6 +12,7 @@ import { revalidatePath } from 'next/cache';
 import { convertImageToWebp, isAllowedDocument, isImageFile } from '@/lib/image.utils';
 import { getRelativeUploadPath, resolveUploadPath, toUploadUrl } from '@/lib/upload-storage';
 import { riwayatSiswaSchema } from '@/lib/validations/ppdb-form';
+import { toPhoneInputValue } from '@/lib/phone-input-value';
 
 const COOKIE_NAME = 'auth_session';
 const LEGACY_COOKIE_NAME = 'admin_session';
@@ -47,24 +48,18 @@ async function checkAndAutoVerifyPendaftaran(pendaftaranId: string) {
 
   if (!p) return;
 
+  // A draft must remain editable until the participant explicitly finalizes it.
+  if (p.status !== StatusPendaftaran.SUBMITTED) return;
+
   const isAllTabsComplete = Boolean(
     p.biodata && p.orangTua && p.sekolahAsal && p.rekomendasi && p.berkas
   );
 
   if (isAllTabsComplete) {
-    if (p.status !== StatusPendaftaran.VERIFIED && p.status !== StatusPendaftaran.ACCEPTED) {
-      await prisma.pendaftaran.update({
-        where: { id: pendaftaranId },
-        data: { status: StatusPendaftaran.VERIFIED },
-      });
-    }
-  } else {
-    if (p.status === StatusPendaftaran.VERIFIED) {
-      await prisma.pendaftaran.update({
-        where: { id: pendaftaranId },
-        data: { status: StatusPendaftaran.SUBMITTED },
-      });
-    }
+    await prisma.pendaftaran.update({
+      where: { id: pendaftaranId },
+      data: { status: StatusPendaftaran.VERIFIED },
+    });
   }
 }
 
@@ -107,6 +102,15 @@ async function getOrCreatePendaftaran(userId: string) {
   let pendaftaran = await prisma.pendaftaran.findUnique({
     where: { userId },
   });
+
+  // Older saves could be marked VERIFIED automatically before a registration number
+  // was assigned. Restore only those records; explicit finalization assigns a number.
+  if (pendaftaran?.status === 'VERIFIED' && !pendaftaran.nomorPendaftaran) {
+    pendaftaran = await prisma.pendaftaran.update({
+      where: { id: pendaftaran.id },
+      data: { status: 'DRAFT' },
+    });
+  }
 
   if (pendaftaran && ['SUBMITTED', 'VERIFIED', 'ACCEPTED'].includes(pendaftaran.status)) {
     throw new Error('Pendaftaran sudah difinalisasi dan tidak dapat diubah.');
@@ -181,7 +185,7 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
     const statusKeluarga = asString(formData.get('statusKeluarga')) || 'ANAK_KANDUNG';
     const tinggalBersama = asString(formData.get('tinggalBersama'));
     const alamatLengkap = asString(formData.get('alamatLengkap'));
-    const noHpWhatsapp = asString(formData.get('noHpWhatsapp'));
+    const noHpWhatsapp = toPhoneInputValue(formData.get('noHpWhatsapp')) ?? '';
     const mediaSosial = asString(formData.get('mediaSosial'));
     const linkPengumpulanVideo = asString(formData.get('linkPengumpulanVideo'));
     const setujuPanduanVideo = asBoolean(formData.get('setujuPanduanVideo'));
@@ -201,6 +205,13 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
     const isButaWarna = asBoolean(formData.get('isButaWarna'));
     const hasPenyakitMenular = asBoolean(formData.get('hasPenyakitMenular'));
     const pernyataanSiswa = asBoolean(formData.get('pernyataanSiswa'));
+
+    if (!setujuPanduanVideo) {
+      return { success: false, error: 'Persetujuan membaca panduan video wajib dicentang' };
+    }
+    if (!pernyataanSiswa) {
+      return { success: false, error: 'Pernyataan calon siswa harus disetujui sebelum data disimpan' };
+    }
 
     if (!namaLengkap) {
       return { success: false, error: 'Nama lengkap wajib diisi' };
@@ -272,7 +283,7 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/ppdb/dashboard/pendaftaran');
+    revalidatePath('/spmb/form');
     return { success: true, data: biodata };
   } catch (error) {
     console.error('saveDataDiriAction error:', error);
@@ -307,7 +318,7 @@ export async function saveRiwayatSiswaAction(formData: FormData): Promise<FormRe
       const oldItems = previous.prestasiData as { buktiUrl?: string }[];
       await Promise.all(oldItems.map((item) => item.buktiUrl && !retained.has(item.buktiUrl) ? deleteFileSilently(item.buktiUrl) : undefined));
     }
-    revalidatePath('/ppdb/dashboard/pendaftaran');
+    revalidatePath('/spmb/form');
     return { success: true, data: { ...saved, ...parsed.data, riwayatPrestasiItems: prestasiItems } };
   } catch {
     return { success: false, error: 'Gagal menyimpan riwayat.' };
@@ -328,10 +339,14 @@ export async function saveDataOrangTuaAction(formData: FormData): Promise<FormRe
     const alamatDomisiliAyah = asString(formData.get('alamatDomisiliAyah'));
     const namaIbu = asString(formData.get('namaIbu'));
     const pekerjaanIbu = asString(formData.get('pekerjaanIbu'));
-    const noHpOi = asString(formData.get('noHpOi'));
+    const noHpOi = toPhoneInputValue(formData.get('noHpOi')) ?? '';
     const keadaanOrangTua = asString(formData.get('keadaanOrangTua')) || 'LENGKAP';
     const penghasilanOrangTua = asString(formData.get('penghasilanOrangTua'));
     const pernyataanOrangTua = asBoolean(formData.get('pernyataanOrangTua'));
+
+    if (!pernyataanOrangTua) {
+      return { success: false, error: 'Pernyataan orang tua/wali harus disetujui sebelum data disimpan' };
+    }
 
     const orangTua = await prisma.dataOrangTua.upsert({
       where: { pendaftaranId: pendaftaran.id },
@@ -361,7 +376,7 @@ export async function saveDataOrangTuaAction(formData: FormData): Promise<FormRe
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/ppdb/dashboard/pendaftaran');
+    revalidatePath('/spmb/form');
     return { success: true, data: orangTua };
   } catch (error) {
     console.error('saveDataOrangTuaAction error:', error);
@@ -404,7 +419,7 @@ export async function saveDataSekolahAction(formData: FormData): Promise<FormRes
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/ppdb/dashboard/pendaftaran');
+    revalidatePath('/spmb/form');
     return { success: true, data: sekolah };
   } catch (error) {
     console.error('saveDataSekolahAction error:', error);
@@ -423,7 +438,7 @@ export async function saveRekomendasiAction(formData: FormData): Promise<FormRes
 
     const namaPemberiRekomendasi = asString(formData.get('namaPemberiRekomendasi')).trim();
     const jabatanInstansi = asString(formData.get('jabatanInstansi')).trim();
-    const noHpPemberiRekomendasi = asString(formData.get('noHpPemberiRekomendasi')).trim();
+    const noHpPemberiRekomendasi = toPhoneInputValue(formData.get('noHpPemberiRekomendasi')) ?? '';
     const existingRekomendasi = await prisma.suratRekomendasi.findUnique({
       where: { pendaftaranId: pendaftaran.id },
       select: { suratRekomendasiUrl: true },
@@ -461,7 +476,7 @@ export async function saveRekomendasiAction(formData: FormData): Promise<FormRes
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/ppdb/dashboard/pendaftaran');
+    revalidatePath('/spmb/form');
     return { success: true, data: rekomendasi };
   } catch (error) {
     console.error('saveRekomendasiAction error:', error);
@@ -492,7 +507,6 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
       { key: 'prestasiUrl', fieldName: 'prestasi', existingUrl: existingBerkas?.prestasiUrl },
       { key: 'bpjsUrl', fieldName: 'bpjs', existingUrl: existingBerkas?.bpjsUrl },
       { key: 'sktmUrl', fieldName: 'sktm', existingUrl: existingBerkas?.sktmUrl },
-      { key: 'suratPernyataanWaliUrl', fieldName: 'pernyataan-wali', existingUrl: existingBerkas?.suratPernyataanWaliUrl },
       { key: 'suratPernyataanCpdbUrl', fieldName: 'pernyataan-cpdb', existingUrl: existingBerkas?.suratPernyataanCpdbUrl },
       { key: 'suratTidakMerokokUrl', fieldName: 'pernyataan-tidak-merokok', existingUrl: existingBerkas?.suratTidakMerokokUrl },
       { key: 'tampakDepanRumahUrl', fieldName: 'rumah-depan', existingUrl: existingBerkas?.tampakDepanRumahUrl },
@@ -528,7 +542,6 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
     const prestasiUrl = savedUrls.prestasiUrl;
     const bpjsUrl = savedUrls.bpjsUrl;
     const sktmUrl = savedUrls.sktmUrl;
-    const suratPernyataanWaliUrl = savedUrls.suratPernyataanWaliUrl;
     const suratPernyataanCpdbUrl = savedUrls.suratPernyataanCpdbUrl;
     const suratTidakMerokokUrl = savedUrls.suratTidakMerokokUrl;
     const tampakDepanRumahUrl = savedUrls.tampakDepanRumahUrl;
@@ -549,7 +562,6 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
         prestasiUrl,
         bpjsUrl,
         sktmUrl,
-        suratPernyataanWaliUrl,
         suratPernyataanCpdbUrl,
         suratTidakMerokokUrl,
         tampakDepanRumahUrl,
@@ -569,7 +581,6 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
         prestasiUrl,
         bpjsUrl,
         sktmUrl,
-        suratPernyataanWaliUrl,
         suratPernyataanCpdbUrl,
         suratTidakMerokokUrl,
         tampakDepanRumahUrl,
@@ -581,7 +592,7 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/ppdb/dashboard/pendaftaran');
+    revalidatePath('/spmb/form');
     return { success: true, data: berkas };
   } catch (error) {
     console.error('uploadBerkasAction error:', error);
@@ -686,7 +697,7 @@ export async function submitPendaftaranAction(): Promise<FormResult> {
       return { success: false, error: 'Simpan semua tab formulir sebelum finalisasi.' };
     }
 
-    const nomorPendaftaran = `PPDB-${Date.now()}-${user.userId.slice(0, 6)}`;
+    const nomorPendaftaran = pendaftaran.nomorPendaftaran ?? `PPDB-${Date.now()}-${user.userId.slice(0, 6)}`;
 
     const updated = await prisma.pendaftaran.update({
       where: { id: pendaftaran.id },
@@ -697,7 +708,7 @@ export async function submitPendaftaranAction(): Promise<FormResult> {
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/ppdb/dashboard/pendaftaran');
+    revalidatePath('/spmb/form');
     return { success: true, data: updated };
   } catch (error) {
     console.error('submitPendaftaranAction error:', error);

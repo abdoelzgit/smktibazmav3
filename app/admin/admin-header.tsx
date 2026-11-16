@@ -24,7 +24,7 @@ const CUSTOM_OVERRIDE_LABELS: Record<string, string> = {
   berita: "Kelola Berita",
   new: "Buat Berita Baru",
   edit: "Edit Berita",
-  "data-ppdb": "Data PPDB",
+  "data-ppdb": "Data SPMB",
   "jejak-karya": "Jejak Karya",
 };
 

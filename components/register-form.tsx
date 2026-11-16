@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,11 @@ export function RegisterForm({
   onSwitchToLogin,
   ...props
 }: React.ComponentProps<"form"> & { onSwitchToLogin?: () => void }) {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+  const safeCallbackUrl = callbackUrl?.startsWith("/spmb/") || callbackUrl?.startsWith("/ppdb/dashboard")
+    ? callbackUrl
+    : null;
   const [state, action, isPending] = useActionState(registerPpdbAction, {
     success: false,
   });
@@ -21,9 +27,9 @@ export function RegisterForm({
 
   useEffect(() => {
     if (state?.success && state.redirectTo) {
-      window.location.href = state.redirectTo;
+      window.location.href = safeCallbackUrl ?? state.redirectTo;
     }
-  }, [state?.success, state?.redirectTo]);
+  }, [state?.success, state?.redirectTo, safeCallbackUrl]);
 
   const errorMessage = state?.error;
 
@@ -108,7 +114,7 @@ export function RegisterForm({
         type="button"
         variant="outline"
         className="w-full font-semibold"
-        onClick={() => signIn("google", { callbackUrl: "/ppdb/dashboard" })}
+        onClick={() => signIn("google", { callbackUrl: safeCallbackUrl ?? "/spmb/dashboard" })}
       >
         <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
           <path

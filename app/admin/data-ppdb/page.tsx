@@ -50,9 +50,11 @@ const CSV_HEADERS = [
   "Tinggal Bersama",
   "Alamat Lengkap",
   "Media Sosial",
-  "Bahasa Asing",
-  "Riwayat Prestasi",
-  "Riwayat Organisasi",
+  "Link Pengumpulan Video",
+  "Konfirmasi Membaca Panduan Video",
+  "Riwayat Bahasa (JSON)",
+  "Riwayat Prestasi (JSON)",
+  "Riwayat Organisasi (JSON)",
   "Berat Badan (kg)",
   "Tinggi Badan (cm)",
   "Riwayat Penyakit",
@@ -84,7 +86,25 @@ const CSV_HEADERS = [
   "Jabatan/Instansi Rekomendasi",
   "No. HP Pemberi Rekomendasi",
   "Catatan Rekomendasi",
+  "URL Surat Rekomendasi",
 
+  // 6. Dokumen terbaru
+  "URL KK",
+  "URL KTP Orang Tua/Wali",
+  "URL KIP/KIS/KPS/PHK",
+  "URL Akta Kelahiran",
+  "URL Ijazah/SKL",
+  "URL Rapor",
+  "URL Piagam Prestasi",
+  "URL BPJS",
+  "URL SKTM",
+  "URL Surat Pernyataan CPDB",
+  "URL Surat Pernyataan Tidak Merokok",
+  "URL Foto Tampak Depan Rumah",
+  "URL Foto Tampak Samping Rumah",
+  "URL Foto Kamar Tidur",
+  "URL Foto Kamar Mandi",
+  "URL Foto Ruang Tamu",
 
 ];
 
@@ -113,6 +133,10 @@ function formatCleanText(val?: string | null, fallback = "-"): string {
     .replace(/\s+/g, " ")
     .trim();
   return cleaned || fallback;
+}
+
+function formatJsonItems(items?: Array<Record<string, unknown>>): string {
+  return items?.length ? JSON.stringify(items) : "Tidak Ada";
 }
 
 // Helper: Standarisasi format nomor HP / WA (jika nomor angka diformat ke 08..., jika teks/keterangan tetap ditampilkan utuh)
@@ -214,9 +238,11 @@ function formatPesertaToRow(p: Peserta): string[] {
     formatCleanText(p.tinggalBersama),
     formatCleanText(p.alamat),
     formatCleanText(p.mediaSosial, "Tidak Ada"),
-    formatCleanText(p.bahasaAsing, "Tidak Ada"),
-    formatCleanText(p.riwayatPrestasi, "Tidak Ada"),
-    formatCleanText(p.riwayatOrganisasi, "Tidak Ada"),
+    formatCleanText(p.linkPengumpulanVideo),
+    p.setujuPanduanVideo ? "Sudah membaca" : "Belum dikonfirmasi",
+    formatJsonItems(p.riwayatBahasaItems),
+    formatJsonItems(p.riwayatPrestasiItems),
+    formatJsonItems(p.riwayatOrganisasiItems),
     p.beratBadan !== undefined && p.beratBadan !== null && String(p.beratBadan).trim() !== "" ? String(p.beratBadan) : "-",
     p.tinggiBadan !== undefined && p.tinggiBadan !== null && String(p.tinggiBadan).trim() !== "" ? String(p.tinggiBadan) : "-",
     formatCleanText(p.riwayatPenyakit, "Tidak Ada"),
@@ -248,6 +274,25 @@ function formatPesertaToRow(p: Peserta): string[] {
     formatCleanText(p.jabatanInstansi),
     formatPhoneNumber(p.noHpPemberiRekomendasi),
     formatCleanText(p.catatanRekomendasi, "Tidak Ada"),
+    formatCleanText(p.suratRekomendasiUrl),
+
+    // 6. Dokumen terbaru
+    formatCleanText(p.kkUrl),
+    formatCleanText(p.ktpOrangTuaUrl),
+    formatCleanText(p.kipUrl),
+    formatCleanText(p.akteUrl),
+    formatCleanText(p.ijazahUrl),
+    formatCleanText(p.raporUrl),
+    formatCleanText(p.prestasiUrl),
+    formatCleanText(p.bpjsUrl),
+    formatCleanText(p.sktmUrl),
+    formatCleanText(p.suratPernyataanCpdbUrl),
+    formatCleanText(p.suratTidakMerokokUrl),
+    formatCleanText(p.tampakDepanRumahUrl),
+    formatCleanText(p.tampakSampingRumahUrl),
+    formatCleanText(p.kamarTidurUrl),
+    formatCleanText(p.kamarMandiUrl),
+    formatCleanText(p.ruangTamuUrl),
   ];
 }
 
@@ -318,7 +363,7 @@ function downloadExcelFile(filename: string, rows: string[][]) {
           <x:ExcelWorkbook>
             <x:ExcelWorksheets>
               <x:ExcelWorksheet>
-                <x:Name>Data Peserta PPDB</x:Name>
+              <x:Name>Data Pendaftar SPMB</x:Name>
                 <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
               </x:ExcelWorksheet>
             </x:ExcelWorksheets>
@@ -401,7 +446,7 @@ export default function DashboardContent() {
     const safeName = (peserta.nama || "peserta").replace(/[^a-zA-Z0-9_-]/g, "_");
     const safeNisn = peserta.nisn && peserta.nisn !== "-" ? peserta.nisn : "no_nisn";
     // Gunakan sep=, agar tiap data masuk ke kolom A, B, C... terpisah
-    downloadCsvFile(`PPDB_${safeNisn}_${safeName}.csv`, [row], ",");
+      downloadCsvFile(`SPMB_${safeNisn}_${safeName}.csv`, [row], ",");
     showToast(`File data lengkap ${peserta.nama} berhasil diunduh.`);
   };
 
@@ -416,10 +461,10 @@ export default function DashboardContent() {
     const dateStr = new Date().toISOString().split("T")[0];
 
     if (formatType === "excel") {
-      downloadExcelFile(`PPDB_Semua_Peserta_${dateStr}.xls`, rows);
+      downloadExcelFile(`SPMB_Semua_Pendaftar_${dateStr}.xls`, rows);
       showToast("Seluruh data peserta berhasil diexport ke format Excel (.xls).");
     } else {
-      downloadCsvFile(`PPDB_Semua_Peserta_${dateStr}.csv`, rows, ",");
+      downloadCsvFile(`SPMB_Semua_Pendaftar_${dateStr}.csv`, rows, ",");
       showToast("Seluruh data peserta berhasil diexport ke CSV (Pemisah Koma).");
     }
   };
@@ -430,10 +475,10 @@ export default function DashboardContent() {
       <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-            Manajemen Data PPDB (Database)
+            Manajemen Data SPMB
           </h1>
           <p className="mt-1 text-xs text-slate-500">
-            Terhubung langsung dengan database PostgreSQL Prisma. Peserta otomatis terverifikasi setelah melengkapi semua informasi.
+            Data pendaftar dan status SPMB dimuat langsung dari database.
           </p>
         </div>
 

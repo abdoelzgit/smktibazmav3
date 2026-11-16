@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
+  Award,
   CheckCircle2,
   Clock,
   User,
@@ -19,14 +20,15 @@ import {
   Loader2,
 } from "lucide-react";
 import StatusBadge from "@/components/status-badge";
-import { getPendaftaranDetailAction } from "@/app/actions/ppdb-admin";
+import { getPendaftaranDetailAction, unlockPendaftaranAction } from "@/app/actions/ppdb-admin";
 import { FormStatusAlert } from "@/components/form-status-alert";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 interface DetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-type TabId = "biodata" | "orangTua" | "sekolah" | "rekomendasi" | "berkas";
+type TabId = "biodata" | "riwayat" | "orangTua" | "sekolah" | "rekomendasi" | "berkas";
 
 export default function DetailPendaftaranPage({ params }: DetailPageProps) {
   const { id } = use(params);
@@ -35,6 +37,34 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("biodata");
+  const [unlockDialogOpen, setUnlockDialogOpen] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
+  const [notice, setNotice] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const isFormLocked = Boolean(data?.nomorPendaftaran)
+    && ["SUBMITTED", "VERIFIED", "ACCEPTED"].includes(data?.status);
+
+  async function unlockForm() {
+    setUnlocking(true);
+    try {
+      const result = await unlockPendaftaranAction(id);
+      if (result.success) {
+        setData((current: Record<string, unknown> | null) => current ? {
+          ...current,
+          status: "DRAFT",
+          statusLabel: "Belum Diverifikasi",
+        } : current);
+        setNotice({ message: "Kunci formulir berhasil dibuka. Peserta dapat mengubah dan menyimpan datanya kembali.", type: "success" });
+        setUnlockDialogOpen(false);
+      } else {
+        setNotice({ message: result.error ?? "Gagal membuka kunci formulir.", type: "error" });
+      }
+    } catch {
+      setNotice({ message: "Gagal membuka kunci formulir. Silakan coba lagi.", type: "error" });
+    } finally {
+      setUnlocking(false);
+    }
+  }
 
   useEffect(() => {
     async function loadDetail() {
@@ -77,7 +107,7 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
               className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
             >
               <ArrowLeft className="h-4 w-4" />
-              Kembali ke Daftar PPDB
+              Kembali ke Daftar SPMB
             </Link>
           </div>
         </div>
@@ -85,14 +115,28 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
     );
   }
 
-  const { biodata, orangTua, sekolahAsal, rekomendasi, berkas, user, statusLabel, isAllTabsComplete } = data;
+  const {
+    biodata,
+    riwayatPrestasiItems = [],
+    riwayatOrganisasiItems = [],
+    riwayatBahasaItems = [],
+    orangTua,
+    sekolahAsal,
+    rekomendasi,
+    berkas,
+    user,
+    statusLabel,
+    isAllTabsComplete,
+    tabCompletion,
+  } = data;
 
-  const tabs: { id: TabId; label: string; icon: React.ElementType; complete: boolean }[] = [
-    { id: "biodata", label: "Data Diri", icon: User, complete: Boolean(biodata) },
-    { id: "orangTua", label: "Data Orang Tua", icon: Users, complete: Boolean(orangTua) },
-    { id: "sekolah", label: "Sekolah Asal", icon: GraduationCap, complete: Boolean(sekolahAsal) },
-    { id: "rekomendasi", label: "Surat Rekomendasi", icon: FileText, complete: Boolean(rekomendasi) },
-    { id: "berkas", label: "Berkas Lampiran", icon: FolderArchive, complete: Boolean(berkas) },
+  const tabs: { id: TabId; label: string; icon: React.ElementType; complete: boolean; hasData: boolean }[] = [
+    { id: "biodata", label: "Data Diri", icon: User, complete: tabCompletion.biodata, hasData: Boolean(biodata) },
+    { id: "riwayat", label: "Riwayat", icon: Award, complete: tabCompletion.riwayat, hasData: Boolean(data.riwayat) },
+    { id: "orangTua", label: "Data Orang Tua", icon: Users, complete: tabCompletion.orangTua, hasData: Boolean(orangTua) },
+    { id: "sekolah", label: "Sekolah Asal", icon: GraduationCap, complete: tabCompletion.sekolah, hasData: Boolean(sekolahAsal) },
+    { id: "rekomendasi", label: "Surat Rekomendasi", icon: FileText, complete: tabCompletion.rekomendasi, hasData: Boolean(rekomendasi) },
+    { id: "berkas", label: "Berkas Lampiran", icon: FolderArchive, complete: tabCompletion.berkas, hasData: Boolean(berkas) },
   ];
 
   const berkasItems = berkas
@@ -102,7 +146,10 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
         { label: "Akte Kelahiran", url: berkas.akteUrl },
         { label: "Ijazah / SKL", url: berkas.ijazahUrl },
         { label: "Rapor Sekolah", url: berkas.raporUrl },
-        { label: "KIP / SKTM", url: berkas.kipUrl },
+        { label: "KIP / KIS / KPS / PHK", url: berkas.kipUrl },
+        { label: "Surat Keterangan Tidak Mampu (SKTM)", url: berkas.sktmUrl },
+        { label: "Surat Pernyataan CPDB", url: berkas.suratPernyataanCpdbUrl },
+        { label: "Surat Pernyataan Tidak Merokok", url: berkas.suratTidakMerokokUrl },
         { label: "Kartu BPJS", url: berkas.bpjsUrl },
         { label: "Sertifikat Prestasi", url: berkas.prestasiUrl },
         { label: "Foto Tampak Depan Rumah", url: berkas.tampakDepanRumahUrl },
@@ -141,6 +188,12 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
           </div>
         </div>
 
+        <div className="flex flex-wrap items-center gap-3">
+        {isFormLocked && <button
+          type="button"
+          onClick={() => setUnlockDialogOpen(true)}
+          className="min-h-9 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+        >Buka kunci formulir</button>}
         <span
           className={`inline-flex items-center gap-1.5 self-start px-3 py-1.5 rounded-lg text-xs font-semibold border ${
             isAllTabsComplete
@@ -148,13 +201,29 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
               : "bg-amber-50 text-amber-800 border-amber-200"
           }`}
         >
-          {isAllTabsComplete ? (
-            <><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Semua Tab Lengkap (5/5)</>
+              {isAllTabsComplete ? (
+            <><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Semua Tab Lengkap ({tabs.length}/{tabs.length})</>
           ) : (
             <><Clock className="h-4 w-4 text-amber-600" /> Formulir Belum Lengkap</>
           )}
         </span>
+        </div>
       </div>
+
+      {notice && <FormStatusAlert message={notice.message} type={notice.type} onDismiss={() => setNotice(null)} />}
+
+      <Dialog open={unlockDialogOpen} onOpenChange={(open) => { if (!unlocking) setUnlockDialogOpen(open); }}>
+        <DialogContent>
+          <DialogTitle>Buka kunci formulir CPDB?</DialogTitle>
+          <DialogDescription>
+            Peserta dapat kembali mengubah dan menyimpan seluruh data formulir setelah kunci dibuka. Pastikan permintaan perubahan sudah dikonfirmasi oleh peserta.
+          </DialogDescription>
+          <div className="flex justify-end gap-2">
+            <button type="button" disabled={unlocking} onClick={() => setUnlockDialogOpen(false)} className="min-h-10 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-50">Batal</button>
+            <button type="button" disabled={unlocking} onClick={unlockForm} className="min-h-10 rounded-md bg-amber-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{unlocking ? "Membuka kunci…" : "Ya, buka kunci"}</button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Body */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -213,11 +282,11 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
                   <span className="font-medium text-slate-700">{tab.label}</span>
                   {tab.complete ? (
                     <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold text-[11px]">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Terisi
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Lengkap
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-amber-700 font-medium text-[11px]">
-                      <Clock className="h-3.5 w-3.5" /> Belum
+                      <Clock className="h-3.5 w-3.5" /> {tab.hasData ? "Belum lengkap" : "Belum diisi"}
                     </span>
                   )}
                 </button>
@@ -288,12 +357,12 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
                       label: "Catatan Kesehatan",
                       value: `Merokok: ${biodata.isMerokok ? "Ya" : "Tidak"} | Buta Warna: ${biodata.isButaWarna ? "Ya" : "Tidak"} | Penyakit Menular: ${biodata.hasPenyakitMenular ? "Ya" : "Tidak"}`,
                     },
-                    { label: "Bahasa Asing", value: biodata.bahasaAsing || "-" },
-                    { label: "Prestasi", value: biodata.riwayatPrestasi || "-" },
-                    { label: "Organisasi", value: biodata.riwayatOrganisasi || "-" },
                     { label: "Media Sosial", value: biodata.mediaSosial || "-" },
+                    { label: "Link Pengumpulan Video", value: biodata.linkPengumpulanVideo || "-" },
+                    { label: "Panduan Video", value: biodata.setujuPanduanVideo ? "Sudah dibaca" : "Belum dikonfirmasi" },
+                    { label: "Pernyataan Calon Siswa", value: biodata.pernyataanSiswa ? "Disetujui" : "Belum disetujui" },
                   ].map((item, i) => (
-                    <div key={i} className={`rounded-lg bg-slate-50 p-3 border border-slate-100 ${i >= 14 ? "" : ""}`}>
+                    <div key={i} className="rounded-lg bg-slate-50 p-3 border border-slate-100">
                       <span className="text-slate-400 font-medium block mb-0.5">{item.label}</span>
                       <span className="font-semibold text-slate-800">{item.value || "-"}</span>
                     </div>
@@ -310,6 +379,63 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
           )}
 
           {/* ── Tab: Data Orang Tua ── */}
+          {activeTab === "riwayat" && (
+            <section className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-5">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <Award className="h-4 w-4 text-blue-900" /> Riwayat Prestasi, Organisasi, dan Bahasa
+              </h3>
+
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-slate-700">Prestasi</h4>
+                {riwayatPrestasiItems.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    {riwayatPrestasiItems.map((item: Record<string, unknown>, index: number) => (
+                      <article key={String(item.id ?? index)} className="rounded-lg border border-slate-200 bg-slate-50 p-3.5 space-y-2">
+                        <p className="font-bold text-slate-900">{String(item.nama || "Prestasi")}</p>
+                        <p className="text-slate-600">{String(item.tingkat || "-")} · {String(item.penyelenggara || "-")}</p>
+                        <p className="text-slate-600">Tanggal: {String(item.tanggal || "-")}</p>
+                        {typeof item.buktiUrl === "string" && item.buktiUrl ? (
+                          <a href={item.buktiUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-semibold text-blue-900 hover:underline">
+                            <ExternalLink className="h-3.5 w-3.5" /> Buka bukti prestasi
+                          </a>
+                        ) : <span className="text-slate-400">Bukti tidak tersedia</span>}
+                      </article>
+                    ))}
+                  </div>
+                ) : <p className="text-xs text-slate-500">Tidak ada prestasi yang ditambahkan.</p>}
+              </div>
+
+              <div className="space-y-3 border-t border-slate-100 pt-4">
+                <h4 className="text-xs font-semibold text-slate-700">Organisasi</h4>
+                {riwayatOrganisasiItems.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    {riwayatOrganisasiItems.map((item: Record<string, unknown>, index: number) => (
+                      <article key={String(item.id ?? index)} className="rounded-lg border border-slate-200 bg-slate-50 p-3.5">
+                        <p className="font-bold text-slate-900">{String(item.nama || "Organisasi")}</p>
+                        <p className="mt-1 text-slate-600">Jabatan: {String(item.jabatan || "-")}</p>
+                        <p className="mt-1 text-slate-600">Periode: {String(item.periode || "-")}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : <p className="text-xs text-slate-500">Tidak ada organisasi yang ditambahkan.</p>}
+              </div>
+
+              <div className="space-y-3 border-t border-slate-100 pt-4">
+                <h4 className="text-xs font-semibold text-slate-700">Bahasa yang Dikuasai</h4>
+                {riwayatBahasaItems.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    {riwayatBahasaItems.map((item: Record<string, unknown>, index: number) => (
+                      <article key={String(item.id ?? index)} className="rounded-lg border border-slate-200 bg-slate-50 p-3.5">
+                        <p className="font-bold text-slate-900">{String(item.nama || "Bahasa")}</p>
+                        <p className="mt-1 text-slate-600">Tingkat penguasaan: {String(item.tingkat || "-")}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : <p className="text-xs text-slate-500">Tidak ada bahasa yang ditambahkan.</p>}
+              </div>
+            </section>
+          )}
+
           {activeTab === "orangTua" && (
             <section className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-5">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
@@ -326,6 +452,7 @@ export default function DetailPendaftaranPage({ params }: DetailPageProps) {
                     { label: "Keadaan Orang Tua", value: orangTua.keadaanOrangTua },
                     { label: "Penghasilan Orang Tua", value: orangTua.penghasilanOrangTua },
                     { label: "Alamat Domisili Ayah", value: orangTua.alamatDomisiliAyah },
+                    { label: "Pernyataan Orang Tua / Wali", value: orangTua.pernyataanOrangTua ? "Disetujui" : "Belum disetujui" },
                   ].map((item, i) => (
                     <div key={i} className="rounded-lg bg-slate-50 p-3 border border-slate-100">
                       <span className="text-slate-400 font-medium block mb-0.5">{item.label}</span>
