@@ -13,6 +13,7 @@ import { convertImageToWebp, isAllowedDocument, isImageFile } from '@/lib/image.
 import { getRelativeUploadPath, resolveUploadPath, toUploadUrl } from '@/lib/upload-storage';
 import { riwayatSiswaSchema } from '@/lib/validations/ppdb-form';
 import { toPhoneInputValue } from '@/lib/phone-input-value';
+import { schedulePpdbSheetSync } from '@/lib/ppdb-google-sheets';
 
 const COOKIE_NAME = 'auth_session';
 const LEGACY_COOKIE_NAME = 'admin_session';
@@ -123,6 +124,7 @@ async function getOrCreatePendaftaran(userId: string) {
         status: 'DRAFT',
       },
     });
+    await schedulePpdbSheetSync(pendaftaran.id);
   }
 
   return pendaftaran;
@@ -283,6 +285,7 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
+    await schedulePpdbSheetSync(pendaftaran.id);
     revalidatePath('/spmb/form');
     return { success: true, data: biodata };
   } catch (error) {
@@ -318,6 +321,7 @@ export async function saveRiwayatSiswaAction(formData: FormData): Promise<FormRe
       const oldItems = previous.prestasiData as { buktiUrl?: string }[];
       await Promise.all(oldItems.map((item) => item.buktiUrl && !retained.has(item.buktiUrl) ? deleteFileSilently(item.buktiUrl) : undefined));
     }
+    await schedulePpdbSheetSync(pendaftaran.id);
     revalidatePath('/spmb/form');
     return { success: true, data: { ...saved, ...parsed.data, riwayatPrestasiItems: prestasiItems } };
   } catch {
@@ -376,6 +380,7 @@ export async function saveDataOrangTuaAction(formData: FormData): Promise<FormRe
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
+    await schedulePpdbSheetSync(pendaftaran.id);
     revalidatePath('/spmb/form');
     return { success: true, data: orangTua };
   } catch (error) {
@@ -419,6 +424,7 @@ export async function saveDataSekolahAction(formData: FormData): Promise<FormRes
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
+    await schedulePpdbSheetSync(pendaftaran.id);
     revalidatePath('/spmb/form');
     return { success: true, data: sekolah };
   } catch (error) {
@@ -476,6 +482,7 @@ export async function saveRekomendasiAction(formData: FormData): Promise<FormRes
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
+    await schedulePpdbSheetSync(pendaftaran.id);
     revalidatePath('/spmb/form');
     return { success: true, data: rekomendasi };
   } catch (error) {
@@ -592,6 +599,7 @@ export async function uploadBerkasAction(formData: FormData): Promise<FormResult
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
+    await schedulePpdbSheetSync(pendaftaran.id);
     revalidatePath('/spmb/form');
     return { success: true, data: berkas };
   } catch (error) {
@@ -708,6 +716,7 @@ export async function submitPendaftaranAction(): Promise<FormResult> {
     });
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
+    await schedulePpdbSheetSync(pendaftaran.id);
     revalidatePath('/spmb/form');
     return { success: true, data: updated };
   } catch (error) {

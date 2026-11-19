@@ -10,13 +10,19 @@ import { uploadBerkasAction } from "@/app/actions/ppdb-form";
 import { useForm } from "@/components/form-context";
 import { FormStatusAlert } from "@/components/form-status-alert";
 
-const documentFields = [
+const identityFields = [
   ["kkUrl", "Kartu Keluarga (KK)"],
   ["ktpOrangTuaUrl", "KTP Orang Tua / Wali"],
-  ["kipUrl", "KIP/KIS/KPS/PHK"],
   ["akteUrl", "Akta Kelahiran / Surat Keterangan Lahir"],
+] as const;
+
+const educationFields = [
   ["ijazahUrl", "Ijazah / Surat Keterangan Lulus"],
   ["raporUrl", "Rapor Semester 1-4"],
+] as const;
+
+const supportingFields = [
+  ["kipUrl", "KIP/KIS/KPS/PHK"],
   ["bpjsUrl", "Kartu BPJS (Opsional)"],
   ["sktmUrl", "Surat Keterangan Tidak Mampu (SKTM)"],
   ["suratPernyataanCpdbUrl", "Surat Pernyataan CMB"],
@@ -37,9 +43,28 @@ const homePhotoFields = [
   ["ruangTamuUrl", "Ruang Tamu"],
 ] as const;
 
+const uploadSections = [
+  { title: "Identitas keluarga", description: "Dokumen identitas calon siswa dan orang tua.", fields: identityFields },
+  { title: "Dokumen pendidikan", description: "Ijazah atau surat kelulusan serta rapor.", fields: educationFields },
+  { title: "Bantuan dan pernyataan", description: "Dokumen pendukung dan surat pernyataan yang diperlukan.", fields: supportingFields },
+  { title: "Foto rumah", description: "Foto rumah dari sudut-sudut yang diminta.", fields: homePhotoFields },
+] as const;
+
 const UPLOAD_BATCH_SIZE = 4;
 const MAX_UPLOAD_FILE_SIZE = 10 * 1024 * 1024;
-const uploadFieldKeys = [...documentFields, ...homePhotoFields].map(([key]) => key);
+const uploadFieldKeys = [
+  "kkUrl",
+  "ktpOrangTuaUrl",
+  "kipUrl",
+  "akteUrl",
+  "ijazahUrl",
+  "raporUrl",
+  "bpjsUrl",
+  "sktmUrl",
+  "suratPernyataanCpdbUrl",
+  "suratTidakMerokokUrl",
+  ...homePhotoFields.map(([key]) => key),
+];
 
 export default function BerkasTab({ isLocked = false, action }: { isLocked?: boolean; action?: unknown } = {}) {
   void action;
@@ -195,25 +220,32 @@ export default function BerkasTab({ isLocked = false, action }: { isLocked?: boo
 
   return (
     <form onSubmit={handleSubmit} className="w-full min-w-0 space-y-6">
-      <section aria-labelledby="required-documents-heading">
-        <div className="mb-3">
-          <h2 id="required-documents-heading" className="text-xs font-semibold text-gray-800">Berkas pendukung</h2>
-          <p className="mt-1 text-xs text-gray-500">Pilih beberapa berkas sekaligus. Sistem mengunggahnya dalam batch agar ukuran tiap permintaan tetap aman.</p>
-        </div>
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:gap-3.5">
-          {documentFields.map(([key, label]) => renderUploadField(key as keyof typeof formData, label))}
-        </div>
-      </section>
+      <div className="space-y-5">
+        {uploadSections.map(({ title, description, fields }, index) => {
+          const headingId = `upload-section-${index + 1}`;
 
-      <section aria-labelledby="home-photos-heading" className="border-t border-gray-200 pt-5">
-        <div className="mb-3">
-          <h2 id="home-photos-heading" className="text-xs font-semibold text-gray-800">Foto rumah yang ditempati</h2>
-          <p className="mt-1 text-xs text-gray-500">Tambahkan foto sesuai sudut yang diminta.</p>
-        </div>
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:gap-3.5">
-          {homePhotoFields.map(([key, label]) => renderUploadField(key as keyof typeof formData, label))}
-        </div>
-      </section>
+          return (
+            <section
+              key={title}
+              aria-labelledby={headingId}
+              className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5"
+            >
+              <div className="mb-4 flex items-start gap-3">
+                <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-md bg-[#132b6d]/8 text-xs font-semibold text-[#132b6d]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h2 id={headingId} className="text-sm font-semibold text-gray-900">{title}</h2>
+                  <p className="mt-1 text-xs leading-5 text-gray-500">{description}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:gap-3.5">
+                {fields.map(([key, label]) => renderUploadField(key as keyof typeof formData, label))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
 
       {!isLocked && <div className="flex flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-end">
         {status && <FormStatusAlert {...status} onDismiss={() => setStatus(null)} />}

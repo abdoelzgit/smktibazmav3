@@ -6,6 +6,10 @@ import { StatusPendaftaran } from '@prisma/client';
 import { Peserta } from '@/components/types';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/app/actions/auth';
+import { google } from 'googleapis';
+import path from 'node:path';
+import { z } from 'zod';
+import { getPpdbSheetKey, schedulePpdbSheetSync } from '@/lib/ppdb-google-sheets';
 
 const AUTH_COOKIE_NAME = 'auth_session';
 
@@ -18,6 +22,113 @@ export type ActionResult<T = unknown> = {
 export type PesertaAdminData = Peserta & {
   rawStatus: StatusPendaftaran;
 };
+
+const googleSheetsSyncSchema = z.object({
+  headers: z.array(z.string().trim().min(1).max(100)).min(1).max(100),
+  rows: z.array(z.array(z.string().max(50000)).max(100)).max(10000),
+});
+
+export async function syncPendaftaranToGoogleSheetsAction(
+  input: { headers: string[]; rows: string[][] }
+): Promise<ActionResult<{ url: string; rowCount: number }>> {
+  try {
+    const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
+    const session = token ? await verifyToken(token) : null;
+    if (session?.role !== 'ADMIN') {
+      return { success: false, error: 'Hanya admin yang dapat menyinkronkan rekap SPMB.' };
+    }
+
+    const parsedInput = googleSheetsSyncSchema.safeParse(input);
+    if (!parsedInput.success) {
+      return { success: false, error: 'Format data rekap tidak valid.' };
+    }
+
+    const { headers, rows } = parsedInput.data;
+    if (rows.some((row) => row.length !== headers.length)) {
+      return { success: false, error: 'Jumlah kolom rekap tidak konsisten.' };
+    }
+
+    const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+    if (!spreadsheetId) {
+      return { success: false, error: 'Konfigurasi GOOGLE_SHEETS_SPREADSHEET_ID belum diatur.' };
+    }
+
+    const auth = new google.auth.GoogleAuth({
+      keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(process.cwd(), 'credential.json'),
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+    const sheets = google.sheets({ version: 'v4', auth });
+    const sheetTitle = process.env.GOOGLE_SHEETS_TAB_NAME || 'Rekap Peserta';
+    let metadata = await sheets.spreadsheets.get({
+      spreadsheetId,
+      fields: 'sheets.properties',
+    });
+    let targetSheet = metadata.data.sheets?.find((sheet) => sheet.properties?.title === sheetTitle);
+
+    if (!targetSheet) {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: { requests: [{ addSheet: { properties: { title: sheetTitle } } }] },
+      });
+      metadata = await sheets.spreadsheets.get({
+        spreadsheetId,
+        fields: 'sheets.properties',
+      });
+      targetSheet = metadata.data.sheets?.find((sheet) => sheet.properties?.title === sheetTitle);
+    }
+
+    const sheetId = targetSheet?.properties?.sheetId;
+    if (sheetId === undefined) {
+      return { success: false, error: 'Tab rekap Google Sheets tidak dapat disiapkan.' };
+    }
+
+    const requiredRows = rows.length + 1;
+    const requiredColumns = headers.length;
+    const currentGrid = targetSheet.properties?.gridProperties;
+    if ((currentGrid?.rowCount ?? 0) < requiredRows || (currentGrid?.columnCount ?? 0) < requiredColumns) {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [{
+            updateSheetProperties: {
+              properties: {
+                sheetId,
+                gridProperties: {
+                  rowCount: Math.max(currentGrid?.rowCount ?? 0, requiredRows),
+                  columnCount: Math.max(currentGrid?.columnCount ?? 0, requiredColumns),
+                },
+              },
+              fields: 'gridProperties.rowCount,gridProperties.columnCount',
+            },
+          }],
+        },
+      });
+    }
+
+    const quotedSheetTitle = `'${sheetTitle.replace(/'/g, "''")}'`;
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId,
+      range: `${quotedSheetTitle}!A:ZZ`,
+    });
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${quotedSheetTitle}!A1`,
+      valueInputOption: 'RAW',
+      requestBody: { values: [headers, ...rows] },
+    });
+
+    return {
+      success: true,
+      data: {
+        url: `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/edit`,
+        rowCount: rows.length,
+      },
+    };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Gagal menyinkronkan rekap ke Google Sheets.';
+    return { success: false, error: msg };
+  }
+}
 
 export async function unlockPendaftaranAction(id: string): Promise<ActionResult> {
   try {
@@ -40,6 +151,8 @@ export async function unlockPendaftaranAction(id: string): Promise<ActionResult>
       where: { id },
       data: { status: StatusPendaftaran.DRAFT },
     });
+
+    await schedulePpdbSheetSync(id);
 
     revalidatePath('/admin/data-ppdb');
     revalidatePath(`/admin/data-ppdb/${id}`);
@@ -218,6 +331,8 @@ export async function updatePendaftaranStatusAction(
       data: { status: targetStatus },
     });
 
+    await schedulePpdbSheetSync(id);
+
     revalidatePath('/admin/data-ppdb');
     return { success: true };
   } catch (err: unknown) {
@@ -228,9 +343,17 @@ export async function updatePendaftaranStatusAction(
 
 export async function deletePendaftaranAction(id: string): Promise<ActionResult> {
   try {
+    const pendaftaran = await prisma.pendaftaran.findUnique({
+      where: { id },
+      select: { id: true, nomorPendaftaran: true },
+    });
+    if (!pendaftaran) return { success: false, error: 'Data pendaftaran tidak ditemukan.' };
+
     await prisma.pendaftaran.delete({
       where: { id },
     });
+
+    await schedulePpdbSheetSync(id, 'DELETE', getPpdbSheetKey(id, pendaftaran.nomorPendaftaran));
 
     revalidatePath('/admin/data-ppdb');
     return { success: true };

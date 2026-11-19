@@ -13,7 +13,6 @@ import {
   Loader2,
   ChevronDown,
   FileSpreadsheet,
-  FileText,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,6 +23,7 @@ import {
 import {
   getPendaftaranPpdbListAction,
   deletePendaftaranAction,
+  syncPendaftaranToGoogleSheetsAction,
 } from "@/app/actions/ppdb-admin";
 import { useToast } from "@/components/toast-provider";
 
@@ -217,7 +217,7 @@ function formatPesertaToRow(p: Peserta): string[] {
 
   return [
     // 1. Data Registrasi
-    formatCleanText(p.nomorPendaftaran),
+    formatCleanText(p.nomorPendaftaran || p.id.slice(-6).toUpperCase()),
     p.status || "Belum Diverifikasi",
     formatCleanText(p.tanggalDaftar),
     formatCleanText(p.namaAkun),
@@ -391,7 +391,7 @@ function downloadExcelFile(filename: string, rows: string[][]) {
 }
 
 export default function DashboardContent() {
-  const { showToast: notify } = useToast();
+  const { showToast } = useToast();
   const [pesertaList, setPesertaList] = useState<Peserta[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPending, startTransition] = useTransition();
@@ -415,10 +415,6 @@ export default function DashboardContent() {
   const totalTerverifikasi = pesertaList.filter((p) => p.status === "Sudah Diverifikasi").length;
   const totalBelumTerverifikasi = totalPeserta - totalTerverifikasi;
   const verifikasiPercentage = totalPeserta > 0 ? Math.round((totalTerverifikasi / totalPeserta) * 100) : 0;
-
-  const showToast = (message: string, type: "success" | "error" | "warning" = "success") => {
-    setNotification({ message, type });
-  };
 
   const handleDelete = (peserta: Peserta) => {
     showToast(`Hapus data pendaftaran ${peserta.nama}? Tindakan ini tidak dapat dibatalkan.`, "warning", {
@@ -450,8 +446,7 @@ export default function DashboardContent() {
     showToast(`File data lengkap ${peserta.nama} berhasil diunduh.`);
   };
 
-  // Export seluruh data peserta dengan 2 opsi format: Excel (.xls) dan CSV (Koma)
-  const handleExportAll = (formatType: "csv" | "excel") => {
+  const handleExportAll = () => {
     if (pesertaList.length === 0) {
       showToast("Tidak ada data untuk diexport.", "warning");
       return;
@@ -459,14 +454,35 @@ export default function DashboardContent() {
 
     const rows = pesertaList.map(formatPesertaToRow);
     const dateStr = new Date().toISOString().split("T")[0];
+    downloadExcelFile(`SPMB_Semua_Pendaftar_${dateStr}.xls`, rows);
+    showToast("Seluruh data peserta berhasil diexport ke format Excel (.xls).");
+  };
 
-    if (formatType === "excel") {
-      downloadExcelFile(`SPMB_Semua_Pendaftar_${dateStr}.xls`, rows);
-      showToast("Seluruh data peserta berhasil diexport ke format Excel (.xls).");
-    } else {
-      downloadCsvFile(`SPMB_Semua_Pendaftar_${dateStr}.csv`, rows, ",");
-      showToast("Seluruh data peserta berhasil diexport ke CSV (Pemisah Koma).");
+  const handleSyncToGoogleSheets = () => {
+    if (pesertaList.length === 0) {
+      showToast("Tidak ada data peserta untuk disinkronkan.", "warning");
+      return;
     }
+
+    const rows = pesertaList.map(formatPesertaToRow);
+    const spreadsheetTab = window.open("about:blank", "_blank");
+    if (spreadsheetTab) spreadsheetTab.opener = null;
+
+    startTransition(async () => {
+      const result = await syncPendaftaranToGoogleSheetsAction({ headers: CSV_HEADERS, rows });
+      if (!result.success || !result.data) {
+        spreadsheetTab?.close();
+        showToast(result.error || "Gagal menyinkronkan rekap ke Google Sheets.", "error");
+        return;
+      }
+
+      if (spreadsheetTab) {
+        spreadsheetTab.location.href = result.data.url;
+      } else {
+        window.location.assign(result.data.url);
+      }
+      showToast(`${result.data.rowCount} peserta berhasil disinkronkan ke Google Sheets.`);
+    });
   };
 
   return (
@@ -503,7 +519,7 @@ export default function DashboardContent() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" sideOffset={6} className="w-68 p-1.5">
               <DropdownMenuItem
-                onClick={() => handleExportAll("excel")}
+                onClick={handleExportAll}
                 className="cursor-pointer font-medium p-2.5 rounded-md hover:bg-slate-100 transition"
               >
                 <FileSpreadsheet className="h-4 w-4 text-emerald-600 mr-2 shrink-0" />
@@ -516,14 +532,19 @@ export default function DashboardContent() {
               </DropdownMenuItem>
 
               <DropdownMenuItem
-                onClick={() => handleExportAll("csv")}
+                onClick={handleSyncToGoogleSheets}
+                disabled={isPending || loading}
                 className="cursor-pointer font-medium p-2.5 rounded-md hover:bg-slate-100 transition"
               >
-                <FileText className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 text-emerald-700 mr-2 shrink-0 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="h-4 w-4 text-emerald-700 mr-2 shrink-0" />
+                )}
                 <div>
-                  <p className="text-xs font-semibold text-slate-900">Format CSV (.csv)</p>
+                  <p className="text-xs font-semibold text-slate-900">Lihat di Google Sheets</p>
                   <p className="text-[10.5px] text-slate-500 leading-tight">
-                     untuk auto-kolom CSV
+                    Sinkronkan rekap lalu buka spreadsheet
                   </p>
                 </div>
               </DropdownMenuItem>
