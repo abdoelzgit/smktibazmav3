@@ -28,6 +28,30 @@ const googleSheetsSyncSchema = z.object({
   rows: z.array(z.array(z.string().max(50000)).max(100)).max(10000),
 });
 
+function getGoogleSheetsUrl(spreadsheetId: string) {
+  return `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/edit`;
+}
+
+export async function getPpdbGoogleSheetsUrlAction(): Promise<ActionResult<{ url: string }>> {
+  try {
+    const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
+    const session = token ? await verifyToken(token) : null;
+    if (session?.role !== 'ADMIN') {
+      return { success: false, error: 'Hanya admin yang dapat membuka rekap SPMB.' };
+    }
+
+    const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+    if (!spreadsheetId) {
+      return { success: false, error: 'Spreadsheet rekap belum dikonfigurasi.' };
+    }
+
+    return { success: true, data: { url: getGoogleSheetsUrl(spreadsheetId) } };
+  } catch (error) {
+    console.error('Gagal menyiapkan tautan Google Sheets:', error);
+    return { success: false, error: 'Gagal menyiapkan tautan Google Sheets.' };
+  }
+}
+
 export async function syncPendaftaranToGoogleSheetsAction(
   input: { headers: string[]; rows: string[][] }
 ): Promise<ActionResult<{ url: string; rowCount: number }>> {
@@ -120,7 +144,7 @@ export async function syncPendaftaranToGoogleSheetsAction(
     return {
       success: true,
       data: {
-        url: `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/edit`,
+        url: getGoogleSheetsUrl(spreadsheetId),
         rowCount: rows.length,
       },
     };
