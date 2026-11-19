@@ -1,14 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { Check, Eye, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { DocumentPreviewDialog } from "@/components/ppdb-document-preview";
-import { uploadBerkasAction } from "@/app/actions/ppdb-form";
+import React, { useEffect, useState } from "react";
+import { FileUploadField } from "@/components/spmb/FileUploadField";
 import { useForm } from "@/components/form-context";
-import { FormStatusAlert } from "@/components/form-status-alert";
+import type { BerkasKey } from "@/lib/ppdb-upload.config";
 
 const documentFields = [
   ["kkUrl", "Kartu Keluarga (KK)"],
@@ -21,12 +16,12 @@ const documentFields = [
   ["sktmUrl", "Surat Keterangan Tidak Mampu (SKTM)"],
   ["suratPernyataanCpdbUrl", "Surat Pernyataan CMB"],
   ["suratTidakMerokokUrl", "Surat Pernyataan Tidak Merokok"],
-] as const;
+] as const satisfies readonly (readonly [BerkasKey, string])[];
 
-const documentTemplateLinks: Record<string, string> = {
-  sktmUrl: "https://drive.google.com/file/d/1YSb-ZQtKtEE6h6NoKxDJI2b5x4tk5Guy/view?usp=drive_link",
-  suratPernyataanCpdbUrl: "https://drive.google.com/file/d/1g3h-JMwiocfOIUOwSoyNve0hkTOqDFWP/view?usp=sharing",
-  suratTidakMerokokUrl: "https://drive.google.com/file/d/1Is7cUnbV7SjEIOlvfTaGAJFpGK1Pyghl/view?usp=sharing",
+const documentTemplateLinks: Partial<Record<BerkasKey, string>> = {
+  sktmUrl: "https://drive.google.com/file/d/1M4t5Ah80w3FK2rWUydxkTmgc-99DfBLk/view?usp=sharing",
+  suratPernyataanCpdbUrl: "https://drive.google.com/file/d/16c9Sqb7wxdYQn_m78n7v636P1quXNWpF/view?usp=sharing",
+  suratTidakMerokokUrl: "https://drive.google.com/file/d/1UjBk4qD0K0RtOmQ4Z1_3b7RRHXC5GLj_/view?usp=sharing",
 };
 
 const homePhotoFields = [
@@ -35,198 +30,85 @@ const homePhotoFields = [
   ["kamarTidurUrl", "Kamar Tidur"],
   ["kamarMandiUrl", "Foto Kamar Mandi"],
   ["ruangTamuUrl", "Ruang Tamu"],
-] as const;
+] as const satisfies readonly (readonly [BerkasKey, string])[];
 
-const UPLOAD_BATCH_SIZE = 4;
-const MAX_UPLOAD_FILE_SIZE = 10 * 1024 * 1024;
-const uploadFieldKeys = [...documentFields, ...homePhotoFields].map(([key]) => key);
+const uploadFieldKeys: BerkasKey[] = [...documentFields, ...homePhotoFields].map(([key]) => key);
 
-export default function BerkasTab({ isLocked = false, action }: { isLocked?: boolean; action?: unknown } = {}) {
-  void action;
+export default function BerkasTab({ isLocked = false }: { isLocked?: boolean } = {}) {
   const { formData, updateFields } = useForm();
-  const [selectedFiles, setSelectedFiles] = useState<Record<string, File | null>>({});
-  const [status, setStatus] = useState<{ message: string; type: "info" | "success" | "error" } | null>(null);
-  const [preview, setPreview] = useState<{ file: File | string; title: string } | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [activeUploadKeys, setActiveUploadKeys] = useState<Set<BerkasKey>>(() => new Set());
+  const savedCount = uploadFieldKeys.filter((key) => Boolean(formData[key])).length;
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const pendingFiles = uploadFieldKeys.flatMap((key) => {
-      const file = selectedFiles[key];
-      return file ? [[key, file] as const] : [];
-    });
+  useEffect(() => {
+    if (activeUploadKeys.size === 0) return;
 
-    if (pendingFiles.length === 0) {
-      setStatus({ message: "Pilih berkas yang ingin diunggah terlebih dahulu.", type: "error" });
-      return;
-    }
+    const warnBeforeLeaving = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
 
-    const oversizedFile = pendingFiles.find(([, file]) => file.size > MAX_UPLOAD_FILE_SIZE);
-    if (oversizedFile) {
-      setStatus({ message: `${oversizedFile[1].name} melebihi batas 10 MB per berkas.`, type: "error" });
-      return;
-    }
+    window.addEventListener("beforeunload", warnBeforeLeaving);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
+  }, [activeUploadKeys.size]);
 
-    const totalBatches = Math.ceil(pendingFiles.length / UPLOAD_BATCH_SIZE);
-    setIsSaving(true);
-
-    try {
-      for (let index = 0; index < totalBatches; index += 1) {
-        const batch = pendingFiles.slice(index * UPLOAD_BATCH_SIZE, (index + 1) * UPLOAD_BATCH_SIZE);
-        const batchData = new FormData();
-        batch.forEach(([key, file]) => batchData.append(key, file, file.name));
-
-        setStatus({ message: `Mengunggah batch ${index + 1} dari ${totalBatches}...`, type: "info" });
-        const result = await uploadBerkasAction(batchData);
-
-        if (!result.success) {
-          setStatus({
-            message: `Batch ${index + 1} gagal: ${result.error ?? "Berkas gagal disimpan."} Batch sebelumnya tetap tersimpan.`,
-            type: "error",
-          });
-          return;
-        }
-
-        if (result.data && typeof result.data === "object") {
-          updateFields("Berkas", result.data as Record<string, unknown>);
-        }
-
-        setSelectedFiles((current) => {
-          const remaining = { ...current };
-          batch.forEach(([key]) => delete remaining[key]);
-          return remaining;
+  const renderField = ([fieldKey, label]: readonly [BerkasKey, string]) => (
+    <FileUploadField
+      key={fieldKey}
+      fieldKey={fieldKey}
+      label={label}
+      initialUrl={formData[fieldKey] as string | null | undefined}
+      isLocked={isLocked}
+      templateUrl={documentTemplateLinks[fieldKey]}
+      onChange={(url) => updateFields("Berkas", { [fieldKey]: url })}
+      onUploadActivity={(active) => {
+        setActiveUploadKeys((current) => {
+          const next = new Set(current);
+          if (active) next.add(fieldKey);
+          else next.delete(fieldKey);
+          return next;
         });
-      }
-
-      setStatus({ message: `${pendingFiles.length} berkas berhasil disimpan.`, type: "success" });
-    } catch {
-      setStatus({
-        message: "Upload terhenti. Berkas dari batch yang sudah selesai tetap tersimpan; simpan lagi untuk melanjutkan.",
-        type: "error",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleFileChange = (fileKey: string, file: File | undefined) => {
-    setSelectedFiles((currentFiles) => ({ ...currentFiles, [fileKey]: file ?? null }));
-    setStatus(null);
-  };
-
-  const renderUploadField = (key: keyof typeof formData, label: string) => {
-    const inputId = `upload-${key}`;
-    const existingUrl = formData[key] as string | undefined;
-    const selectedFile = selectedFiles[key];
-
-    return (
-      <article key={key} className="flex min-w-0 flex-col rounded-lg border border-gray-200 bg-white p-3.5 transition-colors hover:border-gray-300 sm:p-4">
-        <div className="flex min-w-0 items-start gap-2">
-          <div className="min-w-0 flex-1">
-            <label htmlFor={inputId} className="block text-[13px] font-semibold leading-5 text-gray-900">{label}</label>
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-gray-500">
-              <span>PDF atau gambar · maksimal 10 MB</span>
-              {documentTemplateLinks[key] && (
-                <Link href={documentTemplateLinks[key]} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-800 underline underline-offset-2 hover:text-blue-950">
-                  Unduh template
-                </Link>
-              )}
-            </div>
-          </div>
-          {existingUrl && !selectedFile && (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-800">
-              <Check className="size-3" aria-hidden="true" /> Tersimpan
-            </span>
-          )}
-        </div>
-
-        <div className="my-3 border-t border-gray-100" />
-
-        <div className="relative">
-          {!isLocked && <Input
-            id={inputId}
-            name={key}
-            type="file"
-            accept=".pdf,image/*"
-            disabled={isSaving}
-            onChange={(event) => handleFileChange(key, event.target.files?.[0])}
-            aria-label={`Pilih ${label}`}
-            className="peer absolute inset-0 z-10 h-11 w-full cursor-pointer opacity-0"
-          />}
-          {selectedFile ? (
-            <div className="flex min-h-11 min-w-0 items-center gap-2 rounded-md bg-gray-50 px-2.5 py-2 peer-hover:bg-gray-100 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#132b6d]">
-              <FileText className="size-4 shrink-0 text-[#132b6d]" aria-hidden="true" />
-              <span className="min-w-0 flex-1 truncate text-xs font-medium text-gray-800">{selectedFile.name}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="relative z-20 h-8 shrink-0 px-2"
-                onClick={() => setPreview({ file: selectedFile, title: label })}
-              >
-                <Eye aria-hidden="true" />
-                Preview
-              </Button>
-            </div>
-          ) : existingUrl ? (
-            <div className="flex min-h-11 min-w-0 items-center gap-2 rounded-md bg-emerald-50/70 px-2.5 py-2 text-xs text-emerald-900 peer-hover:bg-emerald-50 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#132b6d]">
-              <FileText className="size-4 shrink-0" aria-hidden="true" />
-              <span className="min-w-0 flex-1 truncate">Berkas tersimpan</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="relative z-20 h-8 shrink-0 px-2 text-emerald-900"
-                onClick={() => setPreview({ file: existingUrl, title: label })}
-              >
-                <Eye aria-hidden="true" />
-                Preview
-              </Button>
-            </div>
-          ) : (
-            <span className="flex min-h-11 items-center justify-center rounded-md border border-gray-200 bg-gray-50 px-3 text-xs font-medium text-gray-700 transition-colors peer-hover:bg-gray-100 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#132b6d]">
-              Pilih dokumen
-            </span>
-          )}
-        </div>
-      </article>
-    );
-  };
+      }}
+    />
+  );
 
   return (
-    <form onSubmit={handleSubmit} className="w-full min-w-0 space-y-6">
+    <div className="w-full min-w-0 space-y-6">
+      <div className="flex flex-col gap-1 border-b border-gray-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-sm font-semibold text-gray-900">Berkas pendaftaran</h2>
+          <p className="mt-1 text-xs leading-5 text-gray-600">
+            Setiap berkas diunggah sendiri setelah dipilih. Anda tidak perlu menunggu atau mengirim semua berkas sekaligus.
+          </p>
+        </div>
+        <p className="shrink-0 text-xs font-medium text-gray-700" aria-live="polite">
+          {savedCount} dari {uploadFieldKeys.length} berkas tersimpan
+        </p>
+      </div>
+
       <section aria-labelledby="required-documents-heading">
         <div className="mb-3">
-          <h2 id="required-documents-heading" className="text-xs font-semibold text-gray-800">Berkas pendukung</h2>
-          <p className="mt-1 text-xs text-gray-500">Pilih beberapa berkas sekaligus. Sistem mengunggahnya dalam batch agar ukuran tiap permintaan tetap aman.</p>
+          <h3 id="required-documents-heading" className="text-xs font-semibold text-gray-800">Berkas pendukung</h3>
+          <p className="mt-1 text-xs text-gray-600">Format PDF, JPG, PNG, atau WebP. Maksimal 5 MB per berkas.</p>
         </div>
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:gap-3.5">
-          {documentFields.map(([key, label]) => renderUploadField(key as keyof typeof formData, label))}
+          {documentFields.map(renderField)}
         </div>
       </section>
 
       <section aria-labelledby="home-photos-heading" className="border-t border-gray-200 pt-5">
         <div className="mb-3">
-          <h2 id="home-photos-heading" className="text-xs font-semibold text-gray-800">Foto rumah yang ditempati</h2>
-          <p className="mt-1 text-xs text-gray-500">Tambahkan foto sesuai sudut yang diminta.</p>
+          <h3 id="home-photos-heading" className="text-xs font-semibold text-gray-800">Foto rumah yang ditempati</h3>
+          <p className="mt-1 text-xs text-gray-600">Pilih dan unggah tiap foto secara terpisah.</p>
         </div>
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:gap-3.5">
-          {homePhotoFields.map(([key, label]) => renderUploadField(key as keyof typeof formData, label))}
+          {homePhotoFields.map(renderField)}
         </div>
       </section>
 
-      {!isLocked && <div className="flex flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-end">
-        {status && <FormStatusAlert {...status} onDismiss={() => setStatus(null)} />}
-        <button type="submit" disabled={isSaving} className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#132b6d] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0f2257] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#132b6d] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">
-          {isSaving ? "Mengunggah..." : "Simpan berkas"}
-        </button>
-      </div>}
-      <DocumentPreviewDialog
-        open={Boolean(preview)}
-        file={preview?.file ?? null}
-        title={preview?.title ?? "berkas"}
-        onOpenChange={(open) => { if (!open) setPreview(null); }}
-      />
-    </form>
+      <p className="text-xs text-gray-600">
+        Template surat dapat diunduh dari tautan pada masing-masing berkas.
+        {isLocked && <span> Formulir ini hanya dapat dilihat.</span>}
+      </p>
+    </div>
   );
 }

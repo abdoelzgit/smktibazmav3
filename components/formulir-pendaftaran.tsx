@@ -12,7 +12,6 @@ import { saveDataDiriAction, saveRiwayatSiswaAction } from "@/app/actions/ppdb-f
 import { saveDataOrangTuaAction } from "@/app/actions/ppdb-form";
 import { saveDataSekolahAction } from "@/app/actions/ppdb-form";
 import { saveRekomendasiAction } from "@/app/actions/ppdb-form";
-import { uploadBerkasAction } from "@/app/actions/ppdb-form";
 
 export default function PendaftaranPpdb() {
   const [activeTab, setActiveTab] = useState<string>("Data Diri");
@@ -53,7 +52,7 @@ export default function PendaftaranPpdb() {
       case "Data orang Tua":
         return <DataOrangTuaTab action={saveDataOrangTuaAction} />;
       case "Berkas":
-        return <BerkasTab action={uploadBerkasAction} />;
+        return <BerkasTab />;
       case "Surat Rekomendasi":
         return <SuratRekomendasiTab action={saveRekomendasiAction} />;
       case "Data sekolah Asal":

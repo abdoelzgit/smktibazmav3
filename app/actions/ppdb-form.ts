@@ -1,21 +1,19 @@
 'use server';
 
-import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose';
-import { mkdir, writeFile, unlink } from 'fs/promises';
-import path from 'path';
-import { randomUUID } from 'crypto';
 import { KeadaanOrangTua, StatusKeluarga, StatusSekolah, StatusPendaftaran } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/app/actions/auth';
 import { revalidatePath } from 'next/cache';
-import { convertImageToWebp, isAllowedDocument, isImageFile } from '@/lib/image.utils';
-import { getRelativeUploadPath, resolveUploadPath, toUploadUrl } from '@/lib/upload-storage';
 import { riwayatSiswaSchema } from '@/lib/validations/ppdb-form';
 import { toPhoneInputValue } from '@/lib/phone-input-value';
-
-const COOKIE_NAME = 'auth_session';
-const LEGACY_COOKIE_NAME = 'admin_session';
+import { getPPDBUserFromToken } from '@/lib/ppdb-auth';
+import { getOrCreatePendaftaran } from '@/lib/ppdb-registration';
+import {
+  cleanupNewFile,
+  cleanupStaleFile,
+  deleteFileSilently,
+  saveUploadedFile,
+  type SavedFile,
+} from '@/lib/ppdb-upload';
 
 export type FormResult<T = unknown> = {
   success: boolean;
@@ -63,74 +61,12 @@ async function checkAndAutoVerifyPendaftaran(pendaftaranId: string) {
   }
 }
 
-async function getUserFromToken(): Promise<{ userId: string; email: string } | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
-
-  if (token) {
-    const payload = await verifyToken(token);
-    if (payload) {
-      return { userId: payload.userId, email: payload.email };
-    }
-  }
-
-  const legacyToken = cookieStore.get(LEGACY_COOKIE_NAME)?.value;
-  const secret = process.env.JWT_SECRET;
-  if (!legacyToken || !secret) {
-    return null;
-  }
-
-  try {
-    const { payload } = await jwtVerify(legacyToken, new TextEncoder().encode(secret));
-    const userId = typeof payload.userId === 'string' ? payload.userId : '';
-    if (!userId) {
-      return null;
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user || user.role !== 'USER') {
-      return null;
-    }
-
-    return { userId: user.id, email: user.email };
-  } catch {
-    return null;
-  }
-}
-
-async function getOrCreatePendaftaran(userId: string) {
-  let pendaftaran = await prisma.pendaftaran.findUnique({
-    where: { userId },
-  });
-
-  // Older saves could be marked VERIFIED automatically before a registration number
-  // was assigned. Restore only those records; explicit finalization assigns a number.
-  if (pendaftaran?.status === 'VERIFIED' && !pendaftaran.nomorPendaftaran) {
-    pendaftaran = await prisma.pendaftaran.update({
-      where: { id: pendaftaran.id },
-      data: { status: 'DRAFT' },
-    });
-  }
-
-  if (pendaftaran && ['SUBMITTED', 'VERIFIED', 'ACCEPTED'].includes(pendaftaran.status)) {
-    throw new Error('Pendaftaran sudah difinalisasi dan tidak dapat diubah.');
-  }
-
-  if (!pendaftaran) {
-    pendaftaran = await prisma.pendaftaran.create({
-      data: {
-        userId,
-        status: 'DRAFT',
-      },
-    });
-  }
-
-  return pendaftaran;
-}
-
 export async function saveDataDiriAction(formData: FormData): Promise<FormResult> {
+  let fotoFormalFile: SavedFile | null = null;
+  let biodataCommitted = false;
+
   try {
-    const user = await getUserFromToken();
+    const user = await getPPDBUserFromToken();
     if (!user) {
       return { success: false, error: 'Tidak terautentikasi' };
     }
@@ -149,12 +85,6 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
       },
     });
 
-    const fotoFormalUrl = await saveUploadedFile(
-      formData.get('fotoFormalUrl'),
-      user.userId,
-      'foto-formal',
-      existingBiodata?.fotoFormalUrl
-    );
     const tempatLahir = asString(formData.get('tempatLahir'));
     const tanggalLahirStr = asString(formData.get('tanggalLahir'));
     const nik = asString(formData.get('nik'));
@@ -218,6 +148,13 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
     }
 
     const tanggalLahir = tanggalLahirStr ? new Date(tanggalLahirStr) : null;
+    fotoFormalFile = await saveUploadedFile(
+      formData.get('fotoFormalUrl'),
+      user.userId,
+      'foto-formal',
+      existingBiodata?.fotoFormalUrl,
+    );
+    const fotoFormalUrl = fotoFormalFile.url;
 
     const biodata = await prisma.biodataSiswa.upsert({
       where: { pendaftaranId: pendaftaran.id },
@@ -281,19 +218,26 @@ export async function saveDataDiriAction(formData: FormData): Promise<FormResult
         pernyataanSiswa,
       },
     });
+    biodataCommitted = true;
+    await cleanupStaleFile(fotoFormalFile);
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
     revalidatePath('/spmb/form');
     return { success: true, data: biodata };
   } catch (error) {
+    if (biodataCommitted) await cleanupStaleFile(fotoFormalFile);
+    else await cleanupNewFile(fotoFormalFile);
     console.error('saveDataDiriAction error:', error);
     return { success: false, error: 'Gagal menyimpan data diri' };
   }
 }
 
 export async function saveRiwayatSiswaAction(formData: FormData): Promise<FormResult> {
+  const savedFiles: SavedFile[] = [];
+  let riwayatCommitted = false;
+
   try {
-    const user = await getUserFromToken();
+    const user = await getPPDBUserFromToken();
     if (!user) return { success: false, error: 'Tidak terautentikasi' };
     const pendaftaran = await getOrCreatePendaftaran(user.userId);
     const parsed = riwayatSiswaSchema.safeParse({
@@ -304,30 +248,42 @@ export async function saveRiwayatSiswaAction(formData: FormData): Promise<FormRe
     if (!parsed.success) return { success: false, error: 'Periksa kembali data riwayat yang diisi.' };
 
     const previous = await prisma.riwayatPendaftar.findUnique({ where: { pendaftaranId: pendaftaran.id } });
-    const prestasiItems = await Promise.all(parsed.data.riwayatPrestasiItems.map(async (item, index) => ({
-      ...item,
-      buktiUrl: await saveUploadedFile(formData.get(`bukti-${item.id}`), user.userId, `bukti-prestasi-${index + 1}`, item.buktiUrl),
-    })));
+    const prestasiItems = [];
+    for (const [index, item] of parsed.data.riwayatPrestasiItems.entries()) {
+      const savedFile = await saveUploadedFile(
+        formData.get(`bukti-${item.id}`),
+        user.userId,
+        `bukti-prestasi-${index + 1}`,
+        item.buktiUrl,
+      );
+      savedFiles.push(savedFile);
+      prestasiItems.push({ ...item, buktiUrl: savedFile.url });
+    }
     const saved = await prisma.riwayatPendaftar.upsert({
       where: { pendaftaranId: pendaftaran.id },
       create: { pendaftaranId: pendaftaran.id, prestasiData: prestasiItems, organisasiData: parsed.data.riwayatOrganisasiItems, bahasaData: parsed.data.riwayatBahasaItems },
       update: { prestasiData: prestasiItems, organisasiData: parsed.data.riwayatOrganisasiItems, bahasaData: parsed.data.riwayatBahasaItems },
     });
+    riwayatCommitted = true;
     const retained = new Set(prestasiItems.map((item) => item.buktiUrl).filter(Boolean));
     if (Array.isArray(previous?.prestasiData)) {
       const oldItems = previous.prestasiData as { buktiUrl?: string }[];
       await Promise.all(oldItems.map((item) => item.buktiUrl && !retained.has(item.buktiUrl) ? deleteFileSilently(item.buktiUrl) : undefined));
     }
+    await Promise.all(savedFiles.map(cleanupStaleFile));
     revalidatePath('/spmb/form');
     return { success: true, data: { ...saved, ...parsed.data, riwayatPrestasiItems: prestasiItems } };
   } catch {
+    await Promise.all(
+      savedFiles.map((file) => riwayatCommitted ? cleanupStaleFile(file) : cleanupNewFile(file)),
+    );
     return { success: false, error: 'Gagal menyimpan riwayat.' };
   }
 }
 
 export async function saveDataOrangTuaAction(formData: FormData): Promise<FormResult> {
   try {
-    const user = await getUserFromToken();
+    const user = await getPPDBUserFromToken();
     if (!user) {
       return { success: false, error: 'Tidak terautentikasi' };
     }
@@ -386,7 +342,7 @@ export async function saveDataOrangTuaAction(formData: FormData): Promise<FormRe
 
 export async function saveDataSekolahAction(formData: FormData): Promise<FormResult> {
   try {
-    const user = await getUserFromToken();
+    const user = await getPPDBUserFromToken();
     if (!user) {
       return { success: false, error: 'Tidak terautentikasi' };
     }
@@ -428,8 +384,11 @@ export async function saveDataSekolahAction(formData: FormData): Promise<FormRes
 }
 
 export async function saveRekomendasiAction(formData: FormData): Promise<FormResult> {
+  let recommendationFile: SavedFile | null = null;
+  let recommendationCommitted = false;
+
   try {
-    const user = await getUserFromToken();
+    const user = await getPPDBUserFromToken();
     if (!user) {
       return { success: false, error: 'Tidak terautentikasi' };
     }
@@ -444,17 +403,19 @@ export async function saveRekomendasiAction(formData: FormData): Promise<FormRes
       select: { suratRekomendasiUrl: true },
     });
 
-    const suratRekomendasiUrl = (await saveUploadedFile(
-      formData.get('suratRekomendasiUrl'),
-      user.userId,
-      'surat-rekomendasi',
-      existingRekomendasi?.suratRekomendasiUrl
-    )) ?? '';
     const catatanRekomendasi = asString(formData.get('catatanRekomendasi')).trim();
 
     if (!namaPemberiRekomendasi) {
       return { success: false, error: 'Nama pemberi rekomendasi wajib diisi' };
     }
+
+    recommendationFile = await saveUploadedFile(
+      formData.get('suratRekomendasiUrl'),
+      user.userId,
+      'surat-rekomendasi',
+      existingRekomendasi?.suratRekomendasiUrl,
+    );
+    const suratRekomendasiUrl = recommendationFile.url ?? '';
 
     const rekomendasi = await prisma.suratRekomendasi.upsert({
       where: { pendaftaranId: pendaftaran.id },
@@ -474,195 +435,23 @@ export async function saveRekomendasiAction(formData: FormData): Promise<FormRes
         catatanRekomendasi,
       },
     });
+    recommendationCommitted = true;
+    await cleanupStaleFile(recommendationFile);
 
     await checkAndAutoVerifyPendaftaran(pendaftaran.id);
     revalidatePath('/spmb/form');
     return { success: true, data: rekomendasi };
   } catch (error) {
+    if (recommendationCommitted) await cleanupStaleFile(recommendationFile);
+    else await cleanupNewFile(recommendationFile);
     console.error('saveRekomendasiAction error:', error);
     return { success: false, error: 'Gagal menyimpan data rekomendasi' };
   }
 }
 
-export async function uploadBerkasAction(formData: FormData): Promise<FormResult> {
-  try {
-    const user = await getUserFromToken();
-    if (!user) {
-      return { success: false, error: 'Tidak terautentikasi' };
-    }
-
-    const pendaftaran = await getOrCreatePendaftaran(user.userId);
-
-    const existingBerkas = await prisma.berkasPendaftaran.findUnique({
-      where: { pendaftaranId: pendaftaran.id },
-    });
-
-    const fields = [
-      { key: 'kkUrl', fieldName: 'kk', existingUrl: existingBerkas?.kkUrl },
-      { key: 'ktpOrangTuaUrl', fieldName: 'ktp-orang-tua', existingUrl: existingBerkas?.ktpOrangTuaUrl },
-      { key: 'kipUrl', fieldName: 'kip', existingUrl: existingBerkas?.kipUrl },
-      { key: 'akteUrl', fieldName: 'akte', existingUrl: existingBerkas?.akteUrl },
-      { key: 'ijazahUrl', fieldName: 'ijazah', existingUrl: existingBerkas?.ijazahUrl },
-      { key: 'raporUrl', fieldName: 'rapor', existingUrl: existingBerkas?.raporUrl },
-      { key: 'prestasiUrl', fieldName: 'prestasi', existingUrl: existingBerkas?.prestasiUrl },
-      { key: 'bpjsUrl', fieldName: 'bpjs', existingUrl: existingBerkas?.bpjsUrl },
-      { key: 'sktmUrl', fieldName: 'sktm', existingUrl: existingBerkas?.sktmUrl },
-      { key: 'suratPernyataanCpdbUrl', fieldName: 'pernyataan-cpdb', existingUrl: existingBerkas?.suratPernyataanCpdbUrl },
-      { key: 'suratTidakMerokokUrl', fieldName: 'pernyataan-tidak-merokok', existingUrl: existingBerkas?.suratTidakMerokokUrl },
-      { key: 'tampakDepanRumahUrl', fieldName: 'rumah-depan', existingUrl: existingBerkas?.tampakDepanRumahUrl },
-      { key: 'tampakSampingRumahUrl', fieldName: 'rumah-samping', existingUrl: existingBerkas?.tampakSampingRumahUrl },
-      { key: 'kamarTidurUrl', fieldName: 'kamar-tidur', existingUrl: existingBerkas?.kamarTidurUrl },
-      { key: 'kamarMandiUrl', fieldName: 'kamar-mandi', existingUrl: existingBerkas?.kamarMandiUrl },
-      { key: 'ruangTamuUrl', fieldName: 'ruang-tamu', existingUrl: existingBerkas?.ruangTamuUrl },
-    ] as const;
-    const savedUrls: Record<string, string | null> = {};
-
-    for (let index = 0; index < fields.length; index += 2) {
-      const batch = fields.slice(index, index + 2);
-      const batchResults = await Promise.all(batch.map(async (field) => ({
-        key: field.key,
-        url: await saveUploadedFile(
-          formData.get(field.key),
-          user.userId,
-          field.fieldName,
-          field.existingUrl,
-        ),
-      })));
-      batchResults.forEach(({ key, url }) => {
-        savedUrls[key] = url;
-      });
-    }
-
-    const kkUrl = savedUrls.kkUrl;
-    const ktpOrangTuaUrl = savedUrls.ktpOrangTuaUrl;
-    const kipUrl = savedUrls.kipUrl;
-    const akteUrl = savedUrls.akteUrl;
-    const ijazahUrl = savedUrls.ijazahUrl;
-    const raporUrl = savedUrls.raporUrl;
-    const prestasiUrl = savedUrls.prestasiUrl;
-    const bpjsUrl = savedUrls.bpjsUrl;
-    const sktmUrl = savedUrls.sktmUrl;
-    const suratPernyataanCpdbUrl = savedUrls.suratPernyataanCpdbUrl;
-    const suratTidakMerokokUrl = savedUrls.suratTidakMerokokUrl;
-    const tampakDepanRumahUrl = savedUrls.tampakDepanRumahUrl;
-    const tampakSampingRumahUrl = savedUrls.tampakSampingRumahUrl;
-    const kamarTidurUrl = savedUrls.kamarTidurUrl;
-    const kamarMandiUrl = savedUrls.kamarMandiUrl;
-    const ruangTamuUrl = savedUrls.ruangTamuUrl;
-
-    const berkas = await prisma.berkasPendaftaran.upsert({
-      where: { pendaftaranId: pendaftaran.id },
-      update: {
-        kkUrl,
-        ktpOrangTuaUrl,
-        kipUrl,
-        akteUrl,
-        ijazahUrl,
-        raporUrl,
-        prestasiUrl,
-        bpjsUrl,
-        sktmUrl,
-        suratPernyataanCpdbUrl,
-        suratTidakMerokokUrl,
-        tampakDepanRumahUrl,
-        tampakSampingRumahUrl,
-        kamarTidurUrl,
-        kamarMandiUrl,
-        ruangTamuUrl,
-      },
-      create: {
-        pendaftaranId: pendaftaran.id,
-        kkUrl,
-        ktpOrangTuaUrl,
-        kipUrl,
-        akteUrl,
-        ijazahUrl,
-        raporUrl,
-        prestasiUrl,
-        bpjsUrl,
-        sktmUrl,
-        suratPernyataanCpdbUrl,
-        suratTidakMerokokUrl,
-        tampakDepanRumahUrl,
-        tampakSampingRumahUrl,
-        kamarTidurUrl,
-        kamarMandiUrl,
-        ruangTamuUrl,
-      },
-    });
-
-    await checkAndAutoVerifyPendaftaran(pendaftaran.id);
-    revalidatePath('/spmb/form');
-    return { success: true, data: berkas };
-  } catch (error) {
-    console.error('uploadBerkasAction error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Gagal menyimpan berkas',
-    };
-  }
-}
-
-async function deleteFileSilently(fileUrl: string) {
-  try {
-    if (!fileUrl || typeof fileUrl !== 'string') return;
-    const relativePath = getRelativeUploadPath(fileUrl);
-    if (!relativePath) return;
-
-    const absolutePath = resolveUploadPath(relativePath);
-    await unlink(absolutePath);
-  } catch (error) {
-    console.warn(`[deleteFileSilently] Tidak dapat menghapus berkas lama di ${fileUrl}:`, error);
-  }
-}
-
-async function saveUploadedFile(
-  value: FormDataEntryValue | null,
-  userId: string,
-  fieldName: string,
-  existingUrl: string | null | undefined
-): Promise<string | null> {
-  if (typeof value === 'string' && value.trim() !== '') {
-    return value.trim();
-  }
-
-  if (!(value instanceof File) || value.size === 0) {
-    return existingUrl ?? null;
-  }
-
-  if (value.size > 10 * 1024 * 1024) {
-    throw new Error(`${fieldName} melebihi batas ukuran 10 MB`);
-  }
-
-  if (!isAllowedDocument(value)) {
-    throw new Error(`${fieldName} harus berupa PDF atau gambar`);
-  }
-
-  const image = isImageFile(value);
-  const isWebp = image && (value.type === 'image/webp' || path.extname(value.name).toLowerCase() === '.webp');
-  const extension = image ? '.webp' : path.extname(value.name).toLowerCase() || '.pdf';
-  const fileName = `${fieldName}-${randomUUID()}${extension}`;
-  const relativeDirectory = path.join('ppdb', userId);
-  const absoluteDirectory = resolveUploadPath(relativeDirectory);
-
-  await mkdir(absoluteDirectory, { recursive: true });
-  const contents = image && !isWebp
-    ? await convertImageToWebp(value)
-    : Buffer.from(await value.arrayBuffer());
-  await writeFile(path.join(absoluteDirectory, fileName), contents);
-
-  const newUrl = toUploadUrl(path.join(relativeDirectory, fileName));
-
-  // Hapus file lama jika ada file baru yang diunggah
-  if (existingUrl && existingUrl !== newUrl) {
-    await deleteFileSilently(existingUrl);
-  }
-
-  return newUrl;
-}
 export async function submitPendaftaranAction(): Promise<FormResult> {
   try {
-    const user = await getUserFromToken();
+    const user = await getPPDBUserFromToken();
     if (!user) {
       return { success: false, error: 'Tidak terautentikasi' };
     }
@@ -698,7 +487,6 @@ export async function submitPendaftaranAction(): Promise<FormResult> {
     }
 
     const nomorPendaftaran = pendaftaran.nomorPendaftaran ?? `PPDB-${Date.now()}-${user.userId.slice(0, 6)}`;
-
     const updated = await prisma.pendaftaran.update({
       where: { id: pendaftaran.id },
       data: {
