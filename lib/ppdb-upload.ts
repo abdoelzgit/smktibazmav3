@@ -11,6 +11,7 @@ import { convertImageToWebp, detectAndValidate } from '@/lib/image.utils';
 import { getRelativeUploadPath, resolveUploadPath, toPpdbUploadUrl } from '@/lib/upload-storage';
 import { BERKAS_FIELDS, BerkasKey, UPLOAD_MAX_BYTES } from '@/lib/ppdb-upload.config';
 import { getOrCreatePendaftaran } from '@/lib/ppdb-registration';
+import { schedulePpdbSheetSync } from '@/lib/ppdb-google-sheets';
 
 export type SavedFile = {
   url: string | null;
@@ -156,5 +157,6 @@ export async function saveSingleBerkas(params: {
   }
 
   await cleanupStaleFile(savedFile);
+  await schedulePpdbSheetSync(pendaftaran.id);
   return { key, url: savedFile.url };
 }

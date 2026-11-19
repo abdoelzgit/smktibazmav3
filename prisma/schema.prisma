@@ -1,6 +1,6 @@
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "binary"
+  provider      = "prisma-client-js"
+  engineType    = "binary"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
@@ -50,9 +50,9 @@ model JejakKarya {
   approach      String?
   outcome       String?
   whatWeDid     String?
-  tags          String?   // JSON string array
+  tags          String? // JSON string array
   coverImage    String?
-  galleryImages String?   // JSON string array
+  galleryImages String? // JSON string array
   demoUrl       String?
   published     Boolean   @default(false)
   publishedAt   DateTime?
@@ -80,39 +80,54 @@ model Pendaftaran {
   @@map("pendaftaran_ppdb")
 }
 
+model PpdbSheetSyncQueue {
+  pendaftaranId String    @id
+  operation     String    @default("UPSERT")
+  sheetKey      String
+  attempts      Int       @default(0)
+  availableAt   DateTime  @default(now())
+  lockedAt      DateTime?
+  lastError     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([availableAt, lockedAt])
+  @@map("ppdb_sheet_sync_queue")
+}
+
 model BiodataSiswa {
-  id                 String          @id @default(cuid())
-  pendaftaranId      String          @unique
-  namaLengkap        String
-  email              String?
-  tempatLahir        String?
-  tanggalLahir       DateTime?
-  nik                String?
-  nisn               String?
-  kewarganegaraan    String?         @default("Indonesia")
-  anakKe             Int?
-  jumlahSaudara      Int?
-  statusKeluarga     StatusKeluarga? @default(ANAK_KANDUNG)
-  tinggalBersama     String?
-  alamatLengkap      String?
-  noHpWhatsapp       String?
-  mediaSosial        String?
+  id                   String          @id @default(cuid())
+  pendaftaranId        String          @unique
+  namaLengkap          String
+  email                String?
+  tempatLahir          String?
+  tanggalLahir         DateTime?
+  nik                  String?
+  nisn                 String?
+  kewarganegaraan      String?         @default("Indonesia")
+  anakKe               Int?
+  jumlahSaudara        Int?
+  statusKeluarga       StatusKeluarga? @default(ANAK_KANDUNG)
+  tinggalBersama       String?
+  alamatLengkap        String?
+  noHpWhatsapp         String?
+  mediaSosial          String?
   linkPengumpulanVideo String?
-  setujuPanduanVideo Boolean? @default(false)
-  bahasaAsing        String?
-  riwayatPrestasi    String?
-  riwayatOrganisasi  String?
-  beratBadan         Float?
-  tinggiBadan        Float?
-  riwayatPenyakit    String?
-  isMerokok          Boolean?        @default(false)
-  isButaWarna        Boolean?        @default(false)
-  hasPenyakitMenular Boolean?        @default(false)
-  pernyataanSiswa    Boolean?        @default(false)
-  fotoFormalUrl      String?
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-  pendaftaran        Pendaftaran     @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+  setujuPanduanVideo   Boolean?        @default(false)
+  bahasaAsing          String?
+  riwayatPrestasi      String?
+  riwayatOrganisasi    String?
+  beratBadan           Float?
+  tinggiBadan          Float?
+  riwayatPenyakit      String?
+  isMerokok            Boolean?        @default(false)
+  isButaWarna          Boolean?        @default(false)
+  hasPenyakitMenular   Boolean?        @default(false)
+  pernyataanSiswa      Boolean?        @default(false)
+  fotoFormalUrl        String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  pendaftaran          Pendaftaran     @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
 
   @@map("biodata_siswa")
 }
@@ -167,28 +182,28 @@ model SuratRekomendasi {
 }
 
 model BerkasPendaftaran {
-  id                    String      @id @default(cuid())
-  pendaftaranId         String      @unique
-  kkUrl                 String?
-  ktpOrangTuaUrl        String?
-  kipUrl                String?
-  akteUrl               String?
-  ijazahUrl             String?
-  raporUrl              String?
-  prestasiUrl           String?
-  bpjsUrl               String?
-  sktmUrl               String?
+  id                     String      @id @default(cuid())
+  pendaftaranId          String      @unique
+  kkUrl                  String?
+  ktpOrangTuaUrl         String?
+  kipUrl                 String?
+  akteUrl                String?
+  ijazahUrl              String?
+  raporUrl               String?
+  prestasiUrl            String?
+  bpjsUrl                String?
+  sktmUrl                String?
   suratPernyataanWaliUrl String?
   suratPernyataanCpdbUrl String?
-  suratTidakMerokokUrl  String?
-  tampakDepanRumahUrl   String?
-  tampakSampingRumahUrl String?
-  kamarTidurUrl         String?
-  kamarMandiUrl         String?
-  ruangTamuUrl          String?
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
-  pendaftaran           Pendaftaran @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+  suratTidakMerokokUrl   String?
+  tampakDepanRumahUrl    String?
+  tampakSampingRumahUrl  String?
+  kamarTidurUrl          String?
+  kamarMandiUrl          String?
+  ruangTamuUrl           String?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  pendaftaran            Pendaftaran @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
 
   @@map("berkas_pendaftaran")
 }
@@ -201,7 +216,7 @@ model RiwayatPendaftar {
   bahasaData     Json?       @db.JsonB
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
-  pendaftaran   Pendaftaran @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+  pendaftaran    Pendaftaran @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
 
   @@map("riwayat_pendaftar")
 }
