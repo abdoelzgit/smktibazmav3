@@ -27,8 +27,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
-, "components/SwipeToast.jsx"  ],
-  "exclude": ["node_modules"]
+    "**/*.mts",
+    "components/SwipeToast.jsx"
+  ],
+  "exclude": ["node_modules", ".next/dev"]
 }

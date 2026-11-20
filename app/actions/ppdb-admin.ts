@@ -12,6 +12,11 @@ import { z } from 'zod';
 import { getPpdbSheetKey, schedulePpdbSheetSync } from '@/lib/ppdb-google-sheets';
 
 const AUTH_COOKIE_NAME = 'auth_session';
+const LOCKED_STATUSES: StatusPendaftaran[] = [
+  StatusPendaftaran.SUBMITTED,
+  StatusPendaftaran.VERIFIED,
+  StatusPendaftaran.ACCEPTED,
+];
 
 export type ActionResult<T = unknown> = {
   success: boolean;
@@ -101,14 +106,15 @@ export async function syncPendaftaranToGoogleSheetsAction(
       targetSheet = metadata.data.sheets?.find((sheet) => sheet.properties?.title === sheetTitle);
     }
 
-    const sheetId = targetSheet?.properties?.sheetId;
-    if (sheetId === undefined) {
+    const targetSheetProperties = targetSheet?.properties;
+    const sheetId = targetSheetProperties?.sheetId;
+    if (sheetId === undefined || !targetSheetProperties) {
       return { success: false, error: 'Tab rekap Google Sheets tidak dapat disiapkan.' };
     }
 
     const requiredRows = rows.length + 1;
     const requiredColumns = headers.length;
-    const currentGrid = targetSheet.properties?.gridProperties;
+    const currentGrid = targetSheetProperties.gridProperties;
     if ((currentGrid?.rowCount ?? 0) < requiredRows || (currentGrid?.columnCount ?? 0) < requiredColumns) {
       await sheets.spreadsheets.batchUpdate({
         spreadsheetId,
@@ -167,7 +173,7 @@ export async function unlockPendaftaranAction(id: string): Promise<ActionResult>
       select: { id: true, status: true, nomorPendaftaran: true },
     });
     if (!pendaftaran) return { success: false, error: 'Data pendaftaran tidak ditemukan.' };
-    if (!pendaftaran.nomorPendaftaran || ![StatusPendaftaran.SUBMITTED, StatusPendaftaran.VERIFIED, StatusPendaftaran.ACCEPTED].includes(pendaftaran.status)) {
+    if (!pendaftaran.nomorPendaftaran || !LOCKED_STATUSES.includes(pendaftaran.status)) {
       return { success: false, error: 'Formulir ini tidak sedang terkunci.' };
     }
 

@@ -36,11 +36,13 @@ services:
       HOSTNAME: "0.0.0.0"
       NEXT_TELEMETRY_DISABLED: "1"
       UPLOADS_DIR: /app/uploads
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/google-sheets-credentials.json
       DATABASE_URL: "postgresql://bedul:@B3dul@smktibazma-db:5432/smktibazmadb?schema=public"
      #DATABASE_URL: "postgresql://bedul:B3dul@127.0.0.1:5432/smktibazmadb?schema=public"
       JWT_SECRET: "9f86d081884c7d659a2feaa0c55ad015a13946f"
     volumes:
       - ${UPLOADS_HOST_DIR:?Set UPLOADS_HOST_DIR in .env}:/app/uploads
+      - ${GOOGLE_SHEETS_CREDENTIALS_HOST_PATH:-./credential.json}:/run/secrets/google-sheets-credentials.json:ro
     ports:
       - "127.0.0.1:5555:5555"
     depends_on:

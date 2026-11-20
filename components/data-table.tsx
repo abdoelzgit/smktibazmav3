@@ -51,6 +51,11 @@ export default function DataTable({ data, onDownload, onDelete }: DataTableProps
     );
   };
 
+  const shouldLoadImageDirectly = (url: string): boolean =>
+    url.startsWith("blob:") ||
+    url.includes("/api/ppdb/file/") ||
+    url.includes("/api/uploads/ppdb/");
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -147,7 +152,7 @@ export default function DataTable({ data, onDownload, onDelete }: DataTableProps
                       src={p.fotoFormalUrl!}
                       alt={`${p.nama} Foto Formal`}
                       fill
-                      unoptimized={p.fotoFormalUrl!.startsWith("blob:")}
+                      unoptimized={shouldLoadImageDirectly(p.fotoFormalUrl!)}
                       className="object-cover"
                       sizes="44px"
                     />
@@ -262,7 +267,7 @@ export default function DataTable({ data, onDownload, onDelete }: DataTableProps
                           src={p.fotoFormalUrl!}
                           alt={`${p.nama} Foto Formal`}
                           fill
-                          unoptimized={p.fotoFormalUrl!.startsWith("blob:")}
+                          unoptimized={shouldLoadImageDirectly(p.fotoFormalUrl!)}
                           className="object-cover"
                           sizes="40px"
                         />
