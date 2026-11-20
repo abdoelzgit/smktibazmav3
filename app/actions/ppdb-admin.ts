@@ -367,19 +367,36 @@ export async function updatePendaftaranStatusAction(
 
 export async function deletePendaftaranAction(id: string): Promise<ActionResult> {
   try {
+    const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
+    const session = token ? await verifyToken(token) : null;
+    if (session?.role !== 'ADMIN') {
+      return { success: false, error: 'Hanya admin yang dapat menghapus data peserta.' };
+    }
+
     const pendaftaran = await prisma.pendaftaran.findUnique({
       where: { id },
-      select: { id: true, nomorPendaftaran: true },
+      select: {
+        id: true,
+        userId: true,
+        nomorPendaftaran: true,
+        user: { select: { role: true } },
+      },
     });
     if (!pendaftaran) return { success: false, error: 'Data pendaftaran tidak ditemukan.' };
+    if (pendaftaran.user.role !== 'USER') {
+      return { success: false, error: 'Akun yang terhubung bukan akun peserta.' };
+    }
 
-    await prisma.pendaftaran.delete({
-      where: { id },
+    await prisma.user.delete({
+      where: { id: pendaftaran.userId },
     });
 
     await schedulePpdbSheetSync(id, 'DELETE', getPpdbSheetKey(id, pendaftaran.nomorPendaftaran));
 
     revalidatePath('/admin/data-ppdb');
+    revalidatePath(`/admin/data-ppdb/${id}`);
+    revalidatePath('/spmb/dashboard');
+    revalidatePath('/spmb/form');
     return { success: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal menghapus data pendaftaran';

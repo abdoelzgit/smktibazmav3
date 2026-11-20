@@ -256,6 +256,14 @@ export async function verifyToken(token: string): Promise<TokenPayload | null> {
       return null;
     }
 
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, role: true },
+    });
+    if (!user || user.email !== email || user.role !== role) {
+      return null;
+    }
+
     return { userId, email, name, role };
   } catch {
     return null;
