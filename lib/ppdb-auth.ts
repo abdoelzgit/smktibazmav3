@@ -17,7 +17,15 @@ export async function getPPDBUserFromToken(): Promise<PPDBUser | null> {
       const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
       const userId = typeof payload.userId === 'string' ? payload.userId : '';
       const email = typeof payload.email === 'string' ? payload.email : '';
-      if (userId && email) return { userId, email };
+      if (userId && email) {
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true, role: true },
+        });
+        if (user?.email === email && user.role === 'USER') {
+          return { userId, email };
+        }
+      }
     } catch {
       // Try the legacy session cookie below.
     }
