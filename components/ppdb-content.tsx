@@ -12,6 +12,7 @@ import {
   ArrowUpRight,
   CheckCircle2,
   XCircle,
+  MessageCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -75,6 +76,9 @@ const PROGRESS_CARDS: ProgressItem[] = [
   { title: "Surat Rekomendasi", tab: "Surat Rekomendasi", saved: false, verified: false },
   { title: "Finalisasi", tab: "Finalisasi", saved: false, verified: false },
 ];
+
+// Ganti dengan tautan undangan grup WhatsApp pendaftar.
+const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/Bjuf01iH0UOBqq20jwMWkf";
 
 /**
  * ------------------------------------------------------------------
@@ -346,6 +350,26 @@ export default function DashboardContent({
   return (
     <div className="flex min-w-0 w-full flex-1 flex-col gap-6">
       <BiodataSiswa siswa={siswa} />
+      <section className="flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="flex items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+            <MessageCircle className="size-5" aria-hidden="true" />
+          </span>
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">Grup WhatsApp Pendaftar</h2>
+            <p className="mt-1 text-sm text-slate-600">Bergabung ke grup WhatsApp pendaftar.</p>
+          </div>
+        </div>
+        <a
+          href={WHATSAPP_GROUP_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
+        >
+          <MessageCircle className="size-4" aria-hidden="true" />
+          Gabung Grup WhatsApp
+        </a>
+      </section>
       <ProgressPendaftaran items={progressItems} />
       <AlurPendaftaran steps={STEPS} currentStep={currentStep} />
     </div>
